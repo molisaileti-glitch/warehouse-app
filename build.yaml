@@ -1,0 +1,24 @@
+# build.yaml
+# Drift code generation configuration.
+# Run: flutter pub run build_runner build --delete-conflicting-outputs
+
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Generate immutable data classes (recommended).
+          generate_values_in_copy_with: true
+
+          # Write the generated file next to the source (*.g.dart pattern).
+          store_date_time_values_as_text: false
+
+          # Named parameters in generated Companion constructors — much
+          # more readable than positional for tables with many columns.
+          named_parameters: true
+
+      # Riverpod generator — runs on lib/**/*.dart annotated with @riverpod.
+      riverpod_generator:
+        generate_for:
+          include:
+            - lib/**

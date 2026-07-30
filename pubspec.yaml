@@ -1,0 +1,67 @@
+name: warehouse_app
+description: Offline-first inventory management for warehouse teams.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ── Local database ──────────────────────────────────────────────
+  drift: ^2.28.0
+  drift_flutter: ^0.2.0          # flutter-aware SQLite provider
+  sqlite3_flutter_libs: ^0.5.0   # bundles sqlite3 native libs
+  path_provider: ^2.1.0
+  path: ^1.9.0
+
+  # ── UUID generation ─────────────────────────────────────────────
+  uuid: ^4.4.0
+
+  # ── Networking ──────────────────────────────────────────────────
+  dio: ^5.4.0              # type-safe REST client (optional but recommended)
+
+  # ── Secure storage ──────────────────────────────────────────────
+  flutter_secure_storage: ^9.0.0
+
+  # ── State management ────────────────────────────────────────────
+  flutter_riverpod: ^2.5.0
+  riverpod_annotation: ^2.3.0
+
+  # ── Navigation ──────────────────────────────────────────────────
+  go_router: ^13.2.0
+
+  # ── Background sync ─────────────────────────────────────────────
+  workmanager: ^0.9.0+3
+
+  # ── Utilities ───────────────────────────────────────────────────
+  freezed_annotation: ^2.4.0
+  json_annotation: ^4.9.0
+  intl: ^0.20.2
+  connectivity_plus: ^6.0.0     # online/offline detection
+  collection: ^1.18.0
+  shared_preferences: ^2.5.5
+  flutter_blue_plus: ^1.35.4
+  permission_handler: ^12.0.0+1
+
+  uuidv7: 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+  # ── Code generation ─────────────────────────────────────────────
+  drift_dev: ^2.28.0
+  build_runner: ^2.4.0
+  freezed: ^2.5.0
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  generate: true

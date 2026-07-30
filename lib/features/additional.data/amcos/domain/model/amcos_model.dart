@@ -1,0 +1,276 @@
+//  "id": 4,
+//         "name": "Upton, Bergstrom and Corkery",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "472",
+//         "tinNumber": "35",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Kade80@hotmail.com",
+//         "contactPersonName": "Rogelio Robel",
+//         "contactPersonPhoneNumber": "975-252-8741",
+//         "contactPersonEmail": "Isai.Cartwright@gmail.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     },
+//     {
+//         "id": 5,
+//         "name": "Dooley - Renner",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "416",
+//         "tinNumber": "659",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Lia_Cummerata0@yahoo.com",
+//         "contactPersonName": "Sophia Murray",
+//         "contactPersonPhoneNumber": "453-609-2823",
+//         "contactPersonEmail": "Hillard75@yahoo.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     },
+//     {
+//         "id": 1,
+//         "name": "Pacocha, Krajcik and Lowe",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "685",
+//         "tinNumber": "797",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Grady.Renner63@gmail.com",
+//         "contactPersonName": "Perry Schneider",
+//         "contactPersonPhoneNumber": "537-801-2844",
+//         "contactPersonEmail": "Spencer99@yahoo.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     },
+//     {
+//         "id": 6,
+//         "name": "Pfannerstill LLC",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "449",
+//         "tinNumber": "346",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Marvin.Daniel@hotmail.com",
+//         "contactPersonName": "Kelli Runte",
+//         "contactPersonPhoneNumber": "411-343-9656",
+//         "contactPersonEmail": "Dessie70@hotmail.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     },
+//     {
+//         "id": 7,
+//         "name": "Daugherty - Douglas",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "90",
+//         "tinNumber": "668",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Santino.Will@gmail.com",
+//         "contactPersonName": "Courtney Greenholt",
+//         "contactPersonPhoneNumber": "384-405-7183",
+//         "contactPersonEmail": "Dalton37@yahoo.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     },
+//     {
+//         "id": 2,
+//         "name": "Wilkinson - Gibson",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "494",
+//         "tinNumber": "910",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Kaitlyn_Toy32@yahoo.com",
+//         "contactPersonName": "Brett Morissette",
+//         "contactPersonPhoneNumber": "335-290-8630",
+//         "contactPersonEmail": "Domenico.Ryan52@yahoo.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     },
+//     {
+//         "id": 8,
+//         "name": "Collier - Harber",
+//         "memberCategory": "FISHERMAN",
+//         "registrationNumber": "365",
+//         "tinNumber": "421",
+//         "mcu": 1,
+//         "mcuName": "mcu",
+//         "region": 1,
+//         "regionName": "dar",
+//         "district": 1,
+//         "districtName": "a",
+//         "ward": 1,
+//         "wardName": "a",
+//         "village": 1,
+//         "villageName": "a",
+//         "phoneNumber": "0698700269",
+//         "email": "Mark58@yahoo.com",
+//         "contactPersonName": "Guadalupe Gaylord",
+//         "contactPersonPhoneNumber": "384-424-7462",
+//         "contactPersonEmail": "Laney_Gulgowski@hotmail.com",
+//         "contactPersonTitle": "Meneja",
+//         "website": "www.amcoss.com",
+//         "status": "ACTIVE",
+//         "crops": "1",
+//         "idCounter": 0
+//     }
+// ]
+
+class AmcosModel {
+  final int id;
+  final String name;
+  final String memberCategory;
+  final String registrationNumber;
+  final String tinNumber;
+  final int mcu;
+  final String mcuName;
+  final int region;
+  final String regionName;
+  final int district;
+  final String districtName;
+  final int ward;
+  final String wardName;
+  final int village;
+  final String villageName;
+  final String phoneNumber;
+  final String email;
+  final String contactPersonName;
+  final String contactPersonPhoneNumber;
+  final String contactPersonEmail;
+  final String contactPersonTitle;
+  final String website;
+  final String status;
+  final String crops;
+  final int idCounter;
+
+  AmcosModel({
+    required this.id,
+    required this.name,
+    required this.memberCategory,
+    required this.registrationNumber,
+    required this.tinNumber,
+    required this.mcu,
+    required this.mcuName,
+    required this.region,
+    required this.regionName,
+    required this.district,
+    required this.districtName,
+    required this.ward,
+    required this.wardName,
+    required this.village,
+    required this.villageName,
+    required this.phoneNumber,
+    required this.email,
+    required this.contactPersonName,
+    required this.contactPersonPhoneNumber,
+    required this.contactPersonEmail,
+    required this.contactPersonTitle,
+    required this.website,
+    required this.status,
+    required this.crops,
+    required this.idCounter
+  });
+
+
+factory AmcosModel.fromJsonToModelObject(Map<String, dynamic> json) {
+    return AmcosModel(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      memberCategory: json['memberCategory'] as String,
+      registrationNumber: json['registrationNumber'] as String,
+      tinNumber: json['tinNumber'] as String,
+      mcu: json['mcu'] as int,
+      mcuName: json['mcuName'] as String,
+      region: json['region'] as int,
+      regionName: json['regionName'] as String,
+      district: json['district'] as int,
+      districtName: json['districtName'] as String,
+      ward: json['ward'] as int,
+      wardName: json['wardName'] as String,
+      village: json['village'] as int,
+      villageName: json['villageName'] as String,
+      phoneNumber: json['phoneNumber'] as String,
+      email: json['email'] as String,
+      contactPersonName: json['contactPersonName'] as String,
+      contactPersonPhoneNumber: json['contactPersonPhoneNumber'] as String,
+      contactPersonEmail: json['contactPersonEmail'] as String,
+      contactPersonTitle: json['contactPersonTitle'] as String,
+      website: json['website'] as String,
+      status: json['status'] as String,
+      crops: json['crops'] as String,
+      idCounter: json['idCounter'] as int
+    );
+  }
+}
