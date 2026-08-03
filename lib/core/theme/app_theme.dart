@@ -12,7 +12,7 @@ class AppColors {
   // Roles
   static const ownerColor = Color(0xFF1A6B4A);
   static const managerColor = Color(0xFF1565C0);
-  static const workerColor = Color(0xFF6A1B9A);
+  static const workerColor = Color(0xFF1A6B4A);
 
   // Status
   static const success = Color(0xFF2E7D32);

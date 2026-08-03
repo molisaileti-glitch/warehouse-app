@@ -87,7 +87,9 @@ class DriftWorkerRepository implements WorkerRepository {
   }
 
   bool _isWorkerRole(String role) {
-    final normalized = role.trim().toLowerCase();
-    return normalized == 'worker' || normalized == 'amcos_user';
+    final normalized = role.trim().toLowerCase().replaceAll(' ', '_');
+    return normalized == 'worker' ||
+        normalized == 'amcos_user' ||
+        normalized == 'user';
   }
 }

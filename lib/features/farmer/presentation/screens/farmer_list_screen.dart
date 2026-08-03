@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
+import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 
@@ -29,13 +30,13 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Farmers'),
-        actions: const [SyncIndicator()],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/worker/farmers/new'),
-        backgroundColor: AppColors.workerColor,
-        icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white),
-        label: const Text('Register', style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            tooltip: 'Add farmer',
+            onPressed: () => context.push(AppRoutes.workerFarmerRegistration),
+            icon: const Icon(Icons.add_rounded),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -67,12 +68,10 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                       }).toList();
 
                 if (filtered.isEmpty) {
-                  return EmptyState(
+                  return const EmptyState(
                     icon: Icons.people_alt_outlined,
                     title: 'No farmers yet',
                     subtitle: 'Register a farmer at point of contact.',
-                    actionLabel: 'Register',
-                    onAction: () => context.push('/worker/farmers/new'),
                   );
                 }
 
@@ -88,7 +87,9 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                       farmer.lastName,
                     ].whereType<String>().where((v) => v.isNotEmpty).join(' ');
                     return AppCard(
-                      onTap: () => context.push('/worker/farmers/${farmer.id}'),
+                      onTap: () => context.push(
+                        AppRoutes.workerFarmerDetailFor(farmer.id),
+                      ),
                       child: Row(
                         children: [
                           CircleAvatar(

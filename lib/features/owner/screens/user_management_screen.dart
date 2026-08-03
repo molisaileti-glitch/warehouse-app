@@ -14,13 +14,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/database/database_provider.dart';
 import '../../worker/domain/models/worker_model.dart';
-import '../../worker/domain/repositories/worker_repository.dart';
 import '../../shared/widgets/common_widgets.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
@@ -37,42 +38,22 @@ class UserManagementScreen extends ConsumerWidget {
     final usersAsync = ref.watch(_workersProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Workers'),
-        actions: const [SyncIndicator()],
+        actions: [
+          IconButton(
+            tooltip: 'Add worker',
+            onPressed: () => _showAddWorkerSheet(context, ref),
+            icon: const Icon(Icons.add_rounded),
+          ),
+        ],
       ),
 
       // ── FAB — opens Add Worker sheet ──────────────────────────────────────
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddWorkerSheet(context, ref),
-        backgroundColor: AppColors.ownerColor,
-        icon: const Icon(Icons.person_add_rounded, color: Colors.white),
-        label: const Text('Add Worker', style: TextStyle(color: Colors.white)),
-      ),
-
       body: Column(
         children: [
           // Info banner
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(children: [
-              Icon(Icons.info_outline_rounded, size: 16, color: AppColors.info),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Workers you add will be assigned to a warehouse. Their login credentials are set during registration.',
-                  style: TextStyle(fontSize: 12, color: AppColors.info),
-                ),
-              ),
-            ]),
-          ),
-
           // Worker list
           Expanded(
             child: usersAsync.when(
@@ -82,13 +63,13 @@ class UserManagementScreen extends ConsumerWidget {
                   return const EmptyState(
                     icon: Icons.people_rounded,
                     title: 'No workers yet',
-                    subtitle: 'Tap "Add Worker" to create your first worker account',
+                    subtitle: 'Use + to create your first worker account',
                   );
                 }
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   itemCount: workers.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 4),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (_, i) => _WorkerTile(user: workers[i]),
                 );
               },
@@ -124,6 +105,7 @@ class _WorkerTile extends ConsumerWidget {
         : const AsyncValue.data(null);
 
     return AppCard(
+      onTap: () => context.push(AppRoutes.ownerUserDetailFor(user.id)),
       child: Row(
         children: [
           CircleAvatar(
@@ -176,9 +158,8 @@ class _WorkerTile extends ConsumerWidget {
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: user.isActive
-                      ? AppColors.success
-                      : AppColors.textMuted),
+                  color:
+                      user.isActive ? AppColors.success : AppColors.textMuted),
             ),
           ),
         ],
@@ -207,8 +188,6 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
   bool _obscurePassword = true;
   bool _loading = false;
   String? _error;
-  // Holds the full result from a successful registration
-  WorkerCreateResult? _successResult;
 
   @override
   void dispose() {
@@ -233,7 +212,8 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
 
     // ── Derive amcos + mcu from local DB ─────────────────────────────────────
     final warehouseDao = ref.read(warehouseDaoProvider);
-    final warehouse = await warehouseDao.getWarehouseById(_selectedWarehouseId!);
+    final warehouse =
+        await warehouseDao.getWarehouseById(_selectedWarehouseId!);
 
     if (warehouse == null) {
       setState(() {
@@ -280,10 +260,15 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     if (!mounted) return;
 
     if (result.success) {
-      setState(() {
-        _loading = false;
-        _successResult = result;
-      });
+      ref.invalidate(allWorkersProvider);
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.pop(context);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(result.message ?? 'Worker account created.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
     } else {
       setState(() {
         _loading = false;
@@ -306,25 +291,22 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      child: _successResult != null
-          ? _SuccessView(result: _successResult!)
-          : _FormView(
-              formKey: _formKey,
-              nameCtrl: _nameCtrl,
-              emailCtrl: _emailCtrl,
-              phoneCtrl: _phoneCtrl,
-              passwordCtrl: _passwordCtrl,
-              selectedWarehouseId: _selectedWarehouseId,
-              warehousesAsync: warehousesAsync,
-              error: _error,
-              loading: _loading,
-              obscurePassword: _obscurePassword,
-              onWarehouseChanged: (id) =>
-                  setState(() => _selectedWarehouseId = id),
-              onTogglePassword: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-              onSubmit: _submit,
-            ),
+      child: _FormView(
+        formKey: _formKey,
+        nameCtrl: _nameCtrl,
+        emailCtrl: _emailCtrl,
+        phoneCtrl: _phoneCtrl,
+        passwordCtrl: _passwordCtrl,
+        selectedWarehouseId: _selectedWarehouseId,
+        warehousesAsync: warehousesAsync,
+        error: _error,
+        loading: _loading,
+        obscurePassword: _obscurePassword,
+        onWarehouseChanged: (id) => setState(() => _selectedWarehouseId = id),
+        onTogglePassword: () =>
+            setState(() => _obscurePassword = !_obscurePassword),
+        onSubmit: _submit,
+      ),
     );
   }
 }
@@ -364,9 +346,8 @@ class _FormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final warehouses = warehousesAsync.valueOrNull
-            ?.where((w) => w.isActive).toList() ??
-        [];
+    final warehouses =
+        warehousesAsync.valueOrNull?.where((w) => w.isActive).toList() ?? [];
 
     return Form(
       key: formKey,
@@ -378,7 +359,8 @@ class _FormView extends StatelessWidget {
             // Handle bar
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                     color: AppColors.divider,
                     borderRadius: BorderRadius.circular(2)),
@@ -402,8 +384,8 @@ class _FormView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Add Worker',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   Text('Fill in details and assign a warehouse',
                       style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
@@ -419,8 +401,8 @@ class _FormView extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.3)),
+                  border:
+                      Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                 ),
                 child: Row(children: [
                   const Icon(Icons.error_outline_rounded,
@@ -497,7 +479,9 @@ class _FormView extends StatelessWidget {
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Enter a password';
-                if (v.length < 6) return 'Password must be at least 6 characters';
+                if (v.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
                 return null;
               },
             ),
@@ -510,8 +494,10 @@ class _FormView extends StatelessWidget {
               decoration: const InputDecoration(
                 labelText: 'Assign to warehouse',
                 prefixIcon: Icon(Icons.warehouse_rounded),
-                helperText: 'AMCOS is derived automatically from this selection',
-                helperStyle: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                helperText:
+                    'AMCOS is derived automatically from this selection',
+                helperStyle:
+                    TextStyle(fontSize: 11, color: AppColors.textMuted),
               ),
               hint: const Text('Select warehouse'),
               items: warehouses
@@ -523,16 +509,15 @@ class _FormView extends StatelessWidget {
                       ))
                   .toList(),
               onChanged: onWarehouseChanged,
-              validator: (v) =>
-                  v == null ? 'Please assign a warehouse' : null,
+              validator: (v) => v == null ? 'Please assign a warehouse' : null,
             ),
             const SizedBox(height: 28),
 
             // Submit button
             loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                        color: AppColors.ownerColor))
+                    child:
+                        CircularProgressIndicator(color: AppColors.ownerColor))
                 : ElevatedButton(
                     onPressed: onSubmit,
                     style: ElevatedButton.styleFrom(
@@ -542,106 +527,6 @@ class _FormView extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Success view (shown after worker created) ─────────────────────────────────
-
-class _SuccessView extends StatelessWidget {
-  final WorkerCreateResult result;
-  const _SuccessView({required this.result});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Center(
-          child: Container(
-            width: 36, height: 4,
-            decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(2)),
-          ),
-        ),
-        const SizedBox(height: 32),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.success.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.check_circle_rounded,
-              color: AppColors.success, size: 48),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          result.message ?? 'Worker account created!',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-
-        // Email chip
-        if (result.email != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.info.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.email_outlined,
-                    size: 14, color: AppColors.info),
-                const SizedBox(width: 6),
-                Text(
-                  result.email!,
-                  style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.info,
-                      fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-        const SizedBox(height: 8),
-
-        // Status chip
-        if (result.status != null)
-          Builder(builder: (context) {
-            final isPending =
-                result.status!.toLowerCase().contains('pending');
-            final color = isPending ? AppColors.warning : AppColors.success;
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                result.status!,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            );
-          }),
-
-        const SizedBox(height: 32),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context),
-          style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.ownerColor),
-          child: const Text('Done'),
-        ),
-        const SizedBox(height: 8),
-      ],
     );
   }
 }

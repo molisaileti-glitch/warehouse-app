@@ -42,41 +42,41 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        title: const Text('Harvests'),
+        actions: [
+          warehousesAsync.maybeWhen(
+            loading: () => const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            orElse: () => IconButton(
+              tooltip: 'Receive crop',
+              onPressed: () =>
+                  _startHarvestReceiving(warehousesAsync.valueOrNull ?? []),
+              icon: const Icon(Icons.add_rounded),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Harvests',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    harvestsAsync.maybeWhen(
-                      data: (harvests) => Text(
-                        '${harvests.length} records total',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                      orElse: () => const Text(
-                        'Harvest records',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 22),
                     TextField(
                       controller: _searchCtrl,
                       decoration: const InputDecoration(
@@ -86,7 +86,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                       onChanged: (value) =>
                           setState(() => _query = value.trim().toLowerCase()),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                   ],
                 ),
               ),
@@ -117,7 +117,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                 }
 
                 return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (_, index) {
@@ -134,28 +134,6 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                   SliverFillRemaining(child: ErrorView(message: '$error')),
             ),
           ],
-        ),
-      ),
-      floatingActionButton: warehousesAsync.maybeWhen(
-        data: (warehouses) => FloatingActionButton.extended(
-          heroTag: 'owner_harvest_receive_fab',
-          backgroundColor: AppColors.ownerColor,
-          foregroundColor: Colors.white,
-          icon: const Icon(Icons.add_rounded),
-          label: const Text('Receive Crop'),
-          onPressed: () => _startHarvestReceiving(warehouses),
-        ),
-        orElse: () => FloatingActionButton.extended(
-          heroTag: 'owner_harvest_receive_loading_fab',
-          backgroundColor: AppColors.ownerColor.withValues(alpha: 0.45),
-          foregroundColor: Colors.white,
-          icon: const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          label: const Text('Loading'),
-          onPressed: null,
         ),
       ),
     );
@@ -175,7 +153,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
 
     if (activeWarehouses.length == 1) {
       await context.push(
-        AppRoutes.ownerHarvestRecordFor(activeWarehouses.first.id),
+        AppRoutes.ownerConnectScaleFor(activeWarehouses.first.id),
       );
       return;
     }
@@ -237,7 +215,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                           onTap: () {
                             Navigator.of(sheetContext).pop();
                             context.push(
-                              AppRoutes.ownerHarvestRecordFor(warehouse.id),
+                              AppRoutes.ownerConnectScaleFor(warehouse.id),
                             );
                           },
                         ),
@@ -264,6 +242,7 @@ class _HarvestTile extends StatelessWidget {
     final date = DateFormat('MMM d, HH:mm').format(harvest.receivedAt);
 
     return AppCard(
+      onTap: () => context.push(AppRoutes.ownerHarvestDetailFor(harvest.uuid)),
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [

@@ -16,14 +16,21 @@ import '../../features/owner/screens/pending_syncs_screen.dart';
 import '../../features/owner/screens/warehouse_list_screen.dart';
 import '../../features/owner/screens/warehouse_detail_screen.dart';
 import '../../features/owner/screens/user_management_screen.dart';
+import '../../features/owner/screens/owner_harvest_detail_screen.dart';
 import '../../features/owner/screens/owner_harvests_screen.dart';
 import '../../features/owner/screens/owner_farmers_screen.dart';
+import '../../features/owner/screens/owner_worker_detail_screen.dart';
 import '../../features/owner/screens/audit_log_screen.dart';
 import '../../features/worker/presentation/screens/worker_shell.dart';
 import '../../features/worker/presentation/screens/worker_dashboard_screen.dart';
 import '../../features/worker/presentation/screens/inventory_item_screen.dart';
 import '../../features/worker/presentation/screens/inventory_list_screen.dart';
-import '../../features/harvest/presentation/screens/harvest_record_screen.dart';
+import '../../features/harvest/presentation/screens/harvest_connect_scale_screen.dart';
+import '../../features/harvest/presentation/screens/harvest_farmer_details_screen.dart';
+import '../../features/harvest/presentation/screens/harvest_list_screen.dart';
+import '../../features/harvest/presentation/screens/harvest_receipt_screen.dart';
+import '../../features/harvest/presentation/screens/harvest_scale_bags_screen.dart';
+import '../../features/harvest/presentation/screens/worker_harvest_detail_screen.dart';
 import '../../features/farmer/presentation/screens/farmer_detail_screen.dart';
 import '../../features/farmer/presentation/screens/farmer_list_screen.dart';
 import '../../features/farmer/presentation/screens/farmer_registration_screen.dart';
@@ -42,10 +49,17 @@ class AppRoutes {
   static const ownerWarehouses = '/owner/warehouses';
   static const ownerWarehouseDetail = '/owner/warehouses/:id';
   static const ownerUsers = '/owner/users';
+  static const ownerUserDetail = '/owner/users/:id';
   static const ownerAuditLog = '/owner/audit';
   static const ownerHarvests = '/owner/harvests';
-  static const ownerHarvestRecord = '/owner/harvests/record/:warehouseId';
+  static const ownerHarvestDetail = '/owner/harvests/detail/:id';
+  static const ownerConnectScale = '/owner/harvests/connect-scale/:warehouseId';
+  static const ownerFarmerDetails = '/owner/harvests/details/:warehouseId';
+  static const ownerScaleBags = '/owner/harvests/scale/:warehouseId';
+  static const ownerReceipt = '/owner/harvests/receipt/:warehouseId';
   static const ownerFarmers = '/owner/farmers';
+  static const ownerFarmerRegistration = '/owner/farmers/new';
+  static const ownerFarmerDetail = '/owner/farmers/:id';
   static const ownerSettings = '/owner/settings';
   static const ownerPendingSyncs = '/owner/pending-syncs';
 
@@ -54,7 +68,13 @@ class AppRoutes {
   static const workerInventory = '/worker/inventory/:warehouseId';
   static const workerInventoryItem =
       '/worker/inventory/:warehouseId/item/:itemId';
-  static const workerRecord = '/worker/record/:warehouseId';
+  static const workerHarvests = '/worker/harvests/:warehouseId';
+  static const workerHarvestDetail = '/worker/harvests/:warehouseId/detail/:id';
+  static const workerConnectScale =
+      '/worker/harvests/:warehouseId/connect-scale';
+  static const workerFarmerDetails = '/worker/harvests/:warehouseId/details';
+  static const workerScaleBags = '/worker/harvests/:warehouseId/scale';
+  static const workerReceipt = '/worker/harvests/:warehouseId/receipt';
   static const workerFarmers = '/worker/farmers';
   static const workerFarmerRegistration = '/worker/farmers/new';
   static const workerFarmerDetail = '/worker/farmers/:id';
@@ -65,11 +85,47 @@ class AppRoutes {
   static String workerInventoryItemFor(String warehouseId, String itemId) =>
       '/worker/inventory/$warehouseId/item/$itemId';
 
-  static String workerRecordFor(String warehouseId) =>
-      '/worker/record/$warehouseId';
+  static String workerHarvestsFor(String warehouseId) =>
+      '/worker/harvests/$warehouseId';
 
-  static String ownerHarvestRecordFor(String warehouseId) =>
-      '/owner/harvests/record/$warehouseId';
+  static String workerRecordFor(String warehouseId) =>
+      workerHarvestsFor(warehouseId);
+
+  static String workerHarvestDetailFor(String warehouseId, String id) =>
+      '/worker/harvests/$warehouseId/detail/$id';
+
+  static String workerConnectScaleFor(String warehouseId) =>
+      '/worker/harvests/$warehouseId/connect-scale';
+
+  static String workerFarmerDetailsFor(String warehouseId) =>
+      '/worker/harvests/$warehouseId/details';
+
+  static String workerScaleBagsFor(String warehouseId) =>
+      '/worker/harvests/$warehouseId/scale';
+
+  static String workerReceiptFor(String warehouseId) =>
+      '/worker/harvests/$warehouseId/receipt';
+
+  static String workerFarmerDetailFor(int id) => '/worker/farmers/$id';
+
+  static String ownerConnectScaleFor(String warehouseId) =>
+      '/owner/harvests/connect-scale/$warehouseId';
+
+  static String ownerFarmerDetailsFor(String warehouseId) =>
+      '/owner/harvests/details/$warehouseId';
+
+  static String ownerScaleBagsFor(String warehouseId) =>
+      '/owner/harvests/scale/$warehouseId';
+
+  static String ownerReceiptFor(String warehouseId) =>
+      '/owner/harvests/receipt/$warehouseId';
+
+  static String ownerUserDetailFor(String id) => '/owner/users/$id';
+
+  static String ownerHarvestDetailFor(String id) =>
+      '/owner/harvests/detail/$id';
+
+  static String ownerFarmerDetailFor(int id) => '/owner/farmers/$id';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -157,17 +213,63 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               path: AppRoutes.ownerUsers,
               builder: (_, __) => const UserManagementScreen()),
           GoRoute(
+            path: AppRoutes.ownerUserDetail,
+            builder: (_, state) => OwnerWorkerDetailScreen(
+              workerId: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
               path: AppRoutes.ownerHarvests,
               builder: (_, __) => const OwnerHarvestsScreen()),
           GoRoute(
-            path: AppRoutes.ownerHarvestRecord,
-            builder: (_, state) => HarvestRecordScreen(
+            path: AppRoutes.ownerHarvestDetail,
+            builder: (_, state) => OwnerHarvestDetailScreen(
+              harvestUuid: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerConnectScale,
+            builder: (_, state) => HarvestConnectScaleScreen(
               warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: true,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerFarmerDetails,
+            builder: (_, state) => HarvestFarmerDetailsScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: true,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerScaleBags,
+            builder: (_, state) => HarvestScaleBagsScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: true,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerReceipt,
+            builder: (_, state) => HarvestReceiptScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: true,
             ),
           ),
           GoRoute(
               path: AppRoutes.ownerFarmers,
               builder: (_, __) => const OwnerFarmersScreen()),
+          GoRoute(
+            path: AppRoutes.ownerFarmerRegistration,
+            builder: (_, __) => const FarmerRegistrationScreen(
+              returnRoute: AppRoutes.ownerFarmers,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerFarmerDetail,
+            builder: (_, state) => FarmerDetailScreen(
+              farmerId: int.parse(state.pathParameters['id']!),
+            ),
+          ),
           GoRoute(
               path: AppRoutes.ownerPendingSyncs,
               builder: (_, __) => const PendingSyncsScreen()),
@@ -201,6 +303,40 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: AppRoutes.workerHarvests,
+            builder: (_, state) => HarvestListScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.workerHarvestDetail,
+            builder: (_, state) => WorkerHarvestDetailScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              harvestUuid: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.workerConnectScale,
+            builder: (_, state) => HarvestConnectScaleScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: false,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.workerFarmerDetails,
+            builder: (_, state) => HarvestFarmerDetailsScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: false,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.workerScaleBags,
+            builder: (_, state) => HarvestScaleBagsScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: false,
+            ),
+          ),
+          GoRoute(
               path: AppRoutes.workerFarmers,
               builder: (_, __) => const FarmerListScreen()),
           GoRoute(
@@ -214,9 +350,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
-            path: AppRoutes.workerRecord,
-            builder: (_, state) => HarvestRecordScreen(
-                warehouseId: state.pathParameters['warehouseId']!),
+            path: AppRoutes.workerReceipt,
+            builder: (_, state) => HarvestReceiptScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: false,
+            ),
           ),
         ],
       ),

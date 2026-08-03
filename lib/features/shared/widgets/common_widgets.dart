@@ -65,7 +65,8 @@ class SyncStatusBadge extends StatelessWidget {
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 4),
           Text(label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -103,10 +104,14 @@ class SyncIndicator extends ConsumerWidget {
           top: 6,
           child: Container(
             padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(color: AppColors.warning, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+                color: AppColors.warning, shape: BoxShape.circle),
             child: Text(
               count > 99 ? '99+' : '$count',
-              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -147,23 +152,28 @@ class EmptyState extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 48, color: AppColors.primary.withValues(alpha: 0.6)),
+              child: Icon(icon,
+                  size: 48, color: AppColors.primary.withValues(alpha: 0.6)),
             ),
             const SizedBox(height: 20),
             Text(title,
                 style: const TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary)),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
               Text(subtitle!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  style: const TextStyle(
+                      fontSize: 14, color: AppColors.textSecondary)),
             ],
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 24),
               SizedBox(
                 width: 180,
-                child: ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+                child: ElevatedButton(
+                    onPressed: onAction, child: Text(actionLabel!)),
               ),
             ],
           ],
@@ -188,7 +198,9 @@ class LoadingView extends StatelessWidget {
           const CircularProgressIndicator(color: AppColors.primary),
           if (message != null) ...[
             const SizedBox(height: 16),
-            Text(message!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+            Text(message!,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14)),
           ]
         ],
       ),
@@ -229,7 +241,10 @@ Future<T?> showAppDialog<T>(
     AppDialogType.error => (Icons.error_rounded, AppColors.error),
     AppDialogType.warning => (Icons.warning_rounded, AppColors.warning),
     AppDialogType.info => (Icons.info_rounded, AppColors.info),
-    AppDialogType.confirmation => (Icons.help_outline_rounded, AppColors.primary),
+    AppDialogType.confirmation => (
+        Icons.help_outline_rounded,
+        AppColors.primary
+      ),
     AppDialogType.loading => (Icons.hourglass_top_rounded, AppColors.primary),
   };
 
@@ -459,7 +474,8 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+            const Icon(Icons.error_outline_rounded,
+                size: 48, color: AppColors.error),
             const SizedBox(height: 12),
             Text(message,
                 textAlign: TextAlign.center,
@@ -528,6 +544,7 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       onTap: onTap,
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -539,14 +556,18 @@ class StatCard extends StatelessWidget {
             ),
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(value,
               style: const TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary)),
           const SizedBox(height: 2),
           Text(label,
               style: const TextStyle(
-                  fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -560,7 +581,8 @@ class SectionHeader extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const SectionHeader({super.key, required this.title, this.actionLabel, this.onAction});
+  const SectionHeader(
+      {super.key, required this.title, this.actionLabel, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -571,14 +593,18 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(title,
                 style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
           ),
           if (actionLabel != null)
             GestureDetector(
               onTap: onAction,
               child: Text(actionLabel!,
                   style: const TextStyle(
-                      fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                      fontSize: 13,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600)),
             ),
         ],
       ),
@@ -604,7 +630,8 @@ class RoleBadge extends StatelessWidget {
       ),
       child: Text(
         isOwner ? 'Owner' : 'Worker',
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+        style:
+            TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }

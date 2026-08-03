@@ -28,6 +28,9 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
     final farmerAsync = ref.watch(farmerByIdProvider(widget.farmerId));
     final dependantsAsync =
         ref.watch(farmerDependantsProvider(widget.farmerId));
+    final cropsAsync = ref.watch(allCropsProvider);
+    final crops = cropsAsync.valueOrNull ?? const <Crop>[];
+    final cropsLoading = cropsAsync.isLoading && crops.isEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,11 +119,19 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
                         ),
                         _DetailRow(
                           label: 'Main crop',
-                          value: farmer.mainCrop.toString(),
+                          value: _cropName(
+                            farmer.mainCrop,
+                            crops,
+                            cropsLoading,
+                          ),
                         ),
                         _DetailRow(
                           label: 'Secondary crop',
-                          value: farmer.secondaryCrop.toString(),
+                          value: _cropName(
+                            farmer.secondaryCrop,
+                            crops,
+                            cropsLoading,
+                          ),
                         ),
                         _DetailRow(
                           label: 'Shares',
@@ -176,6 +187,13 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
     );
   }
 
+  String _cropName(int cropId, List<Crop> crops, bool loading) {
+    for (final crop in crops) {
+      if (crop.id == cropId) return crop.name;
+    }
+    return loading ? 'Loading crop...' : 'Unknown crop (ID $cropId)';
+  }
+
   void _showAddDependantSheet() {
     showModalBottomSheet<void>(
       context: context,
@@ -224,40 +242,51 @@ class _AddDependantSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     return Container(
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      constraints: BoxConstraints(maxHeight: mediaQuery.size.height * 0.88),
+      margin: EdgeInsets.only(
+        top: mediaQuery.padding.top + 12,
+        bottom: mediaQuery.viewInsets.bottom,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: kToolbarHeight,
+            child: AppBar(
+              primary: false,
+              automaticallyImplyLeading: false,
+              leading: IconButton(
+                tooltip: 'Back',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
+              title: const Text('Add Dependant'),
+              elevation: 0,
+            ),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (loading)
+                    const LoadingView(message: 'Adding dependant...')
+                  else
+                    DependantForm(onSubmit: onSubmit),
+                ],
               ),
             ),
-            const SizedBox(height: 18),
-            const Text(
-              'Add Dependant',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 18),
-            if (loading)
-              const LoadingView(message: 'Adding dependant...')
-            else
-              DependantForm(onSubmit: onSubmit),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -294,7 +323,7 @@ class _DependantRow extends StatelessWidget {
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
                 Text(
-                  '${dependant.relationship} · ${dependant.gender}',
+                  '${dependant.relationship} - ${dependant.gender}',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

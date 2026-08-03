@@ -19,7 +19,12 @@ const kFarmerMemberTypes = ['MEMBER', 'NON_MEMBER'];
 const kFarmerMaritalStatuses = ['SINGLE', 'MARRIED'];
 
 class FarmerRegistrationScreen extends ConsumerStatefulWidget {
-  const FarmerRegistrationScreen({super.key});
+  final String returnRoute;
+
+  const FarmerRegistrationScreen({
+    super.key,
+    this.returnRoute = '/worker/farmers',
+  });
 
   @override
   ConsumerState<FarmerRegistrationScreen> createState() =>
@@ -149,7 +154,7 @@ class _FarmerRegistrationScreenState
         ? '${result.createdDependants} dependant(s) added.'
         : '${result.createdDependants} dependant(s) added. Some dependants failed.';
     final messenger = ScaffoldMessenger.of(context);
-    context.go('/worker/farmers');
+    context.go(widget.returnRoute);
     messenger.showSnackBar(
       SnackBar(
         content: Text('Farmer created. $dependantMessage'),
@@ -163,6 +168,8 @@ class _FarmerRegistrationScreenState
   Future<int?> _deriveMcuId() async {
     final currentUserId = ref.read(currentUserIdProvider);
     if (currentUserId == null) return null;
+    final ownerMcuId = int.tryParse(currentUserId);
+    if (ownerMcuId != null) return ownerMcuId;
     final worker = await ref.read(workerDaoProvider).getUserById(currentUserId);
     if (worker?.mcu != null) return worker!.mcu;
     final warehouseId = worker?.warehouseId;
@@ -392,7 +399,8 @@ class _FarmerRegistrationScreenState
           const EmptyState(
             icon: Icons.family_restroom_rounded,
             title: 'No dependants added',
-            subtitle: 'This step is optional. Dependants can also be added later.',
+            subtitle:
+                'This step is optional. Dependants can also be added later.',
           )
         else
           for (var i = 0; i < _dependants.length; i++) ...[
@@ -669,7 +677,8 @@ class _DependantTile extends StatelessWidget {
         children: [
           CircleAvatar(
             backgroundColor: AppColors.workerColor.withValues(alpha: 0.1),
-            child: const Icon(Icons.person_outline, color: AppColors.workerColor),
+            child:
+                const Icon(Icons.person_outline, color: AppColors.workerColor),
           ),
           const SizedBox(width: 12),
           Expanded(

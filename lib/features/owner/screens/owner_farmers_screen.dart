@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
+import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 
@@ -28,41 +30,25 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        title: const Text('Farmers'),
+        actions: [
+          IconButton(
+            tooltip: 'Add farmer',
+            onPressed: () => context.push(AppRoutes.ownerFarmerRegistration),
+            icon: const Icon(Icons.add_rounded),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Farmers',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    farmersAsync.maybeWhen(
-                      data: (farmers) => Text(
-                        '${farmers.length} farmers total',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                      orElse: () => const Text(
-                        'Registered farmers',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 22),
                     TextField(
                       controller: _searchCtrl,
                       decoration: const InputDecoration(
@@ -72,7 +58,7 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
                       onChanged: (value) =>
                           setState(() => _query = value.trim().toLowerCase()),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                   ],
                 ),
               ),
@@ -105,7 +91,7 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
                 }
 
                 return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (_, index) {
@@ -142,6 +128,7 @@ class _FarmerTile extends StatelessWidget {
     ].whereType<String>().where((value) => value.trim().isNotEmpty).join(' ');
 
     return AppCard(
+      onTap: () => context.push(AppRoutes.ownerFarmerDetailFor(farmer.id)),
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [

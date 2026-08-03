@@ -23,12 +23,12 @@ class AuthState {
   const AuthState.loading() : this(status: AuthStatus.loading);
   const AuthState.unauthenticated({String? error})
       : this(status: AuthStatus.unauthenticated, error: error);
-  const AuthState.authenticated({required String userId, required UserRole role})
+  const AuthState.authenticated(
+      {required String userId, required UserRole role})
       : this(status: AuthStatus.authenticated, userId: userId, role: role);
 
   bool get isOwner => role == UserRole.owner || role == UserRole.superAdmin;
   bool get isWorker => role == UserRole.worker;
-
 }
 
 // ── Notifier ──────────────────────────────────────────────────────────────────
@@ -56,19 +56,19 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   // ── Login ─────────────────────────────────────────────────────────────────
 
   Future<void> login({
-  required String email,
-  required String password,
-}) async {
-  state = const AsyncValue.data(AuthState.loading());
-  final result = await _repo.login(email: email, password: password);
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncValue.data(AuthState.loading());
+    final result = await _repo.login(email: email, password: password);
 
-  if (result.success) {
-    state = AsyncValue.data(
-        AuthState.authenticated(userId: result.userId!, role: result.role!));
-  } else {
-    state = AsyncValue.data(AuthState.unauthenticated(error: result.error));
+    if (result.success) {
+      state = AsyncValue.data(
+          AuthState.authenticated(userId: result.userId!, role: result.role!));
+    } else {
+      state = AsyncValue.data(AuthState.unauthenticated(error: result.error));
+    }
   }
-}
 
   // ── Register (owner first-time setup) ─────────────────────────────────────
 
@@ -84,6 +84,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   // ── Logout ────────────────────────────────────────────────────────────────
 
   Future<void> logout() async {
+    state = const AsyncValue.data(AuthState.loading());
     await _repo.logout();
     state = const AsyncValue.data(AuthState.unauthenticated());
   }

@@ -22,7 +22,7 @@ class WorkerShell extends ConsumerWidget {
 
     int currentIndex = 0;
     if (location.contains('/inventory')) currentIndex = 1;
-    if (location.contains('/record')) currentIndex = 2;
+    if (location.contains('/harvests')) currentIndex = 2;
     if (location.contains('/farmers')) currentIndex = 3;
 
     return Scaffold(
@@ -35,15 +35,19 @@ class WorkerShell extends ConsumerWidget {
             context.go(AppRoutes.workerInventoryFor(warehouseId));
           }
           if (i == 2 && warehouseId != null) {
-            context.go(AppRoutes.workerRecordFor(warehouseId));
+            context.go(AppRoutes.workerHarvestsFor(warehouseId));
           }
           if (i == 3) context.go(AppRoutes.workerFarmers);
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_rounded), label: 'Inventory'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle_rounded), label: 'Record'),
-          BottomNavigationBarItem(icon: Icon(Icons.people_alt_rounded), label: 'Farmers'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.inventory_2_rounded), label: 'Inventory'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.grass_rounded), label: 'Harvest'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.people_alt_rounded), label: 'Farmers'),
         ],
       ),
     );

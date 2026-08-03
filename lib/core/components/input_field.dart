@@ -67,8 +67,9 @@ class AppTextFormField extends StatelessWidget {
           decoration: InputDecoration(
             labelText: useFloatingLabel ? labelText : null,
             hintText: hintText ?? (!useFloatingLabel ? labelText : null),
-            floatingLabelBehavior:
-                useFloatingLabel ? (floatingLabelBehavior ?? FloatingLabelBehavior.auto) : null,
+            floatingLabelBehavior: useFloatingLabel
+                ? (floatingLabelBehavior ?? FloatingLabelBehavior.auto)
+                : null,
             suffixIcon: suffixIcon,
           ),
           validator: validator,
@@ -112,15 +113,17 @@ class AppDropdownFormField<T> extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          labelText,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+        if (!useFloatingLabel) ...[
+          Text(
+            labelText,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
+          const SizedBox(height: 6),
+        ],
         DropdownButtonFormField<T>(
           initialValue: value,
           items: items,
@@ -130,7 +133,9 @@ class AppDropdownFormField<T> extends StatelessWidget {
           decoration: InputDecoration(
             labelText: useFloatingLabel ? labelText : null,
             hintText: hintText ?? (!useFloatingLabel ? labelText : null),
-            floatingLabelBehavior: useFloatingLabel ? (floatingLabelBehavior ?? FloatingLabelBehavior.auto) : null,
+            floatingLabelBehavior: useFloatingLabel
+                ? (floatingLabelBehavior ?? FloatingLabelBehavior.auto)
+                : null,
           ),
           hint: hintText != null ? Text(hintText!) : null,
         ),

@@ -128,7 +128,7 @@ class WeightScaleController extends StateNotifier<WeightScaleState> {
 
     try {
       _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
-        for (final result in _filterScaleDevices(results)) {
+        for (final result in _discoverableDevices(results)) {
           devicesById[result.device.remoteId.toString()] = result;
         }
       });
@@ -148,7 +148,13 @@ class WeightScaleController extends StateNotifier<WeightScaleState> {
     }
 
     final devices = devicesById.values.toList()
-      ..sort((a, b) => b.rssi.compareTo(a.rssi));
+      ..sort((a, b) {
+        final aLikelyScale = _looksLikeScale(a) ? 1 : 0;
+        final bLikelyScale = _looksLikeScale(b) ? 1 : 0;
+        final scaleCompare = bLikelyScale.compareTo(aLikelyScale);
+        if (scaleCompare != 0) return scaleCompare;
+        return b.rssi.compareTo(a.rssi);
+      });
     return devices;
   }
 
@@ -521,22 +527,22 @@ class WeightScaleController extends StateNotifier<WeightScaleState> {
     return adapterState == BluetoothAdapterState.on;
   }
 
-  List<ScanResult> _filterScaleDevices(List<ScanResult> results) {
+  List<ScanResult> _discoverableDevices(List<ScanResult> results) {
     final devices = <String, ScanResult>{};
     for (final result in results) {
-      final device = result.device;
-      final name = _deviceName(device).toLowerCase();
-      final hasScaleName =
-          _scaleNamePatterns.any((pattern) => name.contains(pattern));
-      final hasScaleService = result.advertisementData.serviceUuids.any(
-        (uuid) => uuid.toString().toUpperCase().contains('FFE0'),
-      );
-
-      if (hasScaleName || hasScaleService) {
-        devices[device.remoteId.toString()] = result;
-      }
+      devices[result.device.remoteId.toString()] = result;
     }
     return devices.values.toList();
+  }
+
+  bool _looksLikeScale(ScanResult result) {
+    final name = _deviceName(result.device).toLowerCase();
+    final hasScaleName =
+        _scaleNamePatterns.any((pattern) => name.contains(pattern));
+    final hasScaleService = result.advertisementData.serviceUuids.any(
+      (uuid) => uuid.toString().toUpperCase().contains('FFE0'),
+    );
+    return hasScaleName || hasScaleService;
   }
 
   Future<void> _stopScan() async {

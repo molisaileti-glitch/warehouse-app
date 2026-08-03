@@ -30,7 +30,6 @@ class WorkerDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.myTasks),
         actions: [
-          SyncIndicator(onTap: () {}),
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
@@ -109,20 +108,22 @@ class _WorkerBody extends ConsumerWidget {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.workerColor, Color(0xFF8E24AA)],
-              ),
+        
+              color: AppColors.workerColor,
+              
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(children: [
-              const Icon(Icons.warehouse_rounded, color: Colors.white, size: 32),
+              const Icon(Icons.warehouse_rounded,
+                  color: Colors.white, size: 32),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(l10n.assignedWarehouse,
-                        style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                        style: const TextStyle(
+                            color: Colors.white60, fontSize: 12)),
                     Text(whAsync.valueOrNull?.name ?? '…',
                         style: const TextStyle(
                             color: Colors.white,
@@ -146,14 +147,15 @@ class _WorkerBody extends ConsumerWidget {
             crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 1.3,
+            childAspectRatio: 1.05,
             children: [
               StatCard(
                 label: l10n.totalItems,
                 value: '${itemsAsync.valueOrNull?.length ?? 0}',
                 icon: Icons.inventory_2_rounded,
                 color: AppColors.workerColor,
-                onTap: () => context.go(AppRoutes.workerInventoryFor(warehouseId)),
+                onTap: () =>
+                    context.go(AppRoutes.workerInventoryFor(warehouseId)),
               ),
               StatCard(
                 label: l10n.lowStock,
@@ -166,8 +168,7 @@ class _WorkerBody extends ConsumerWidget {
         ),
 
         // Quick actions
-        SliverToBoxAdapter(
-            child: SectionHeader(title: l10n.recordAction)),
+        SliverToBoxAdapter(child: SectionHeader(title: l10n.recordAction)),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
@@ -206,8 +207,7 @@ class _WorkerBody extends ConsumerWidget {
 
         // Low stock alerts
         if ((lowAsync.valueOrNull?.length ?? 0) > 0) ...[
-          SliverToBoxAdapter(
-              child: SectionHeader(title: l10n.lowStockAlerts)),
+          SliverToBoxAdapter(child: SectionHeader(title: l10n.lowStockAlerts)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             sliver: SliverList(
@@ -272,16 +272,14 @@ class _NoProfileView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(l10n.workerDashboardTitle,
-                style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
               l10n.workerProfileNoSync,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.5),
+                  color: AppColors.textSecondary, fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 32),
             OutlinedButton.icon(
@@ -331,15 +329,14 @@ class _ActionButton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 14)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
             Text(subtitle,
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 12)),
           ],
         )),
-        Icon(Icons.chevron_right_rounded,
-            color: color.withValues(alpha: 0.5)),
+        Icon(Icons.chevron_right_rounded, color: color.withValues(alpha: 0.5)),
       ]),
     );
   }

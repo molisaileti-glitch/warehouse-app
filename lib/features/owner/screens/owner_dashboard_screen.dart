@@ -31,6 +31,12 @@ final _ownerPendingSyncCountProvider = StreamProvider<int>((ref) {
       );
 });
 
+final _ownerHarvestCountProvider = StreamProvider<int>((ref) {
+  return ref.watch(harvestDaoProvider).watchAllHarvests().map(
+        (harvests) => harvests.length,
+      );
+});
+
 class OwnerDashboardScreen extends ConsumerWidget {
   const OwnerDashboardScreen({super.key});
 
@@ -49,6 +55,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
         : const AsyncValue<List<AuditLog>>.data([]);
     final pendingSyncCount =
         ref.watch(_ownerPendingSyncCountProvider).valueOrNull ?? 0;
+    final harvestCount = ref.watch(_ownerHarvestCountProvider).valueOrNull ?? 0;
     final syncState = ref.watch(syncNotifierProvider);
     final l10n = AppLocalizations.of(context)!;
 
@@ -56,13 +63,19 @@ class OwnerDashboardScreen extends ConsumerWidget {
     final workers = workersAsync.valueOrNull ?? const <User>[];
     final farmers = farmersAsync.valueOrNull ?? const <Farmer>[];
 
+    ref.listen<SyncState>(syncNotifierProvider, (previous, next) {
+      if (previous?.isSyncing == true && next.isDone) {
+        _showTopToast(
+          context,
+          l10n.syncedSummary(next.pushed.toString(), next.pulled.toString()),
+          AppColors.success,
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        scrolledUnderElevation: 0,
         title: const SizedBox.shrink(),
         actions: [
           IconButton(
@@ -107,7 +120,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 ),
               )
             : const Icon(Icons.sync_rounded),
-        label: Text(syncState.isSyncing ? l10n.syncing : l10n.forceSync),
+        label: Text(syncState.isSyncing ? l10n.syncing : 'Sync'),
         backgroundColor: AppColors.ownerColor,
         foregroundColor: Colors.white,
       ),
@@ -117,7 +130,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            if (syncState.isSyncing || syncState.hasErrors || syncState.isDone)
+            if (syncState.isSyncing || syncState.hasErrors)
               SliverToBoxAdapter(child: _SyncBanner(state: syncState)),
             SliverToBoxAdapter(
               child: Padding(
@@ -125,9 +138,9 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Good morning',
-                      style: TextStyle(
+                    Text(
+                      _greetingFor(DateTime.now()),
+                      style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
@@ -187,11 +200,12 @@ class OwnerDashboardScreen extends ConsumerWidget {
                     color: AppColors.success,
                   ),
                   _DashboardStatCard(
-                    label: 'Active warehouses',
-                    value: '${warehouses.where((w) => w.isActive).length}',
-                    subtitle: 'Ready for operations',
-                    icon: Icons.check_circle_rounded,
+                    label: 'Harvest',
+                    value: '$harvestCount',
+                    subtitle: 'Records',
+                    icon: Icons.grass_rounded,
                     color: AppColors.info,
+                    onTap: () => context.go(AppRoutes.ownerHarvests),
                   ),
                 ]),
               ),
@@ -311,6 +325,67 @@ class _OverviewPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+String _greetingFor(DateTime time) {
+  final hour = time.hour;
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+void _showTopToast(BuildContext context, String message, Color color) {
+  final overlay = Overlay.of(context);
+  final entry = OverlayEntry(
+    builder: (context) => Positioned(
+      top: MediaQuery.of(context).padding.top + 14,
+      left: 36,
+      right: 36,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.14),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(entry);
+  Future.delayed(const Duration(seconds: 3), entry.remove);
 }
 
 class _DashboardStatCard extends StatelessWidget {
@@ -582,7 +657,7 @@ class _SyncBanner extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     if (state.isSyncing) {
       return Container(
-        color: AppColors.info.withOpacity(0.1),
+        color: AppColors.info.withValues(alpha: 0.1),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(children: [
           const SizedBox(
@@ -603,7 +678,7 @@ class _SyncBanner extends StatelessWidget {
     }
     if (state.error != null) {
       return Container(
-        color: AppColors.error.withOpacity(0.08),
+        color: AppColors.error.withValues(alpha: 0.08),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(children: [
           const Icon(Icons.warning_rounded, color: AppColors.error, size: 16),
@@ -619,7 +694,7 @@ class _SyncBanner extends StatelessWidget {
     }
     if (state.isDone) {
       return Container(
-        color: AppColors.success.withOpacity(0.08),
+        color: AppColors.success.withValues(alpha: 0.08),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(children: [
           const Icon(
@@ -629,7 +704,8 @@ class _SyncBanner extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            l10n.syncedSummary(state.pushed.toString(), state.pulled.toString()),
+            l10n.syncedSummary(
+                state.pushed.toString(), state.pulled.toString()),
             style: const TextStyle(color: AppColors.success, fontSize: 13),
           ),
         ]),

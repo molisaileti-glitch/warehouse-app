@@ -17,7 +17,7 @@ void main() async {
   // Lock to portrait on phones.
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
+    DeviceOrientation.portraitDown, 
   ]);
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(

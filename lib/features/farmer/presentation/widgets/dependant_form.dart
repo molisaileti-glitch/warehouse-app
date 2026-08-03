@@ -81,99 +81,120 @@ class _DependantFormState extends State<DependantForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppTextFormField(
-            controller: _firstNameCtrl,
-            labelText: 'First name',
-            icon: Icons.person_outline,
-            textCapitalization: TextCapitalization.words,
-            validator: _required,
-          ),
-          const SizedBox(height: 14),
-          AppTextFormField(
-            controller: _middleNameCtrl,
-            labelText: 'Middle name',
-            icon: Icons.person_outline,
-            textCapitalization: TextCapitalization.words,
-          ),
-          const SizedBox(height: 14),
-          AppTextFormField(
-            controller: _lastNameCtrl,
-            labelText: 'Last name',
-            icon: Icons.person_outline,
-            textCapitalization: TextCapitalization.words,
-            validator: _required,
-          ),
-          const SizedBox(height: 14),
-          AppDropdownFormField<String>(
-            labelText: 'Relationship',
-            icon: Icons.family_restroom_rounded,
-            value: _relationship,
-            items: kDependantRelationships
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                .toList(),
-            onChanged: (value) => setState(() => _relationship = value!),
-          ),
-          const SizedBox(height: 14),
-          AppDropdownFormField<String>(
-            labelText: 'Gender',
-            icon: Icons.wc_rounded,
-            value: _gender,
-            items: const [
-              DropdownMenuItem(value: 'MALE', child: Text('MALE')),
-              DropdownMenuItem(value: 'FEMALE', child: Text('FEMALE')),
-            ],
-            onChanged: (value) => setState(() => _gender = value!),
-          ),
-          const SizedBox(height: 14),
-          AppTextFormField(
-            controller: _dobCtrl,
-            labelText: 'Date of birth',
-            icon: Icons.calendar_today_outlined,
-            hintText: 'YYYY-MM-DD',
-            readOnly: true,
-            onTap: () => _pickDate(_dobCtrl),
-            suffixIcon: const Icon(Icons.calendar_month_outlined),
-            validator: _date,
-          ),
-          const SizedBox(height: 14),
-          AppTextFormField(
-            controller: _phoneCtrl,
-            labelText: 'Phone number',
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 14),
-          AppTextFormField(
-            controller: _emailCtrl,
-            labelText: 'Email',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            autocorrect: false,
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) return null;
-              return value.contains('@') ? null : 'Enter a valid email';
-            },
-          ),
-          const SizedBox(height: 14),
-          AppTextFormField(
-            controller: _addressCtrl,
-            labelText: 'Address',
-            icon: Icons.location_on_outlined,
-            textCapitalization: TextCapitalization.words,
-          ),
-          const SizedBox(height: 22),
-          ElevatedButton.icon(
-            onPressed: _submit,
-            icon: const Icon(Icons.check_rounded),
-            label: Text(widget.submitLabel),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.workerColor),
-          ),
-        ],
+    return SafeArea(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppTextFormField(
+              controller: _firstNameCtrl,
+              labelText: 'First name',
+              icon: Icons.person_outline,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              textCapitalization: TextCapitalization.words,
+              validator: _required,
+            ),
+            const SizedBox(height: 14),
+            AppTextFormField(
+              controller: _middleNameCtrl,
+              labelText: 'Middle name',
+              icon: Icons.person_outline,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 14),
+            AppTextFormField(
+              controller: _lastNameCtrl,
+              labelText: 'Last name',
+              icon: Icons.person_outline,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              textCapitalization: TextCapitalization.words,
+              validator: _required,
+            ),
+            const SizedBox(height: 14),
+            AppDropdownFormField<String>(
+              labelText: 'Relationship',
+              icon: Icons.family_restroom_rounded,
+              value: _relationship,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              items: kDependantRelationships
+                  .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                  .toList(),
+              onChanged: (value) => setState(() => _relationship = value!),
+            ),
+            const SizedBox(height: 14),
+            AppDropdownFormField<String>(
+              labelText: 'Gender',
+              icon: Icons.wc_rounded,
+              value: _gender,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              items: const [
+                DropdownMenuItem(value: 'MALE', child: Text('MALE')),
+                DropdownMenuItem(value: 'FEMALE', child: Text('FEMALE')),
+              ],
+              onChanged: (value) => setState(() => _gender = value!),
+            ),
+            const SizedBox(height: 14),
+            AppTextFormField(
+              controller: _dobCtrl,
+              labelText: 'Date of birth',
+              icon: Icons.calendar_today_outlined,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              hintText: 'YYYY-MM-DD',
+              readOnly: true,
+              onTap: () => _pickDate(_dobCtrl),
+              suffixIcon: const Icon(Icons.calendar_month_outlined),
+              validator: _date,
+            ),
+            const SizedBox(height: 14),
+            AppTextFormField(
+              controller: _phoneCtrl,
+              labelText: 'Phone number',
+              icon: Icons.phone_outlined,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 14),
+            AppTextFormField(
+              controller: _emailCtrl,
+              labelText: 'Email',
+              icon: Icons.email_outlined,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) return null;
+                return value.contains('@') ? null : 'Enter a valid email';
+              },
+            ),
+            const SizedBox(height: 14),
+            AppTextFormField(
+              controller: _addressCtrl,
+              labelText: 'Address',
+              icon: Icons.location_on_outlined,
+              useFloatingLabel: true,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 22),
+            ElevatedButton.icon(
+              onPressed: _submit,
+              icon: const Icon(Icons.check_rounded),
+              label: Text(widget.submitLabel),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.workerColor),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -53,6 +53,16 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        title: const Text('Warehouses'),
+        actions: [
+          IconButton(
+            tooltip: 'Add warehouse',
+            onPressed: () => _showCreateSheet(context),
+            icon: const Icon(Icons.add_rounded),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _refresh,
@@ -60,9 +70,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
             data: (warehouses) {
               final query = _query.trim().toLowerCase();
               final baseList = _activeOnly
-                  ? warehouses
-                      .where((warehouse) => warehouse.isActive)
-                      .toList()
+                  ? warehouses.where((warehouse) => warehouse.isActive).toList()
                   : warehouses;
               final filtered = query.isEmpty
                   ? baseList
@@ -80,41 +88,9 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                       child: Column(
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Warehouses',
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${warehouses.length} locations total',
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              _AddWarehouseButton(
-                                onTap: () => _showCreateSheet(context),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
                           TextField(
                             controller: _search,
                             decoration: const InputDecoration(
@@ -124,7 +100,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                             onChanged: (value) =>
                                 setState(() => _query = value),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           Row(
                             children: [
                               Expanded(
@@ -143,15 +119,14 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _WarehouseSummaryCard(
-                                  value:
-                                      '$activeCount/${warehouses.length}',
+                                  value: '$activeCount/${warehouses.length}',
                                   label: 'Active',
                                   highlighted: true,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 20),
                           Row(
                             children: [
                               const Expanded(
@@ -188,7 +163,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                     )
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 110),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (_, index) {
@@ -224,31 +199,6 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
   }
 }
 
-class _AddWarehouseButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _AddWarehouseButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(
-        side: BorderSide(color: AppColors.divider),
-      ),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: const SizedBox(
-          width: 54,
-          height: 54,
-          child: Icon(Icons.add_rounded, color: AppColors.textPrimary, size: 30),
-        ),
-      ),
-    );
-  }
-}
-
 class _WarehouseSummaryCard extends StatelessWidget {
   final String value;
   final String label;
@@ -267,8 +217,8 @@ class _WarehouseSummaryCard extends StatelessWidget {
     final sub = highlighted ? Colors.white70 : AppColors.textSecondary;
 
     return Container(
-      height: 104,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      height: 92,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(18),
@@ -285,7 +235,7 @@ class _WarehouseSummaryCard extends StatelessWidget {
               value,
               style: TextStyle(
                 color: fg,
-                fontSize: 28,
+                fontSize: 24,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -297,7 +247,7 @@ class _WarehouseSummaryCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: sub,
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -319,7 +269,7 @@ class _WarehouseTile extends StatelessWidget {
 
     return AppCard(
       onTap: () => context.push('/owner/warehouses/${warehouse.id}'),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Expanded(
@@ -335,7 +285,7 @@ class _WarehouseTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -359,7 +309,7 @@ class _WarehouseTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -386,7 +336,7 @@ class _WarehouseStatusBadge extends StatelessWidget {
     final color = active ? AppColors.success : AppColors.textMuted;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
@@ -395,7 +345,7 @@ class _WarehouseStatusBadge extends StatelessWidget {
         active ? 'Active' : 'Inactive',
         style: TextStyle(
           color: color,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -500,7 +450,8 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
           decoration: InputDecoration(labelText: label),
           items: itemBuilder(items),
           onChanged: onChanged,
-          validator: validator == null ? null : (selected) => validator(selected),
+          validator:
+              validator == null ? null : (selected) => validator(selected),
         );
       },
     );
@@ -548,7 +499,8 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
               _buildLocationDropdown<Region>(
                 label: 'Region',
                 value: _selectedRegion,
-                streamBuilder: () => ref.read(regionDaoProvider).watchAllRegions(),
+                streamBuilder: () =>
+                    ref.read(regionDaoProvider).watchAllRegions(),
                 itemBuilder: (regions) => regions
                     .map(
                       (region) => DropdownMenuItem<Region>(
@@ -680,7 +632,8 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                 readOnly: true,
                 decoration: const InputDecoration(
                   labelText: 'GPS location / address',
-                  hintText: 'Auto-built from region, district, ward and village',
+                  hintText:
+                      'Auto-built from region, district, ward and village',
                 ),
               ),
               const SizedBox(height: 24),
