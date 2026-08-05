@@ -1,6 +1,6 @@
 // lib/core/components/input_field.dart
 //
-// Label sits above the field (top-left), not floating inside the border.
+// Shared outlined form fields with labels kept visible on the border.
 
 import 'package:flutter/material.dart';
 
@@ -37,7 +37,7 @@ class AppTextFormField extends StatelessWidget {
     this.onTap,
     this.readOnly = false,
     this.floatingLabelBehavior,
-    this.useFloatingLabel = false,
+    this.useFloatingLabel = true,
   });
 
   @override
@@ -68,8 +68,9 @@ class AppTextFormField extends StatelessWidget {
             labelText: useFloatingLabel ? labelText : null,
             hintText: hintText ?? (!useFloatingLabel ? labelText : null),
             floatingLabelBehavior: useFloatingLabel
-                ? (floatingLabelBehavior ?? FloatingLabelBehavior.auto)
+                ? (floatingLabelBehavior ?? FloatingLabelBehavior.always)
                 : null,
+            prefixIcon: Icon(icon),
             suffixIcon: suffixIcon,
           ),
           validator: validator,
@@ -105,7 +106,7 @@ class AppDropdownFormField<T> extends StatelessWidget {
     this.validator,
     this.hintText,
     this.floatingLabelBehavior,
-    this.useFloatingLabel = false,
+    this.useFloatingLabel = true,
   });
 
   @override
@@ -134,8 +135,9 @@ class AppDropdownFormField<T> extends StatelessWidget {
             labelText: useFloatingLabel ? labelText : null,
             hintText: hintText ?? (!useFloatingLabel ? labelText : null),
             floatingLabelBehavior: useFloatingLabel
-                ? (floatingLabelBehavior ?? FloatingLabelBehavior.auto)
+                ? (floatingLabelBehavior ?? FloatingLabelBehavior.always)
                 : null,
+            prefixIcon: Icon(icon),
           ),
           hint: hintText != null ? Text(hintText!) : null,
         ),

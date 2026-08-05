@@ -86,6 +86,91 @@ class DriftWorkerRepository implements WorkerRepository {
     );
   }
 
+  @override
+  Future<void> updateWorker({
+    required String id,
+    required String fullName,
+    required String email,
+    required String phoneNumber,
+    required String? warehouseId,
+    required int? mcu,
+    required int? amcos,
+    required bool isActive,
+  }) async {
+    final payload = {
+      'fullName': fullName,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'warehouseId': warehouseId,
+      'mcu': mcu,
+      'amcos': amcos,
+      'isActive': isActive,
+    };
+
+    await _dao.updateUser(
+      UsersCompanion(
+        id: Value(id),
+        fullName: Value(fullName),
+        email: Value(email),
+        phoneNumber: Value(phoneNumber),
+        warehouseId: Value(warehouseId),
+        mcu: Value(mcu),
+        amcos: Value(amcos),
+        isActive: Value(isActive),
+        syncStatus: const Value('pending'),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+
+    await _syncDao.enqueue(
+      SyncQueueCompanion.insert(
+        entityType: 'users',
+        entityId: id,
+        operation: 'update',
+        payload: jsonEncode(payload),
+      ),
+    );
+
+    await _auditDao.insertLog(
+      AuditLogsCompanion.insert(
+        id: newUuid(),
+        userId: _currentUserId,
+        action: 'worker.update',
+        warehouseId: Value(warehouseId),
+        metadata: Value(jsonEncode({'name': fullName})),
+        origin: const Value('offline'),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteWorker(String id) async {
+    final worker = await _dao.getUserById(id);
+
+    await _dao.softDeleteUser(id);
+    await _syncDao.enqueue(
+      SyncQueueCompanion.insert(
+        entityType: 'users',
+        entityId: id,
+        operation: 'delete',
+        payload: jsonEncode({'id': id}),
+      ),
+    );
+
+    await _auditDao.insertLog(
+      AuditLogsCompanion.insert(
+        id: newUuid(),
+        userId: _currentUserId,
+        action: 'worker.delete',
+        warehouseId: Value(worker?.warehouseId),
+        metadata: Value(
+          worker == null ? null : jsonEncode({'name': worker.fullName}),
+        ),
+        origin: const Value('offline'),
+      ),
+    );
+  }
+
   bool _isWorkerRole(String role) {
     final normalized = role.trim().toLowerCase().replaceAll(' ', '_');
     return normalized == 'worker' ||

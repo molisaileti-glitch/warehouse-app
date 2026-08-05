@@ -7,6 +7,17 @@ abstract class WorkerRepository {
   Stream<User?> watchWorkerById(String id);
 
   Future<WorkerCreateResult> createWorker(WorkerModel worker);
+  Future<void> updateWorker({
+    required String id,
+    required String fullName,
+    required String email,
+    required String phoneNumber,
+    required String? warehouseId,
+    required int? mcu,
+    required int? amcos,
+    required bool isActive,
+  });
+  Future<void> deleteWorker(String id);
 }
 
 class WorkerCreateResult {

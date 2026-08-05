@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
@@ -469,12 +470,6 @@ class _HarvestScaleBagsScreenState
 
     _tagCtrl.clear();
     ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bag added.'),
-        backgroundColor: AppColors.success,
-      ),
-    );
   }
 
   Future<void> _showBagsSheet({
@@ -620,15 +615,22 @@ class _HarvestScaleBagsScreenState
       return;
     }
 
-    final confirmed = await showConfirmDialog(
+    final confirmed = await showCreationConfirmDialog(
       context,
       title: 'Complete Harvest',
-      message: 'Save ${session.bags.length} bag(s) and generate one receipt?',
+      description:
+          'Save ${session.bags.length} bag(s) and generate one receipt?',
       confirmLabel: 'Save',
     );
     if (!confirmed) return;
+    if (!mounted) return;
 
     setState(() => _submitting = true);
+    showCenteredLoadingDialog(
+      context,
+      title: 'Saving Harvest',
+      description: 'Saving this harvest locally.',
+    );
     final result = await ref.read(harvestRepositoryProvider).recordHarvest(
           HarvestCreateInput(
             farmer: farmer,
@@ -642,6 +644,7 @@ class _HarvestScaleBagsScreenState
         );
 
     if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
     setState(() => _submitting = false);
 
     if (!result.success) {
@@ -656,6 +659,13 @@ class _HarvestScaleBagsScreenState
     if (sheetContext.mounted) {
       Navigator.of(sheetContext).pop();
     }
+
+    await showCreationSuccessDialog(
+      context,
+      title: 'Harvest Saved',
+      description: 'Harvest successfully saved. Receipt is ready.',
+    );
+    if (!mounted) return;
 
     context.go(
       widget.ownerFlow

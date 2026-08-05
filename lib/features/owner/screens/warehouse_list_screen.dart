@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/providers/auth_provider.dart';
@@ -194,7 +195,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const _CreateWarehouseSheet(),
+      builder: (_) => _CreateWarehouseSheet(parentContext: context),
     );
   }
 }
@@ -366,7 +367,9 @@ String _warehouseLocation(Warehouse warehouse) {
 }
 
 class _CreateWarehouseSheet extends ConsumerStatefulWidget {
-  const _CreateWarehouseSheet();
+  final BuildContext parentContext;
+
+  const _CreateWarehouseSheet({required this.parentContext});
 
   @override
   ConsumerState<_CreateWarehouseSheet> createState() =>
@@ -393,7 +396,22 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final confirmed = await showCreationConfirmDialog(
+      context,
+      title: 'Create Warehouse',
+      description: 'Create ${_nameCtrl.text.trim()} as a new warehouse?',
+      confirmLabel: 'Create',
+    );
+    if (!confirmed) return;
+    if (!mounted) return;
+
     setState(() => _loading = true);
+    showCenteredLoadingDialog(
+      context,
+      title: 'Creating Warehouse',
+      description: 'Saving this warehouse locally.',
+    );
+
     try {
       final gpsLocation = buildWarehouseGpsLocation(
         regionName: _selectedRegion?.name,
@@ -412,15 +430,20 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
             villageName: _selectedVillage?.name,
           );
       if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Warehouse created locally. Sync to upload.'),
-          backgroundColor: AppColors.success,
-        ),
-      );
+      if (widget.parentContext.mounted) {
+        await showCreationSuccessDialog(
+          widget.parentContext,
+          title: 'Warehouse Created',
+          description: 'Warehouse successfully created.',
+        );
+      }
     } catch (error) {
       if (mounted) {
+        if (Navigator.of(context, rootNavigator: true).canPop()) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $error'),

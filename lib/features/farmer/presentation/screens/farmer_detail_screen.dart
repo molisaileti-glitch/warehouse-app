@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
@@ -207,27 +208,46 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
   }
 
   Future<void> _addDependant(FarmerDependantInput dependant) async {
+    final confirmed = await showCreationConfirmDialog(
+      context,
+      title: 'Add Dependant',
+      description: 'Add this dependant to the farmer record?',
+      confirmLabel: 'Add',
+    );
+    if (!confirmed) return;
+    if (!mounted) return;
+
     setState(() => _adding = true);
+    showCenteredLoadingDialog(
+      context,
+      title: 'Adding Dependant',
+      description: 'Saving this dependant locally.',
+    );
     final result = await ref.read(farmerRepoProvider).addDependant(
           farmerId: widget.farmerId,
           dependant: dependant,
         );
     if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
     setState(() => _adding = false);
     if (result.success) {
       ref.invalidate(farmerDependantsProvider(widget.farmerId));
     }
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result.success
-              ? 'Dependant added.'
-              : result.error ?? 'Failed to add dependant.',
+    if (result.success) {
+      await showCreationSuccessDialog(
+        context,
+        title: 'Dependant Added',
+        description: 'Dependant successfully added.',
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error ?? 'Failed to add dependant.'),
+          backgroundColor: AppColors.error,
         ),
-        backgroundColor: result.success ? AppColors.success : AppColors.error,
-      ),
-    );
+      );
+    }
   }
 }
 

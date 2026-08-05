@@ -15,6 +15,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/components/app_feedback.dart';
 import '../../../core/components/input_field.dart';
 import '../../../core/components/app_stepper.dart';
 import '../../../core/repositories/auth_repository.dart' as auth_repo;
@@ -43,7 +44,8 @@ class Region {
     return Region(
       id: _readInt(map, const ['id', 'regionId', 'region_id']),
       name: _readString(map, const ['name', 'regionName', 'title', 'label']),
-      postCode: _readString(map, const ['postCode', 'postcode', 'postalCode', 'code', 'regionCode']),
+      postCode: _readString(map,
+          const ['postCode', 'postcode', 'postalCode', 'code', 'regionCode']),
     );
   }
 }
@@ -89,7 +91,8 @@ String _readString(Map<String, dynamic> source, List<String> keys) {
 
 List<Region> parseRegionsPayload(dynamic responseData) {
   if (responseData is Map<String, dynamic>) {
-    final data = responseData['records'] ?? responseData['data'] ?? responseData;
+    final data =
+        responseData['records'] ?? responseData['data'] ?? responseData;
     if (data is List) {
       return data
           .map(Region.fromJsonToModel)
@@ -202,7 +205,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       final dio = ref.read(apiClientProvider).dio;
       final response = await dio.get('/regions');
-      print('REGIONS RESPONSE: ${response.data}');
       final regions = parseRegionsPayload(response.data);
       if (!mounted) return;
       if (regions.isEmpty) {
@@ -211,7 +213,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           _regionsError = 'No valid regions were returned from the server.';
           _loadingRegions = false;
         });
-        if (_regionsLoadingDialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
+        if (_regionsLoadingDialogVisible &&
+            Navigator.of(context, rootNavigator: true).canPop()) {
           Navigator.of(context, rootNavigator: true).pop();
         }
         return;
@@ -220,7 +223,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _regions = regions;
         _loadingRegions = false;
       });
-      if (_regionsLoadingDialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
+      if (_regionsLoadingDialogVisible &&
+          Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
       }
     } on DioException catch (e) {
@@ -230,7 +234,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             '${AppLocalizations.of(context)!.couldNotLoadRegions}: ${e.message}';
         _loadingRegions = false;
       });
-      if (_regionsLoadingDialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
+      if (_regionsLoadingDialogVisible &&
+          Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
       }
     }
@@ -240,7 +245,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final formOk = _businessFormKey.currentState?.validate() ?? false;
     if (!formOk) return false;
     if (_selectedRegion == null) {
-      setState(() => _submitError = AppLocalizations.of(context)!.selectRegionError);
+      setState(
+          () => _submitError = AppLocalizations.of(context)!.selectRegionError);
       return false;
     }
     setState(() => _submitError = null);
@@ -253,21 +259,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showAppDialog<bool>(
+    final confirmed = await showCreationConfirmDialog(
       context,
       title: l10n.registrationConfirmTitle,
       description: l10n.registrationConfirmMessage,
-      type: AppDialogType.confirmation,
-      actions: [
-        AppDialogAction<bool>(label: l10n.cancel, result: false),
-        AppDialogAction<bool>(
-          label: l10n.confirm,
-          result: true,
-          isPrimary: true,
-        ),
-      ],
+      confirmLabel: l10n.confirm,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final body = {
       'name': _nameCtrl.text.trim(),
@@ -293,7 +291,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _submitError = null;
     });
 
-    showLoadingDialog(
+    showCenteredLoadingDialog(
       context,
       title: l10n.loadingTitle,
       description: l10n.loadingDescription,
@@ -302,7 +300,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     String? failureMessage;
 
     try {
-      final result = await ref.read(auth_repo.authRepositoryProvider).register(body);
+      final result =
+          await ref.read(auth_repo.authRepositoryProvider).register(body);
       if (!result.success) {
         failureMessage = _localizeAuthError(l10n, result.error);
         if (mounted) {
@@ -339,7 +338,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    await showSuccessDialog(
+    await showCreationSuccessDialog(
       context,
       title: l10n.registrationSuccessTitle,
       description: l10n.registrationSuccessMessage,
@@ -360,11 +359,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
         ),
         child: Row(children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 18),
+          const Icon(Icons.error_outline_rounded,
+              color: AppColors.error, size: 18),
           const SizedBox(width: 8),
           Expanded(
               child: Text(_submitError!,
-                  style: const TextStyle(color: AppColors.error, fontSize: 13))),
+                  style:
+                      const TextStyle(color: AppColors.error, fontSize: 13))),
         ]),
       ),
     );
@@ -433,7 +434,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             labelText: l10n.registrationNumber,
             icon: Icons.numbers_outlined,
             hintText: l10n.enterRegistrationNumber,
-            validator: (v) => Validators.required(v, l10n.enterRegistrationNumber),
+            validator: (v) =>
+                Validators.required(v, l10n.enterRegistrationNumber),
           ),
           const SizedBox(height: 16),
           AppTextFormField(
@@ -536,15 +538,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             obscureText: _obscurePassword,
             autocorrect: false,
             suffixIcon: IconButton(
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
               ),
               tooltip: _obscurePassword ? 'Show password' : 'Hide password',
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return l10n.validationPasswordRequired;
-              if (v.length < 6) return l10n.validationPasswordTooShort;
+              if (v == null || v.isEmpty) {
+                return l10n.validationPasswordRequired;
+              }
+              if (v.length < 6) {
+                return l10n.validationPasswordTooShort;
+              }
               return null;
             },
           ),
@@ -569,7 +578,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           Expanded(
             child: Text(value.isEmpty ? '-' : value,
-                style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+                style: const TextStyle(
+                    fontSize: 13, color: AppColors.textPrimary)),
           ),
         ],
       ),
@@ -652,7 +662,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.cloud_off_rounded, size: 44, color: AppColors.error),
+                const Icon(Icons.cloud_off_rounded,
+                    size: 44, color: AppColors.error),
                 const SizedBox(height: 12),
                 Text(
                   _regionsError!,
@@ -677,7 +688,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: Text(l10n.createOwnerAccount, style: const TextStyle(color: AppColors.textPrimary)),
+        title: Text(l10n.createOwnerAccount,
+            style: const TextStyle(color: AppColors.textPrimary)),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -688,30 +700,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            //   Container(
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: AppColors.primary,
-            //       borderRadius: BorderRadius.circular(18),
-            //     ),
-            //     child: const Icon(Icons.admin_panel_settings_rounded,
-            //         size: 36, color: Colors.white),
-            //   ),
+              //   Container(
+              //     padding: const EdgeInsets.all(16),
+              //     decoration: BoxDecoration(
+              //       color: AppColors.primary,
+              //       borderRadius: BorderRadius.circular(18),
+              //     ),
+              //     child: const Icon(Icons.admin_panel_settings_rounded,
+              //         size: 36, color: Colors.white),
+              //   ),
 
-            //   const SizedBox(height: 20),
+              //   const SizedBox(height: 20),
 
-            //   Text(l10n.createOwnerAccount,
-            //       style: const TextStyle(
-            //           fontSize: 24,
-            //           fontWeight: FontWeight.w800,
-            //           color: AppColors.textPrimary,
-            //           letterSpacing: -0.4)),
-            //   const SizedBox(height: 6),
-            //   Text(
-            //     l10n.registerSubtitle,
-            //     style: const TextStyle(
-            //         fontSize: 13, color: AppColors.textSecondary, height: 1.4),
-            //   ),
+              //   Text(l10n.createOwnerAccount,
+              //       style: const TextStyle(
+              //           fontSize: 24,
+              //           fontWeight: FontWeight.w800,
+              //           color: AppColors.textPrimary,
+              //           letterSpacing: -0.4)),
+              //   const SizedBox(height: 6),
+              //   Text(
+              //     l10n.registerSubtitle,
+              //     style: const TextStyle(
+              //         fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+              //   ),
               const SizedBox(height: 16),
               Expanded(
                 child: Theme(
@@ -727,19 +739,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     steps: [
                       AppStep(
                         title: 'Business Info',
-                        description: 'Tell us who the business is and where it operates.',
+                        description:
+                            'Tell us who the business is and where it operates.',
                         contentBuilder: _buildBusinessStep,
                         validate: _validateBusinessStep,
                       ),
                       AppStep(
                         title: 'Contact Person',
-                        description: 'Add the person we should reach for day-to-day communication.',
+                        description:
+                            'Add the person we should reach for day-to-day communication.',
                         contentBuilder: _buildContactStep,
                         validate: _validateContactStep,
                       ),
                       AppStep(
                         title: 'Review',
-                        description: 'Check everything once before we create the account.',
+                        description:
+                            'Check everything once before we create the account.',
                         contentBuilder: _buildReviewStep,
                         validate: () => true,
                       ),
@@ -747,7 +762,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
               ),
-              
             ],
           ),
         ),

@@ -17,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/components/app_feedback.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/auth_provider.dart';
@@ -87,7 +88,7 @@ class UserManagementScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const _AddWorkerSheet(),
+      builder: (_) => _AddWorkerSheet(parentContext: context),
     );
   }
 }
@@ -162,6 +163,8 @@ class _WorkerTile extends ConsumerWidget {
                       user.isActive ? AppColors.success : AppColors.textMuted),
             ),
           ),
+          const SizedBox(width: 8),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
         ],
       ),
     );
@@ -171,7 +174,9 @@ class _WorkerTile extends ConsumerWidget {
 // ── Add Worker bottom sheet ───────────────────────────────────────────────────
 
 class _AddWorkerSheet extends ConsumerStatefulWidget {
-  const _AddWorkerSheet();
+  final BuildContext parentContext;
+
+  const _AddWorkerSheet({required this.parentContext});
 
   @override
   ConsumerState<_AddWorkerSheet> createState() => _AddWorkerSheetState();
@@ -205,19 +210,14 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
       return;
     }
 
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
     // ── Derive amcos + mcu from local DB ─────────────────────────────────────
     final warehouseDao = ref.read(warehouseDaoProvider);
     final warehouse =
         await warehouseDao.getWarehouseById(_selectedWarehouseId!);
+    if (!mounted) return;
 
     if (warehouse == null) {
       setState(() {
-        _loading = false;
         _error = 'Selected warehouse not found. Please try again.';
       });
       return;
@@ -226,7 +226,6 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     final amcosId = warehouse.amcos;
     if (amcosId == null) {
       setState(() {
-        _loading = false;
         _error =
             '"${warehouse.name}" has no AMCOS assigned. Please select a different warehouse.';
       });
@@ -238,13 +237,32 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     final mcuId = int.tryParse(currentUserId ?? '');
     if (mcuId == null) {
       setState(() {
-        _loading = false;
         _error = 'Could not determine owner ID. Please log out and back in.';
       });
       return;
     }
 
     // ── Call API ──────────────────────────────────────────────────────────────
+    final confirmed = await showCreationConfirmDialog(
+      context,
+      title: 'Create Worker',
+      description:
+          'Create an account for ${_nameCtrl.text.trim()} and assign this worker to ${warehouse.name}?',
+      confirmLabel: 'Create',
+    );
+    if (!confirmed) return;
+    if (!mounted) return;
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    showCenteredLoadingDialog(
+      context,
+      title: 'Creating Worker',
+      description: 'Saving this worker locally.',
+    );
+
     final result = await ref.read(workerRepoProvider).createWorker(
           WorkerModel(
             fullName: _nameCtrl.text.trim(),
@@ -258,17 +276,18 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
         );
 
     if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
 
     if (result.success) {
       ref.invalidate(allWorkersProvider);
-      final messenger = ScaffoldMessenger.of(context);
       Navigator.pop(context);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(result.message ?? 'Worker account created.'),
-          backgroundColor: AppColors.success,
-        ),
-      );
+      if (widget.parentContext.mounted) {
+        await showCreationSuccessDialog(
+          widget.parentContext,
+          title: 'Worker Created',
+          description: 'Worker successfully created.',
+        );
+      }
     } else {
       setState(() {
         _loading = false;
@@ -491,6 +510,7 @@ class _FormView extends StatelessWidget {
             // The selected warehouse also silently provides the amcos ID.
             DropdownButtonFormField<String>(
               initialValue: selectedWarehouseId,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Assign to warehouse',
                 prefixIcon: Icon(Icons.warehouse_rounded),
@@ -500,6 +520,15 @@ class _FormView extends StatelessWidget {
                     TextStyle(fontSize: 11, color: AppColors.textMuted),
               ),
               hint: const Text('Select warehouse'),
+              selectedItemBuilder: (context) => warehouses
+                  .map(
+                    (w) => Text(
+                      w.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  )
+                  .toList(),
               items: warehouses
                   .map((w) => DropdownMenuItem(
                         value: w.id,

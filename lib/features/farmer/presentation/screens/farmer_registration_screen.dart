@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/components/app_stepper.dart';
 import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
@@ -91,15 +92,17 @@ class _FarmerRegistrationScreenState
       return;
     }
 
-    final confirmed = await showConfirmDialog(
+    final confirmed = await showCreationConfirmDialog(
       context,
       title: 'Create Farmer',
-      message: 'Confirm these details and create this farmer record?',
+      description: 'Confirm these details and create this farmer record?',
       confirmLabel: 'Create',
     );
     if (!confirmed) return;
+    if (!mounted) return;
 
     final mcuId = await _deriveMcuId();
+    if (!mounted) return;
     if (mcuId == null) {
       setState(() {
         _submitError =
@@ -113,6 +116,11 @@ class _FarmerRegistrationScreenState
       _submitting = true;
       _submitError = null;
     });
+    showCenteredLoadingDialog(
+      context,
+      title: 'Creating Farmer',
+      description: 'Saving this farmer locally.',
+    );
 
     final result = await ref.read(farmerRepoProvider).createFarmer(
           farmer: FarmerCreateInput(
@@ -142,6 +150,7 @@ class _FarmerRegistrationScreenState
         );
 
     if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
     setState(() => _submitting = false);
 
     if (!result.success) {
@@ -153,16 +162,13 @@ class _FarmerRegistrationScreenState
     final dependantMessage = result.dependantErrors.isEmpty
         ? '${result.createdDependants} dependant(s) added.'
         : '${result.createdDependants} dependant(s) added. Some dependants failed.';
-    final messenger = ScaffoldMessenger.of(context);
-    context.go(widget.returnRoute);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Farmer created. $dependantMessage'),
-        backgroundColor: result.dependantErrors.isEmpty
-            ? AppColors.success
-            : AppColors.warning,
-      ),
+    await showCreationSuccessDialog(
+      context,
+      title: 'Farmer Registered',
+      description: 'Farmer successfully registered. $dependantMessage',
     );
+    if (!mounted) return;
+    context.go(widget.returnRoute);
   }
 
   Future<int?> _deriveMcuId() async {
