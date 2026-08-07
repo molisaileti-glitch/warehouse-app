@@ -17,8 +17,7 @@ class AuthRepository {
     required Dio dio,
     required SecureTokenStorage storage,
     required WorkerDao workerDao,
-  })
-      : _dio = dio,
+  })  : _dio = dio,
         _storage = storage,
         _workerDao = workerDao;
 
@@ -29,8 +28,10 @@ class AuthRepository {
       final res = await _dio.post('/mcus', data: data);
 
       final responseData = res.data as Map<String, dynamic>;
-      final accessToken = responseData['token'] as String? ?? 'mock-register-token';
-      final refreshToken = responseData['refreshToken'] as String? ?? 'mock-register-refresh-token';
+      final accessToken =
+          responseData['token'] as String? ?? 'mock-register-token';
+      final refreshToken = responseData['refreshToken'] as String? ??
+          'mock-register-refresh-token';
       final userId = (responseData['id'] ?? '4').toString();
       const userRole = 'owner';
 
@@ -143,6 +144,59 @@ class AuthRepository {
   }
 
   // ── Refresh token ─────────────────────────────────────────────────────────
+
+  Future<PasswordActionResult> forgotPassword({required String email}) async {
+    try {
+      final res = await _dio.post('/auth/forgot-password', data: {
+        'email': email,
+      });
+      final data = res.data as Map<String, dynamic>;
+      return PasswordActionResult.success(
+        message: data['message'] as String? ??
+            'Password reset instructions have been sent to your email',
+        email: data['email'] as String? ?? email,
+      );
+    } on DioException catch (e) {
+      return PasswordActionResult.failure(_dioMessage(e));
+    }
+  }
+
+  Future<PasswordActionResult> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/reset-password', data: {
+        'token': token,
+        'newPassword': newPassword,
+      });
+      final data = res.data as Map<String, dynamic>;
+      return PasswordActionResult.success(
+        message: data['message'] as String? ??
+            'Password has been reset successfully',
+      );
+    } on DioException catch (e) {
+      return PasswordActionResult.failure(_dioMessage(e));
+    }
+  }
+
+  Future<PasswordActionResult> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+      final data = res.data as Map<String, dynamic>;
+      return PasswordActionResult.success(
+        message: data['message'] as String? ?? 'Password changed successfully',
+      );
+    } on DioException catch (e) {
+      return PasswordActionResult.failure(_dioMessage(e));
+    }
+  }
 
   Future<bool> refreshToken() async {
     try {
@@ -307,7 +361,8 @@ class AuthResult {
     this.role,
   });
 
-  factory AuthResult.success({required String userId, required UserRole role}) =>
+  factory AuthResult.success(
+          {required String userId, required UserRole role}) =>
       AuthResult._(success: true, userId: userId, role: role);
 
   factory AuthResult.failure(String error) =>
@@ -343,6 +398,33 @@ class CreateUserResult {
 
   factory CreateUserResult.failure(String error) =>
       CreateUserResult._(success: false, error: error);
+}
+
+class PasswordActionResult {
+  final bool success;
+  final String? error;
+  final String? message;
+  final String? email;
+
+  const PasswordActionResult._({
+    required this.success,
+    this.error,
+    this.message,
+    this.email,
+  });
+
+  factory PasswordActionResult.success({
+    required String message,
+    String? email,
+  }) =>
+      PasswordActionResult._(
+        success: true,
+        message: message,
+        email: email,
+      );
+
+  factory PasswordActionResult.failure(String error) =>
+      PasswordActionResult._(success: false, error: error);
 }
 
 class SessionState {

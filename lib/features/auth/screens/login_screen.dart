@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/repositories/auth_repository.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/auth_provider.dart';
@@ -68,6 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           onTogglePassword: () =>
                               setState(() => _obscure = !_obscure),
                           onSubmit: _submit,
+                          onForgotPassword: _showForgotPasswordSheet,
                           localizeError: (errorKey) =>
                               _localizeError(context, errorKey),
                         ),
@@ -82,6 +85,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         },
       ),
+    );
+  }
+
+  void _showForgotPasswordSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ForgotPasswordSheet(parentContext: context),
     );
   }
 
@@ -128,15 +140,20 @@ class _LoginHeader extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
-                      Icons.warehouse_rounded,
-                      color: Colors.white,
-                      size: 24,
+                    padding: const EdgeInsets.all(5),
+                    child: Image.asset(
+                      'assets/logo/warehouse_logo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.warehouse_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   const Text(
-                    'StockPilot',
+                    'MavunoHub',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 25,
@@ -172,6 +189,7 @@ class _LoginCard extends StatelessWidget {
   final AppLocalizations l10n;
   final VoidCallback onTogglePassword;
   final VoidCallback onSubmit;
+  final VoidCallback onForgotPassword;
   final String Function(String?) localizeError;
 
   const _LoginCard({
@@ -184,6 +202,7 @@ class _LoginCard extends StatelessWidget {
     required this.l10n,
     required this.onTogglePassword,
     required this.onSubmit,
+    required this.onForgotPassword,
     required this.localizeError,
   });
 
@@ -315,8 +334,365 @@ class _LoginCard extends StatelessWidget {
                     onPressed: onSubmit,
                     child: Text(l10n.signIn),
                   ),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: loading ? null : onForgotPassword,
+              child: const Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ForgotPasswordSheet extends ConsumerStatefulWidget {
+  final BuildContext parentContext;
+
+  const _ForgotPasswordSheet({required this.parentContext});
+
+  @override
+  ConsumerState<_ForgotPasswordSheet> createState() =>
+      _ForgotPasswordSheetState();
+}
+
+class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    showCenteredLoadingDialog(
+      context,
+      title: 'Sending Instructions',
+      description: 'Checking this email address.',
+    );
+
+    final result = await ref.read(authRepositoryProvider).forgotPassword(
+          email: _emailCtrl.text.trim(),
+        );
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    setState(() => _loading = false);
+
+    if (!result.success) {
+      setState(() => _error = result.error ?? 'Failed to send reset email.');
+      return;
+    }
+
+    Navigator.pop(context);
+    if (!widget.parentContext.mounted) return;
+    final resetNow = await showAppFeedbackDialog<bool>(
+      widget.parentContext,
+      title: 'Check Your Email',
+      description: result.message ??
+          'Password reset instructions have been sent to your email.',
+      type: AppFeedbackType.success,
+      actions: const [
+        AppFeedbackAction<bool>(label: 'OK', result: false),
+        AppFeedbackAction<bool>(
+          label: 'Reset Password',
+          result: true,
+          isPrimary: true,
+        ),
+      ],
+    );
+    if (resetNow == true && widget.parentContext.mounted) {
+      showModalBottomSheet(
+        context: widget.parentContext,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) =>
+            _ResetPasswordSheet(parentContext: widget.parentContext),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _AuthSheetFrame(
+      title: 'Forgot Password',
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_error != null) ...[
+              _AuthErrorBox(message: _error!),
+              const SizedBox(height: 14),
+            ],
+            TextFormField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) return 'Required';
+                return value.contains('@') ? null : 'Enter a valid email';
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _loading ? null : _submit,
+              child: const Text('Send Instructions'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ResetPasswordSheet extends ConsumerStatefulWidget {
+  final BuildContext parentContext;
+
+  const _ResetPasswordSheet({required this.parentContext});
+
+  @override
+  ConsumerState<_ResetPasswordSheet> createState() =>
+      _ResetPasswordSheetState();
+}
+
+class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _tokenCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
+  bool _obscure = true;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _tokenCtrl.dispose();
+    _passwordCtrl.dispose();
+    _confirmCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    showCenteredLoadingDialog(
+      context,
+      title: 'Resetting Password',
+      description: 'Saving your new password.',
+    );
+
+    final result = await ref.read(authRepositoryProvider).resetPassword(
+          token: _tokenCtrl.text.trim(),
+          newPassword: _passwordCtrl.text,
+        );
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    setState(() => _loading = false);
+
+    if (!result.success) {
+      setState(() => _error = result.error ?? 'Failed to reset password.');
+      return;
+    }
+
+    Navigator.pop(context);
+    if (widget.parentContext.mounted) {
+      await showCreationSuccessDialog(
+        widget.parentContext,
+        title: 'Password Reset',
+        description: result.message ?? 'Password has been reset successfully.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _AuthSheetFrame(
+      title: 'Reset Password',
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_error != null) ...[
+              _AuthErrorBox(message: _error!),
+              const SizedBox(height: 14),
+            ],
+            TextFormField(
+              controller: _tokenCtrl,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                labelText: 'Reset token',
+                prefixIcon: Icon(Icons.key_outlined),
+              ),
+              validator: (value) =>
+                  value == null || value.trim().isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: 14),
+            _ResetPasswordField(
+              controller: _passwordCtrl,
+              label: 'New password',
+              obscure: _obscure,
+              onToggle: () => setState(() => _obscure = !_obscure),
+            ),
+            const SizedBox(height: 14),
+            _ResetPasswordField(
+              controller: _confirmCtrl,
+              label: 'Confirm password',
+              obscure: _obscure,
+              onToggle: () => setState(() => _obscure = !_obscure),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Required';
+                if (value != _passwordCtrl.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _loading ? null : _submit,
+              child: const Text('Reset Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthSheetFrame extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const _AuthSheetFrame({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 30),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 18),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ResetPasswordField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool obscure;
+  final VoidCallback onToggle;
+  final String? Function(String?)? validator;
+
+  const _ResetPasswordField({
+    required this.controller,
+    required this.label,
+    required this.obscure,
+    required this.onToggle,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: TextInputType.visiblePassword,
+      autocorrect: false,
+      enableSuggestions: false,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: const Icon(Icons.lock_outline_rounded),
+        suffixIcon: IconButton(
+          onPressed: onToggle,
+          icon: Icon(
+            obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          ),
+        ),
+      ),
+      validator: validator ??
+          (value) {
+            if (value == null || value.isEmpty) return 'Required';
+            if (value.length < 6) {
+              return 'Password must be at least 6 characters';
+            }
+            return null;
+          },
+    );
+  }
+}
+
+class _AuthErrorBox extends StatelessWidget {
+  final String message;
+
+  const _AuthErrorBox({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+      ),
+      child: Text(
+        message,
+        style: const TextStyle(color: AppColors.error, fontSize: 13),
       ),
     );
   }

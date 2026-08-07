@@ -763,6 +763,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network error — check your connection'**
   String get errorNetworkError;
+
+  /// No description provided for @receiptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receiptTitle;
+
+  /// No description provided for @noReceiptYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No receipt yet'**
+  String get noReceiptYet;
+
+  /// No description provided for @completeReceivingBeforeReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a receiving session before viewing the receipt.'**
+  String get completeReceivingBeforeReceipt;
+
+  /// No description provided for @startReceiving.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Receiving'**
+  String get startReceiving;
+
+  /// No description provided for @warehouseReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Warehouse Receipt'**
+  String get warehouseReceipt;
+
+  /// No description provided for @receiptLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt language'**
+  String get receiptLanguage;
+
+  /// No description provided for @receiptEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get receiptEnglish;
+
+  /// No description provided for @receiptSwahili.
+  ///
+  /// In en, this message translates to:
+  /// **'Swahili'**
+  String get receiptSwahili;
+
+  /// No description provided for @receiptFarmer.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmer'**
+  String get receiptFarmer;
+
+  /// No description provided for @receiptCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop'**
+  String get receiptCrop;
+
+  /// No description provided for @receiptWarehouse.
+  ///
+  /// In en, this message translates to:
+  /// **'Warehouse'**
+  String get receiptWarehouse;
+
+  /// No description provided for @receiptBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Bags'**
+  String get receiptBags;
+
+  /// No description provided for @receiptGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross'**
+  String get receiptGross;
+
+  /// No description provided for @receiptTare.
+  ///
+  /// In en, this message translates to:
+  /// **'Tare'**
+  String get receiptTare;
+
+  /// No description provided for @receiptNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get receiptNet;
+
+  /// No description provided for @receiptDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get receiptDate;
+
+  /// No description provided for @receiptReceivedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Received by'**
+  String get receiptReceivedBy;
+
+  /// No description provided for @newReceiving.
+  ///
+  /// In en, this message translates to:
+  /// **'New Receiving'**
+  String get newReceiving;
+
+  /// No description provided for @generateReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Receipt'**
+  String get generateReceipt;
 }
 
 class _AppLocalizationsDelegate

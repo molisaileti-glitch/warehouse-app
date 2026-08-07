@@ -34,7 +34,6 @@ class WarehouseListScreen extends ConsumerStatefulWidget {
 class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
   final _search = TextEditingController();
   String _query = '';
-  bool _activeOnly = false;
 
   @override
   void dispose() {
@@ -70,9 +69,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
           child: warehousesAsync.when(
             data: (warehouses) {
               final query = _query.trim().toLowerCase();
-              final baseList = _activeOnly
-                  ? warehouses.where((warehouse) => warehouse.isActive).toList()
-                  : warehouses;
+              final baseList = warehouses;
               final filtered = query.isEmpty
                   ? baseList
                   : baseList.where((warehouse) {
@@ -128,9 +125,9 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          Row(
+                          const Row(
                             children: [
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'All Warehouses',
                                   style: TextStyle(
@@ -139,12 +136,6 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                              ),
-                              TextButton(
-                                onPressed: () => setState(
-                                  () => _activeOnly = !_activeOnly,
-                                ),
-                                child: Text(_activeOnly ? 'All' : 'Filter'),
                               ),
                             ],
                           ),

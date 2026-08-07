@@ -90,20 +90,6 @@ class OwnerDashboardScreen extends ConsumerWidget {
             tooltip: 'Settings',
             onPressed: () => context.go(AppRoutes.ownerSettings),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Sign out',
-            onPressed: () async {
-              final ok = await showConfirmDialog(
-                context,
-                title: l10n.signOutConfirmTitle,
-                message: l10n.signOutConfirmMessageOwner,
-                confirmLabel: l10n.signOut,
-                isDestructive: true,
-              );
-              if (ok) ref.read(authProvider.notifier).logout();
-            },
-          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

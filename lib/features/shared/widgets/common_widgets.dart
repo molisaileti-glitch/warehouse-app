@@ -46,10 +46,14 @@ class SyncStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon, label) = switch (status) {
+    final normalized = status.trim().toLowerCase();
+    if (normalized != 'synced' && normalized != 'conflict') {
+      return const SizedBox.shrink();
+    }
+
+    final (color, icon, label) = switch (normalized) {
       'synced' => (AppColors.syncSynced, Icons.cloud_done_rounded, 'Synced'),
-      'conflict' => (AppColors.syncConflict, Icons.warning_rounded, 'Conflict'),
-      _ => (AppColors.syncPending, Icons.cloud_upload_rounded, 'Pending'),
+      _ => (AppColors.syncConflict, Icons.warning_rounded, 'Conflict'),
     };
 
     return Container(

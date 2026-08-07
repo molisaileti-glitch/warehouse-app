@@ -357,4 +357,62 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get errorNetworkError =>
       'Hitilafu ya mtandao — angalia muunganisho wako';
+
+  @override
+  String get receiptTitle => 'Risiti';
+
+  @override
+  String get noReceiptYet => 'Hakuna risiti bado';
+
+  @override
+  String get completeReceivingBeforeReceipt =>
+      'Kamilisha upokeaji kabla ya kuona risiti.';
+
+  @override
+  String get startReceiving => 'Anza Kupokea';
+
+  @override
+  String get warehouseReceipt => 'Risiti ya Ghala';
+
+  @override
+  String get receiptLanguage => 'Lugha ya risiti';
+
+  @override
+  String get receiptEnglish => 'Kiingereza';
+
+  @override
+  String get receiptSwahili => 'Kiswahili';
+
+  @override
+  String get receiptFarmer => 'Mkulima';
+
+  @override
+  String get receiptCrop => 'Zao';
+
+  @override
+  String get receiptWarehouse => 'Ghala';
+
+  @override
+  String get receiptBags => 'Mifuko';
+
+  @override
+  String get receiptGross => 'Uzito ghafi';
+
+  @override
+  String get receiptTare => 'Uzito wa kifungashio';
+
+  @override
+  String get receiptNet => 'Uzito halisi';
+
+  @override
+  String get receiptDate => 'Tarehe';
+
+  @override
+  String get receiptReceivedBy => 'Imepokelewa na';
+
+  @override
+  String get newReceiving => 'Pokea Mavuno Mapya';
+
+  @override
+  String get generateReceipt => 'Tengeneza Risiti';
 }

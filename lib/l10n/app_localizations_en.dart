@@ -354,4 +354,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorNetworkError => 'Network error — check your connection';
+
+  @override
+  String get receiptTitle => 'Receipt';
+
+  @override
+  String get noReceiptYet => 'No receipt yet';
+
+  @override
+  String get completeReceivingBeforeReceipt =>
+      'Complete a receiving session before viewing the receipt.';
+
+  @override
+  String get startReceiving => 'Start Receiving';
+
+  @override
+  String get warehouseReceipt => 'Warehouse Receipt';
+
+  @override
+  String get receiptLanguage => 'Receipt language';
+
+  @override
+  String get receiptEnglish => 'English';
+
+  @override
+  String get receiptSwahili => 'Swahili';
+
+  @override
+  String get receiptFarmer => 'Farmer';
+
+  @override
+  String get receiptCrop => 'Crop';
+
+  @override
+  String get receiptWarehouse => 'Warehouse';
+
+  @override
+  String get receiptBags => 'Bags';
+
+  @override
+  String get receiptGross => 'Gross';
+
+  @override
+  String get receiptTare => 'Tare';
+
+  @override
+  String get receiptNet => 'Net';
+
+  @override
+  String get receiptDate => 'Date';
+
+  @override
+  String get receiptReceivedBy => 'Received by';
+
+  @override
+  String get newReceiving => 'New Receiving';
+
+  @override
+  String get generateReceipt => 'Generate Receipt';
 }

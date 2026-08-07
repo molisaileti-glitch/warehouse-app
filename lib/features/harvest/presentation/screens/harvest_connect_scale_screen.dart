@@ -80,7 +80,7 @@ class _HarvestConnectScaleScreenState
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Connect a Bluetooth scale before measuring crops. Once connected, the live reading will be used on the weighing screen.',
+                    'Connect a Bluetooth scale before measuring crops. Turn on Bluetooth and Location before scanning so nearby scales can be discovered.',
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       height: 1.4,
@@ -89,6 +89,8 @@ class _HarvestConnectScaleScreenState
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            _requirementsCard(),
             const SizedBox(height: 16),
             AppCard(
               child: Row(
@@ -153,6 +155,26 @@ class _HarvestConnectScaleScreenState
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _requirementsCard() {
+    return const AppCard(
+      child: Column(
+        children: [
+          _RequirementRow(
+            icon: Icons.bluetooth_rounded,
+            title: 'Bluetooth',
+            subtitle: 'Turn on Bluetooth before scanning.',
+          ),
+          Divider(height: 20),
+          _RequirementRow(
+            icon: Icons.location_on_outlined,
+            title: 'Location',
+            subtitle: 'Turn on Location so nearby devices can appear.',
+          ),
+        ],
       ),
     );
   }
@@ -223,7 +245,8 @@ class _HarvestConnectScaleScreenState
                         child: EmptyState(
                           icon: Icons.bluetooth_disabled_rounded,
                           title: 'No devices found',
-                          subtitle: 'Turn on the scale and refresh.',
+                          subtitle:
+                              'Turn on the scale, Bluetooth, and Location, then refresh.',
                         ),
                       )
                     else
@@ -254,6 +277,47 @@ class _HarvestConnectScaleScreenState
           },
         );
       },
+    );
+  }
+}
+
+class _RequirementRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _RequirementRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.ownerColor),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

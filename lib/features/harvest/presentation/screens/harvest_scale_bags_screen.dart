@@ -33,14 +33,15 @@ class _HarvestScaleBagsScreenState
     extends ConsumerState<HarvestScaleBagsScreen> {
   final _bagFormKey = GlobalKey<FormState>();
   final _tagCtrl = TextEditingController();
+  final _packagingCtrl = TextEditingController(text: '1');
   bool _submitting = false;
 
-  static const _packagingWeight = 0.0;
   static const _moisturePercent = 1.0;
 
   @override
   void dispose() {
     _tagCtrl.dispose();
+    _packagingCtrl.dispose();
     super.dispose();
   }
 
@@ -54,9 +55,6 @@ class _HarvestScaleBagsScreenState
     final farmersAsync = ref.watch(allFarmersProvider);
     final cropsAsync = ref.watch(allCropsProvider);
     final unitsAsync = ref.watch(measurementUnitsProvider);
-    final gradesAsync = session.cropId == null
-        ? const AsyncValue.data(<CropGrade>[])
-        : ref.watch(cropGradesForCropProvider(session.cropId!));
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -79,7 +77,6 @@ class _HarvestScaleBagsScreenState
             farmersAsync: farmersAsync,
             cropsAsync: cropsAsync,
             unitsAsync: unitsAsync,
-            gradesAsync: gradesAsync,
           );
         },
       ),
@@ -93,7 +90,6 @@ class _HarvestScaleBagsScreenState
     required AsyncValue<List<Farmer>> farmersAsync,
     required AsyncValue<List<Crop>> cropsAsync,
     required AsyncValue<List<MeasurementUnit>> unitsAsync,
-    required AsyncValue<List<CropGrade>> gradesAsync,
   }) {
     if (!session.hasDetails) {
       return _missingDetails();
@@ -107,9 +103,6 @@ class _HarvestScaleBagsScreenState
         .firstOrNull;
     final unit =
         _selectedUnit(unitsAsync.valueOrNull ?? const [], session.uomId);
-    final grade = (gradesAsync.valueOrNull ?? const <CropGrade>[])
-        .where((item) => item.id == session.cropGradeId)
-        .firstOrNull;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -119,7 +112,6 @@ class _HarvestScaleBagsScreenState
           _detailsSummary(
             farmer: farmer,
             crop: crop,
-            grade: grade,
             warehouse: warehouse,
           ),
           const SizedBox(height: 16),
@@ -128,36 +120,53 @@ class _HarvestScaleBagsScreenState
           _sectionTitle('Bag'),
           Form(
             key: _bagFormKey,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
               children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _tagCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Bag tag',
-                      prefixIcon: Icon(Icons.qr_code_2_outlined),
-                    ),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'[A-Za-z0-9-]'),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _tagCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Bag tag',
+                          prefixIcon: Icon(Icons.qr_code_2_outlined),
+                        ),
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[A-Za-z0-9-]'),
+                          ),
+                        ],
+                        validator: _required,
                       ),
-                    ],
-                    validator: _required,
-                  ),
+                    ),
+                    const SizedBox(width: 10),
+                    IconButton.filledTonal(
+                      tooltip: 'Generate bag tag',
+                      onPressed: _generateBagTag,
+                      icon: const Icon(Icons.casino_outlined),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                IconButton.filledTonal(
-                  tooltip: 'Generate bag tag',
-                  onPressed: _generateBagTag,
-                  icon: const Icon(Icons.casino_outlined),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _packagingCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Packaging weight (kg)',
+                    prefixIcon: Icon(Icons.inventory_2_outlined),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
+                  validator: _packagingValidator,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          _calculationPreview(scaleState, crop),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -183,7 +192,6 @@ class _HarvestScaleBagsScreenState
                     warehouse: warehouse,
                     farmer: farmer,
                     crop: crop,
-                    grade: grade,
                     unit: unit,
                   ),
                   icon: Badge(
@@ -196,7 +204,7 @@ class _HarvestScaleBagsScreenState
           ),
           const SizedBox(height: 14),
           Text(
-            'Tare is set to ${_formatWeight(_packagingWeight)} kg and moisture to ${_formatWeight(_moisturePercent)}%.',
+            'Moisture is set to ${_formatWeight(_moisturePercent)}%. Net weight will appear on the receipt.',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -227,7 +235,6 @@ class _HarvestScaleBagsScreenState
   Widget _detailsSummary({
     required Farmer? farmer,
     required Crop? crop,
-    required CropGrade? grade,
     required Warehouse warehouse,
   }) {
     return AppCard(
@@ -250,11 +257,7 @@ class _HarvestScaleBagsScreenState
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  [
-                    crop?.name,
-                    grade?.gradeName,
-                    warehouse.name,
-                  ].whereType<String>().join(' - '),
+                  [crop?.name, warehouse.name].whereType<String>().join(' - '),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -381,60 +384,6 @@ class _HarvestScaleBagsScreenState
     );
   }
 
-  Widget _calculationPreview(WeightScaleState scaleState, Crop? crop) {
-    final gross = scaleState.weight;
-    final load = gross - _packagingWeight;
-    final moistureWeight = load * _moisturePercent / 100;
-    final net = load - moistureWeight;
-    final invalid = gross > 0 && _packagingWeight > gross;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: invalid
-            ? AppColors.error.withValues(alpha: 0.08)
-            : AppColors.primary.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: invalid
-              ? AppColors.error.withValues(alpha: 0.25)
-              : AppColors.primary.withValues(alpha: 0.16),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Net weight',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            invalid
-                ? 'Check weights'
-                : '${_formatWeight(net)} ${crop?.uom ?? scaleState.uom}',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: invalid ? AppColors.error : AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Gross ${_formatWeight(gross)} - moisture ${_formatWeight(moistureWeight)}',
-            style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _generateBagTag() {
     final now = DateTime.now();
     final random = Random().nextInt(9000) + 1000;
@@ -457,13 +406,19 @@ class _HarvestScaleBagsScreenState
       return;
     }
 
+    final packagingWeight = _packagingWeightValue();
+    if (packagingWeight >= scaleState.weight) {
+      _showError('Packaging weight must be less than gross weight.');
+      return;
+    }
+
     ref
         .read(harvestReceivingControllerProvider(widget.warehouseId).notifier)
         .addBag(
           HarvestBagInput(
             tag: _tagCtrl.text.trim(),
             grossWeight: scaleState.weight,
-            packagingWeight: _packagingWeight,
+            packagingWeight: packagingWeight,
             moistureContent: _moisturePercent,
           ),
         );
@@ -477,7 +432,6 @@ class _HarvestScaleBagsScreenState
     required Warehouse warehouse,
     required Farmer? farmer,
     required Crop? crop,
-    required CropGrade? grade,
     required MeasurementUnit? unit,
   }) {
     return showModalBottomSheet<void>(
@@ -489,10 +443,6 @@ class _HarvestScaleBagsScreenState
           builder: (context, ref, _) {
             final currentSession = ref.watch(
               harvestReceivingControllerProvider(widget.warehouseId),
-            );
-            final totalNet = currentSession.bags.fold<double>(
-              0,
-              (sum, bag) => sum + bag.calculate().netWeight,
             );
 
             return SafeArea(
@@ -551,27 +501,6 @@ class _HarvestScaleBagsScreenState
                           },
                         ),
                       ),
-                      const Divider(height: 24),
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Total net',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${_formatWeight(totalNet)} kg',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: 16),
                       _submitting
                           ? const Center(child: CircularProgressIndicator())
@@ -584,7 +513,6 @@ class _HarvestScaleBagsScreenState
                                         warehouse: warehouse,
                                         farmer: farmer,
                                         crop: crop,
-                                        grade: grade,
                                         unit: unit,
                                       ),
                               icon: const Icon(Icons.receipt_long_outlined),
@@ -607,7 +535,6 @@ class _HarvestScaleBagsScreenState
     required Warehouse warehouse,
     required Farmer farmer,
     required Crop crop,
-    required CropGrade? grade,
     required MeasurementUnit? unit,
   }) async {
     if (session.bags.isEmpty) {
@@ -636,7 +563,7 @@ class _HarvestScaleBagsScreenState
             farmer: farmer,
             warehouse: warehouse,
             crop: crop,
-            cropGrade: grade,
+            cropGrade: null,
             uom: unit,
             packaging: session.packaging,
             bags: List.unmodifiable(session.bags),
@@ -725,8 +652,20 @@ class _HarvestScaleBagsScreenState
     return value == null || value.trim().isEmpty ? 'Required' : null;
   }
 
+  String? _packagingValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Required';
+    final parsed = double.tryParse(value.trim());
+    if (parsed == null) return 'Enter a valid weight';
+    if (parsed < 0) return 'Cannot be negative';
+    return null;
+  }
+
+  double _packagingWeightValue() {
+    return double.tryParse(_packagingCtrl.text.trim()) ?? 1;
+  }
+
   String _farmerName(Farmer farmer) {
-    return [
+    final name = [
       farmer.firstName,
       farmer.middleName,
       farmer.lastName,
@@ -735,6 +674,7 @@ class _HarvestScaleBagsScreenState
         .map((v) => v.trim())
         .where((v) => v.isNotEmpty)
         .join(' ');
+    return name.isEmpty ? 'Farmer ${farmer.id}' : name;
   }
 
   String _formatWeight(double value) {
@@ -762,7 +702,6 @@ class _BagTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weights = bag.calculate();
     return AppCard(
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -794,7 +733,7 @@ class _BagTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Gross ${_formatWeight(bag.grossWeight)} kg - Net ${_formatWeight(weights.netWeight)} kg',
+                  'Gross ${_formatWeight(bag.grossWeight)} kg - Packaging ${_formatWeight(bag.packagingWeight)} kg',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
