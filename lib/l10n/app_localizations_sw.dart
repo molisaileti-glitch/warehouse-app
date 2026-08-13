@@ -415,4 +415,117 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get generateReceipt => 'Tengeneza Risiti';
+
+  @override
+  String get printReceipt => 'Chapisha Risiti';
+
+  @override
+  String get selectPrinter => 'Chagua Printa';
+
+  @override
+  String get availablePrinters => 'Printa Zilizopo';
+
+  @override
+  String get refreshPrinters => 'Onyesha upya printa';
+
+  @override
+  String get scanningPrinters => 'Inatafuta printa...';
+
+  @override
+  String get noPrintersFound => 'Hakuna printa zilizopatikana';
+
+  @override
+  String get turnOnPrinterAndRefresh =>
+      'Washa printa, kisha bonyeza kuonyesha upya.';
+
+  @override
+  String get noPairedPrinters => 'Hakuna printa iliyounganishwa';
+
+  @override
+  String get pairPrinterInSettings =>
+      'Unganisha printa ya risiti kwenye mipangilio ya Bluetooth ya simu kwanza.';
+
+  @override
+  String get printingReceipt => 'Inachapisha Risiti';
+
+  @override
+  String get printingReceiptDescription =>
+      'Inatuma risiti hii kwenye printa uliyochagua.';
+
+  @override
+  String get receiptPrinted => 'Risiti Imechapishwa';
+
+  @override
+  String get receiptPrintedDescription =>
+      'Risiti imetumwa kwenye printa kikamilifu.';
+
+  @override
+  String get printerError => 'Hitilafu ya Printa';
+
+  @override
+  String get printerLoadError => 'Imeshindwa kupakia printa zilizounganishwa.';
+
+  @override
+  String get bluetoothPermissionRequired =>
+      'Ruhusa ya Bluetooth inahitajika ili kuchapisha risiti.';
+
+  @override
+  String get printOptions => 'Chaguzi za Kuchapisha';
+
+  @override
+  String get printWithBagDetails => 'Na maelezo ya mifuko';
+
+  @override
+  String get printWithoutBagDetails => 'Bila maelezo ya mifuko';
+
+  @override
+  String get harvestRequestReceipt => 'Risiti ya Ombi la Mavuno';
+
+  @override
+  String get receiptPhone => 'Simu';
+
+  @override
+  String get receiptCenter => 'Kituo';
+
+  @override
+  String get receiptPackaging => 'Kifungashio';
+
+  @override
+  String get receiptTotalBags => 'Jumla ya Mifuko';
+
+  @override
+  String get receiptNoBagsFound => 'Hakuna Mifuko';
+
+  @override
+  String get receiptBagDetailsNotPrinted => 'Maelezo ya Mifuko Hayakuchapishwa';
+
+  @override
+  String get receiptTagNumber => 'Namba ya Lebo';
+
+  @override
+  String get receiptMoisturePercent => 'Unyevu %';
+
+  @override
+  String get receiptPackagingWeight => 'Uzito Kifungashio';
+
+  @override
+  String get receiptNumber => 'Namba ya Risiti';
+
+  @override
+  String get receiptReceivedDate => 'Tarehe Kupokea';
+
+  @override
+  String get receiptReceivedTime => 'Muda Kupokea';
+
+  @override
+  String get receiptPrintDate => 'Tarehe Kuchapisha';
+
+  @override
+  String get receiptPrintTime => 'Muda Kuchapisha';
+
+  @override
+  String get receiptEnd => 'Mwisho wa Risiti';
+
+  @override
+  String get poweredByShambabora => 'Imewezeshwa na ShambaBora';
 }

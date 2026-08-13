@@ -412,4 +412,116 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get generateReceipt => 'Generate Receipt';
+
+  @override
+  String get printReceipt => 'Print Receipt';
+
+  @override
+  String get selectPrinter => 'Select Printer';
+
+  @override
+  String get availablePrinters => 'Available Printers';
+
+  @override
+  String get refreshPrinters => 'Refresh printers';
+
+  @override
+  String get scanningPrinters => 'Scanning printers...';
+
+  @override
+  String get noPrintersFound => 'No printers found';
+
+  @override
+  String get turnOnPrinterAndRefresh => 'Turn on the printer, then refresh.';
+
+  @override
+  String get noPairedPrinters => 'No paired printers';
+
+  @override
+  String get pairPrinterInSettings =>
+      'Pair your thermal printer in Android Bluetooth settings first.';
+
+  @override
+  String get printingReceipt => 'Printing Receipt';
+
+  @override
+  String get printingReceiptDescription =>
+      'Sending this receipt to the selected printer.';
+
+  @override
+  String get receiptPrinted => 'Receipt Printed';
+
+  @override
+  String get receiptPrintedDescription =>
+      'The receipt was sent to the printer successfully.';
+
+  @override
+  String get printerError => 'Printer Error';
+
+  @override
+  String get printerLoadError => 'Could not load paired printers.';
+
+  @override
+  String get bluetoothPermissionRequired =>
+      'Bluetooth permission is required to print receipts.';
+
+  @override
+  String get printOptions => 'Print Options';
+
+  @override
+  String get printWithBagDetails => 'With bag details';
+
+  @override
+  String get printWithoutBagDetails => 'Without bag details';
+
+  @override
+  String get harvestRequestReceipt => 'Harvest Request Receipt';
+
+  @override
+  String get receiptPhone => 'Phone';
+
+  @override
+  String get receiptCenter => 'Center';
+
+  @override
+  String get receiptPackaging => 'Packaging';
+
+  @override
+  String get receiptTotalBags => 'Total Bags';
+
+  @override
+  String get receiptNoBagsFound => 'No Bags Found';
+
+  @override
+  String get receiptBagDetailsNotPrinted => 'Bag Details Not Printed';
+
+  @override
+  String get receiptTagNumber => 'Tag Number';
+
+  @override
+  String get receiptMoisturePercent => 'Moisture %';
+
+  @override
+  String get receiptPackagingWeight => 'Packaging Wt';
+
+  @override
+  String get receiptNumber => 'Receipt Number';
+
+  @override
+  String get receiptReceivedDate => 'Received Date';
+
+  @override
+  String get receiptReceivedTime => 'Received Time';
+
+  @override
+  String get receiptPrintDate => 'Print Date';
+
+  @override
+  String get receiptPrintTime => 'Print Time';
+
+  @override
+  String get receiptEnd => 'Receipt End';
+
+  @override
+  String get poweredByShambabora => 'Powered by ShambaBora';
 }

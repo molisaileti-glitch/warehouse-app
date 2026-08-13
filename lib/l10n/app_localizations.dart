@@ -877,6 +877,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Generate Receipt'**
   String get generateReceipt;
+
+  /// No description provided for @printReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Print Receipt'**
+  String get printReceipt;
+
+  /// No description provided for @selectPrinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Printer'**
+  String get selectPrinter;
+
+  /// No description provided for @availablePrinters.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Printers'**
+  String get availablePrinters;
+
+  /// No description provided for @refreshPrinters.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh printers'**
+  String get refreshPrinters;
+
+  /// No description provided for @scanningPrinters.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning printers...'**
+  String get scanningPrinters;
+
+  /// No description provided for @noPrintersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No printers found'**
+  String get noPrintersFound;
+
+  /// No description provided for @turnOnPrinterAndRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on the printer, then refresh.'**
+  String get turnOnPrinterAndRefresh;
+
+  /// No description provided for @noPairedPrinters.
+  ///
+  /// In en, this message translates to:
+  /// **'No paired printers'**
+  String get noPairedPrinters;
+
+  /// No description provided for @pairPrinterInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair your thermal printer in Android Bluetooth settings first.'**
+  String get pairPrinterInSettings;
+
+  /// No description provided for @printingReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Printing Receipt'**
+  String get printingReceipt;
+
+  /// No description provided for @printingReceiptDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending this receipt to the selected printer.'**
+  String get printingReceiptDescription;
+
+  /// No description provided for @receiptPrinted.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Printed'**
+  String get receiptPrinted;
+
+  /// No description provided for @receiptPrintedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The receipt was sent to the printer successfully.'**
+  String get receiptPrintedDescription;
+
+  /// No description provided for @printerError.
+  ///
+  /// In en, this message translates to:
+  /// **'Printer Error'**
+  String get printerError;
+
+  /// No description provided for @printerLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load paired printers.'**
+  String get printerLoadError;
+
+  /// No description provided for @bluetoothPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth permission is required to print receipts.'**
+  String get bluetoothPermissionRequired;
+
+  /// No description provided for @printOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Print Options'**
+  String get printOptions;
+
+  /// No description provided for @printWithBagDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'With bag details'**
+  String get printWithBagDetails;
+
+  /// No description provided for @printWithoutBagDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Without bag details'**
+  String get printWithoutBagDetails;
+
+  /// No description provided for @harvestRequestReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Harvest Request Receipt'**
+  String get harvestRequestReceipt;
+
+  /// No description provided for @receiptPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get receiptPhone;
+
+  /// No description provided for @receiptCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get receiptCenter;
+
+  /// No description provided for @receiptPackaging.
+  ///
+  /// In en, this message translates to:
+  /// **'Packaging'**
+  String get receiptPackaging;
+
+  /// No description provided for @receiptTotalBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Bags'**
+  String get receiptTotalBags;
+
+  /// No description provided for @receiptNoBagsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Bags Found'**
+  String get receiptNoBagsFound;
+
+  /// No description provided for @receiptBagDetailsNotPrinted.
+  ///
+  /// In en, this message translates to:
+  /// **'Bag Details Not Printed'**
+  String get receiptBagDetailsNotPrinted;
+
+  /// No description provided for @receiptTagNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag Number'**
+  String get receiptTagNumber;
+
+  /// No description provided for @receiptMoisturePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Moisture %'**
+  String get receiptMoisturePercent;
+
+  /// No description provided for @receiptPackagingWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Packaging Wt'**
+  String get receiptPackagingWeight;
+
+  /// No description provided for @receiptNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Number'**
+  String get receiptNumber;
+
+  /// No description provided for @receiptReceivedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Received Date'**
+  String get receiptReceivedDate;
+
+  /// No description provided for @receiptReceivedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Received Time'**
+  String get receiptReceivedTime;
+
+  /// No description provided for @receiptPrintDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Print Date'**
+  String get receiptPrintDate;
+
+  /// No description provided for @receiptPrintTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Print Time'**
+  String get receiptPrintTime;
+
+  /// No description provided for @receiptEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt End'**
+  String get receiptEnd;
+
+  /// No description provided for @poweredByShambabora.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by ShambaBora'**
+  String get poweredByShambabora;
 }
 
 class _AppLocalizationsDelegate

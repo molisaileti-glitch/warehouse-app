@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
@@ -25,6 +27,16 @@ class HarvestConnectScaleScreen extends ConsumerStatefulWidget {
 class _HarvestConnectScaleScreenState
     extends ConsumerState<HarvestConnectScaleScreen> {
   bool _scanning = false;
+  bool _requirementDialogVisible = false;
+  bool _hasShownRequirementDialog = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showBluetoothLocationDialogIfNeeded();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +92,7 @@ class _HarvestConnectScaleScreenState
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Connect a Bluetooth scale before measuring crops. Turn on Bluetooth and Location before scanning so nearby scales can be discovered.',
+                    'Connect a Bluetooth scale before measuring crops. Scan nearby devices when the scale is ready.',
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       height: 1.4,
@@ -89,8 +101,6 @@ class _HarvestConnectScaleScreenState
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            _requirementsCard(),
             const SizedBox(height: 16),
             AppCard(
               child: Row(
@@ -159,32 +169,17 @@ class _HarvestConnectScaleScreenState
     );
   }
 
-  Widget _requirementsCard() {
-    return const AppCard(
-      child: Column(
-        children: [
-          _RequirementRow(
-            icon: Icons.bluetooth_rounded,
-            title: 'Bluetooth',
-            subtitle: 'Turn on Bluetooth before scanning.',
-          ),
-          Divider(height: 20),
-          _RequirementRow(
-            icon: Icons.location_on_outlined,
-            title: 'Location',
-            subtitle: 'Turn on Location so nearby devices can appear.',
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _openDevicesSheet() async {
     setState(() => _scanning = true);
     final controller = ref.read(weightScaleControllerProvider.notifier);
     var devices = await controller.scanForScales();
     if (!mounted) return;
     setState(() => _scanning = false);
+
+    if (devices.isEmpty) {
+      await _showBluetoothLocationDialogIfNeeded(force: true);
+      if (!mounted) return;
+    }
 
     await showModalBottomSheet<void>(
       context: context,
@@ -279,46 +274,43 @@ class _HarvestConnectScaleScreenState
       },
     );
   }
-}
 
-class _RequirementRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  Future<bool> _showBluetoothLocationDialogIfNeeded(
+      {bool force = false}) async {
+    if (_requirementDialogVisible || (!force && _hasShownRequirementDialog)) {
+      return false;
+    }
+    final needsReminder = await _needsBluetoothLocationReminder();
+    if (!mounted || !needsReminder) return false;
 
-  const _RequirementRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.ownerColor),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
+    _requirementDialogVisible = true;
+    _hasShownRequirementDialog = true;
+    await showAppFeedbackDialog<void>(
+      context,
+      title: 'Bluetooth and Location Required',
+      description:
+          'Please allow Bluetooth and Location permissions, and keep Bluetooth and Location turned on before scanning devices.',
+      type: AppFeedbackType.info,
+      actions: [
+        const AppFeedbackAction<void>(label: 'OK', isPrimary: true),
       ],
     );
+    _requirementDialogVisible = false;
+    return true;
+  }
+
+  Future<bool> _needsBluetoothLocationReminder() async {
+    final adapterState = await FlutterBluePlus.adapterState.first;
+    final locationStatus = await Permission.locationWhenInUse.status;
+    final locationService = await Permission.locationWhenInUse.serviceStatus;
+    final bluetoothScanStatus = await Permission.bluetoothScan.status;
+    final bluetoothConnectStatus = await Permission.bluetoothConnect.status;
+
+    return adapterState != BluetoothAdapterState.on ||
+        !locationStatus.isGranted ||
+        !locationService.isEnabled ||
+        !bluetoothScanStatus.isGranted ||
+        !bluetoothConnectStatus.isGranted;
   }
 }
 

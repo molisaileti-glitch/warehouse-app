@@ -27,9 +27,11 @@ class _HarvestFarmerDetailsScreenState
     extends ConsumerState<HarvestFarmerDetailsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _farmerSearchCtrl = TextEditingController();
+  final _farmerSearchFocus = FocusNode();
 
   int? _farmerId;
   int? _cropId;
+  bool _showFarmerResults = false;
 
   @override
   void initState() {
@@ -39,12 +41,18 @@ class _HarvestFarmerDetailsScreenState
     );
     _farmerId = session.farmerId;
     _cropId = session.cropId;
+    _farmerSearchFocus.addListener(() {
+      if (_farmerSearchFocus.hasFocus) {
+        setState(() => _showFarmerResults = true);
+      }
+    });
     Future.microtask(_pullReferenceData);
   }
 
   @override
   void dispose() {
     _farmerSearchCtrl.dispose();
+    _farmerSearchFocus.dispose();
     super.dispose();
   }
 
@@ -100,6 +108,10 @@ class _HarvestFarmerDetailsScreenState
   }) {
     final farmers = farmersAsync.valueOrNull ?? const <Farmer>[];
     final crops = cropsAsync.valueOrNull ?? const <Crop>[];
+    final selectedFarmer = farmers.where((f) => f.id == _farmerId).firstOrNull;
+    if (selectedFarmer != null && _farmerSearchCtrl.text.isEmpty) {
+      _farmerSearchCtrl.text = _farmerName(selectedFarmer);
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
@@ -208,6 +220,7 @@ class _HarvestFarmerDetailsScreenState
           children: [
             TextField(
               controller: _farmerSearchCtrl,
+              focusNode: _farmerSearchFocus,
               decoration: InputDecoration(
                 hintText: 'Search',
                 prefixIcon: const Icon(Icons.search_rounded),
@@ -217,7 +230,10 @@ class _HarvestFarmerDetailsScreenState
                         tooltip: 'Clear search',
                         onPressed: () {
                           _farmerSearchCtrl.clear();
-                          setState(() {});
+                          setState(() {
+                            _farmerId = null;
+                            _showFarmerResults = true;
+                          });
                         },
                         icon: const Icon(Icons.close_rounded),
                       ),
@@ -227,24 +243,37 @@ class _HarvestFarmerDetailsScreenState
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
               ),
-              onChanged: (_) => setState(() {}),
+              onTap: () => setState(() => _showFarmerResults = true),
+              onChanged: (_) => setState(() => _showFarmerResults = true),
             ),
-            const Divider(height: 1),
-            if (filtered.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: EmptyState(
-                  icon: Icons.person_search_outlined,
-                  title: 'No matching farmers',
-                ),
-              )
-            else
-              for (final farmer in filtered.take(8))
-                _FarmerSearchRow(
-                  name: _farmerName(farmer),
-                  selected: farmer.id == _farmerId,
-                  onTap: () => setState(() => _farmerId = farmer.id),
-                ),
+            if (_showFarmerResults) ...[
+              const Divider(height: 1),
+              if (filtered.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: EmptyState(
+                    icon: Icons.person_search_outlined,
+                    title: 'No matching farmers',
+                  ),
+                )
+              else
+                for (final farmer in filtered.take(8))
+                  _FarmerSearchRow(
+                    name: _farmerName(farmer),
+                    selected: farmer.id == _farmerId,
+                    onTap: () {
+                      _farmerSearchCtrl.text = _farmerName(farmer);
+                      _farmerSearchCtrl.selection = TextSelection.collapsed(
+                        offset: _farmerSearchCtrl.text.length,
+                      );
+                      _farmerSearchFocus.unfocus();
+                      setState(() {
+                        _farmerId = farmer.id;
+                        _showFarmerResults = false;
+                      });
+                    },
+                  ),
+            ],
           ],
         ),
       ),
