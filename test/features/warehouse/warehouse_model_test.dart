@@ -8,6 +8,7 @@ void main() {
         'id': 1,
         'uuid': 'warehouse-uuid-1',
         'name': 'Kuhic - Powlowski',
+        'mcu': 2,
         'gpsLocation': '-157.7205',
         'amcos': 2,
         'amcosName': 'Tremblay - Powlowski',
@@ -21,6 +22,7 @@ void main() {
       expect(model.uuid, 'warehouse-uuid-1');
       expect(model.id, '1');
       expect(model.name, 'Kuhic - Powlowski');
+      expect(model.ownerId, '2');
       expect(model.gpsLocation, '-157.7205');
       expect(model.amcos, 2);
       expect(model.amcosName, 'Tremblay - Powlowski');
@@ -36,6 +38,7 @@ void main() {
         uuid: 'warehouse-uuid-2',
         id: '2',
         name: 'A warehouse',
+        ownerId: '2',
         gpsLocation: '-10.12',
         amcos: 3,
         amcosName: 'AMCOS One',
@@ -51,6 +54,7 @@ void main() {
       expect(json['uuid'], 'warehouse-uuid-2');
       expect(json['id'], 2);
       expect(json['name'], 'A warehouse');
+      expect(json['mcu'], 2);
       expect(json['gpsLocation'], '-10.12');
     });
 
@@ -59,6 +63,7 @@ void main() {
         uuid: 'warehouse-uuid-3',
         id: '3',
         name: 'Sync me',
+        ownerId: '2',
         gpsLocation: '-5.5',
         synced: true,
         syncAction: 'updated',
@@ -68,6 +73,7 @@ void main() {
 
       expect(payload['uuid'], 'warehouse-uuid-3');
       expect(payload['name'], 'Sync me');
+      expect(payload['mcu'], 2);
       expect(payload.containsKey('id'), isFalse);
       expect(payload.containsKey('synced'), isFalse);
       expect(payload.containsKey('syncAction'), isFalse);

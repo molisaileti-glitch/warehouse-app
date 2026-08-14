@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
+import 'package:warehouse_app/core/network/api_client.dart';
 import 'package:warehouse_app/core/providers/auth_provider.dart';
 import 'package:warehouse_app/features/worker/data/repositories/drift_worker_repository.dart';
 import 'package:warehouse_app/features/worker/domain/repositories/worker_repository.dart';
@@ -13,6 +14,7 @@ final workerRepoProvider = Provider<WorkerRepository>((ref) {
     dao: ref.watch(workerDaoProvider),
     syncDao: ref.watch(syncQueueDaoProvider),
     auditDao: ref.watch(auditLogDaoProvider),
+    dio: ref.watch(apiClientProvider).dio,
     currentUserId: userId,
   );
 });

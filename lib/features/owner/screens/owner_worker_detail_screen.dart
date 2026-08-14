@@ -10,6 +10,8 @@ import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/l10n/localized_values.dart';
 
 final _workerAmcosProvider = StreamProvider.family<Amcos?, int>((ref, id) {
   return ref.watch(amcosDaoProvider).watchAmcosById(id);
@@ -26,6 +28,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final workersAsync = ref.watch(allWorkersProvider);
 
     return Scaffold(
@@ -35,7 +38,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Worker Details'),
+        title: Text(l10n.workerDetails),
         actions: [
           workersAsync.maybeWhen(
             data: (workers) {
@@ -43,7 +46,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
                   workers.where((item) => item.id == workerId).firstOrNull;
               if (worker == null) return const SizedBox.shrink();
               return IconButton(
-                tooltip: 'Edit worker',
+                tooltip: l10n.editWorker,
                 icon: const Icon(Icons.edit_rounded),
                 onPressed: () => _showEditSheet(context, worker),
               );
@@ -59,9 +62,9 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
           final worker =
               workers.where((item) => item.id == workerId).firstOrNull;
           if (worker == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.person_off_outlined,
-              title: 'Worker not found',
+              title: l10n.workerNotFound,
             );
           }
 
@@ -74,8 +77,8 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
           final mcuAsync = worker.mcu == null
               ? const AsyncValue<User?>.data(null)
               : ref.watch(_workerMcuProvider(worker.mcu!));
-          final amcosName = _amcosLabel(amcosAsync, worker.amcos);
-          final mcuName = _mcuLabel(mcuAsync, amcosAsync, worker.mcu);
+          final amcosName = _amcosLabel(amcosAsync, worker.amcos, l10n);
+          final mcuName = _mcuLabel(mcuAsync, amcosAsync, worker.mcu, l10n);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -123,27 +126,30 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
                 AppCard(
                   child: Column(
                     children: [
-                      _DetailRow(label: 'Phone', value: worker.phoneNumber),
-                      _DetailRow(label: 'Role', value: worker.role),
+                      _DetailRow(label: l10n.phone, value: worker.phoneNumber),
                       _DetailRow(
-                        label: 'Status',
-                        value: worker.isActive ? 'Active' : 'Inactive',
+                        label: l10n.role,
+                        value: localizedReferenceValue(l10n, worker.role),
                       ),
-                      _DetailRow(label: 'AMCOS', value: amcosName),
-                      _DetailRow(label: 'MCU', value: mcuName),
+                      _DetailRow(
+                        label: l10n.status,
+                        value: worker.isActive ? l10n.active : l10n.inactive,
+                      ),
+                      _DetailRow(label: l10n.amcos, value: amcosName),
+                      _DetailRow(label: l10n.mcu, value: mcuName),
                       warehouseAsync.maybeWhen(
                         data: (warehouse) => _DetailRow(
-                          label: 'Warehouse',
+                          label: l10n.warehouse,
                           value: warehouse?.name ?? '-',
                         ),
-                        orElse: () => const _DetailRow(
-                          label: 'Warehouse',
-                          value: 'Loading...',
+                        orElse: () => _DetailRow(
+                          label: l10n.warehouse,
+                          value: l10n.loading,
                         ),
                       ),
                       _DetailRow(
-                        label: 'Created',
-                        value: DateFormat('MMM d, yyyy HH:mm')
+                        label: l10n.created,
+                        value: DateFormat('MMM d, yyyy HH:mm', l10n.localeName)
                             .format(worker.createdAt),
                       ),
                     ],
@@ -157,7 +163,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
                   ),
                   onPressed: () => _deleteWorker(context, ref, worker),
                   icon: const Icon(Icons.delete_rounded),
-                  label: const Text('Delete Worker'),
+                  label: Text(l10n.deleteWorker),
                 ),
               ],
             ),
@@ -167,19 +173,28 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
     );
   }
 
-  String _amcosLabel(AsyncValue<Amcos?> async, int? id) {
+  String _amcosLabel(
+    AsyncValue<Amcos?> async,
+    int? id,
+    AppLocalizations l10n,
+  ) {
     if (id == null) return '-';
     return async.maybeWhen(
       data: (amcos) {
         final name = amcos?.name.trim();
         return name == null || name.isEmpty ? 'AMCOS #$id' : name;
       },
-      loading: () => 'Loading...',
+      loading: () => l10n.loading,
       orElse: () => 'AMCOS #$id',
     );
   }
 
-  String _mcuLabel(AsyncValue<User?> async, AsyncValue<Amcos?> amcos, int? id) {
+  String _mcuLabel(
+    AsyncValue<User?> async,
+    AsyncValue<Amcos?> amcos,
+    int? id,
+    AppLocalizations l10n,
+  ) {
     if (id == null) return '-';
     return async.maybeWhen(
       data: (user) {
@@ -191,7 +206,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
         }
         return 'MCU #$id';
       },
-      loading: () => 'Loading...',
+      loading: () => l10n.loading,
       orElse: () => 'MCU #$id',
     );
   }
@@ -213,12 +228,12 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     User worker,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Delete Worker',
-      description:
-          'This will remove ${worker.fullName} locally and queue the change for sync.',
-      confirmLabel: 'Delete',
+      title: l10n.deleteWorker,
+      description: l10n.deleteWorkerConfirm(worker.fullName),
+      confirmLabel: l10n.delete,
       isDestructive: true,
     );
     if (!confirmed) return;
@@ -226,8 +241,8 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
 
     showCenteredLoadingDialog(
       context,
-      title: 'Deleting Worker',
-      description: 'Removing this worker locally.',
+      title: l10n.deletingWorker,
+      description: l10n.removingWorkerLocally,
     );
     try {
       await ref.read(workerRepoProvider).deleteWorker(worker.id);
@@ -236,8 +251,8 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
       ref.invalidate(allWorkersProvider);
       await showCreationSuccessDialog(
         context,
-        title: 'Worker Deleted',
-        description: 'Worker successfully deleted.',
+        title: l10n.workerDeleted,
+        description: l10n.workerDeletedSuccess,
       );
       if (context.mounted) context.go(AppRoutes.ownerUsers);
     } catch (error) {
@@ -247,7 +262,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $error'),
+          content: Text(l10n.errorWithDetails('$error')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -288,9 +303,10 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_warehouseId == null) {
-      setState(() => _error = 'Please assign this worker to a warehouse.');
+      setState(() => _error = l10n.assignWorkerWarehouse);
       return;
     }
 
@@ -298,7 +314,7 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
         await ref.read(warehouseDaoProvider).getWarehouseById(_warehouseId!);
     if (!mounted) return;
     if (warehouse == null) {
-      setState(() => _error = 'Selected warehouse not found.');
+      setState(() => _error = l10n.selectedWarehouseNotFound);
       return;
     }
 
@@ -306,9 +322,9 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
     final mcuId = int.tryParse(currentUserId ?? '') ?? widget.worker.mcu;
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Save Worker Changes',
-      description: 'Save changes for ${_nameCtrl.text.trim()}?',
-      confirmLabel: 'Save',
+      title: l10n.saveWorkerChanges,
+      description: l10n.saveWorkerChangesConfirm(_nameCtrl.text.trim()),
+      confirmLabel: l10n.saveButton,
     );
     if (!confirmed) return;
     if (!mounted) return;
@@ -319,8 +335,8 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
     });
     showCenteredLoadingDialog(
       context,
-      title: 'Updating Worker',
-      description: 'Saving worker changes locally.',
+      title: l10n.updatingWorker,
+      description: l10n.savingWorkerChangesLocally,
     );
 
     try {
@@ -341,8 +357,8 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
       if (widget.parentContext.mounted) {
         await showCreationSuccessDialog(
           widget.parentContext,
-          title: 'Worker Updated',
-          description: 'Worker successfully updated.',
+          title: l10n.workerUpdated,
+          description: l10n.workerUpdatedSuccess,
         );
       }
     } catch (error) {
@@ -352,13 +368,14 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
       }
       setState(() {
         _loading = false;
-        _error = 'Error: $error';
+        _error = l10n.errorWithDetails('$error');
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentUserId = ref.watch(currentUserIdProvider);
     final warehousesAsync = currentUserId == null
         ? const AsyncValue<List<Warehouse>>.data([])
@@ -392,9 +409,12 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Edit Worker',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              Text(
+                l10n.editWorker,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 20),
               if (_error != null) ...[
@@ -421,9 +441,9 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
               TextFormField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Full name',
-                  prefixIcon: Icon(Icons.person_outline_rounded),
+                decoration: InputDecoration(
+                  labelText: l10n.fullName,
+                  prefixIcon: const Icon(Icons.person_outline_rounded),
                 ),
                 validator: _required,
               ),
@@ -431,24 +451,26 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.emailAddress,
+                  prefixIcon: const Icon(Icons.email_outlined),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Required';
+                    return l10n.requiredField;
                   }
-                  return value.contains('@') ? null : 'Enter a valid email';
+                  return value.contains('@')
+                      ? null
+                      : l10n.validationEmailInvalid;
                 },
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone number',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.phoneNumber,
+                  prefixIcon: const Icon(Icons.phone_outlined),
                 ),
                 validator: _required,
               ),
@@ -456,9 +478,9 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
               DropdownButtonFormField<String>(
                 initialValue: _warehouseId,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Assign to warehouse',
-                  prefixIcon: Icon(Icons.warehouse_rounded),
+                decoration: InputDecoration(
+                  labelText: l10n.assignToWarehouse,
+                  prefixIcon: const Icon(Icons.warehouse_rounded),
                 ),
                 selectedItemBuilder: (context) => warehouses
                     .map(
@@ -484,12 +506,12 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
                     )
                     .toList(),
                 onChanged: (value) => setState(() => _warehouseId = value),
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+                title: Text(l10n.active),
                 value: _isActive,
                 activeThumbColor: AppColors.primary,
                 onChanged: (value) => setState(() => _isActive = value),
@@ -497,7 +519,7 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _loading ? null : _save,
-                child: const Text('Save Changes'),
+                child: Text(l10n.saveChanges),
               ),
             ],
           ),
@@ -507,7 +529,9 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
   }
 
   String? _required(String? value) {
-    return value == null || value.trim().isEmpty ? 'Required' : null;
+    return value == null || value.trim().isEmpty
+        ? AppLocalizations.of(context)!.requiredField
+        : null;
   }
 }
 

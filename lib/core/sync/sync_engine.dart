@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,8 +11,10 @@ import 'package:warehouse_app/core/providers/auth_provider.dart';
 import 'package:warehouse_app/features/additional.data/amcos/presentation/providers/amcos_providers.dart';
 import 'package:warehouse_app/features/additional.data/crop/presentation/providers/crop_providers.dart';
 import 'package:warehouse_app/features/additional.data/location/presentation/providers/location_providers.dart';
+import 'package:warehouse_app/features/farmer/presentation/providers/farmer_providers.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_providers.dart';
 import 'package:warehouse_app/features/warehouse/presentation/providers/warehouse_providers.dart';
+import 'package:warehouse_app/features/worker/presentation/providers/worker_providers.dart';
 
 const _maxRetries = 5;
 const _batchSize = 30;
@@ -55,7 +58,6 @@ class SyncManager {
 
     try {
       pulled = await _roleStrategy.pull(await _getLastSyncTime());
-      pulled += await _pullMutableEntities(await _getLastSyncTime());
       await _saveLastSyncTime(DateTime.now());
     } catch (e) {
       errors.add('Pull failed: $e');
@@ -106,93 +108,22 @@ class SyncManager {
 
     switch (entry.operation) {
       case 'create':
-        await _dio.post(_entityCollectionPath(entry.entityType), data: payload);
+        final response = await _dio.post(
+          _entityCollectionPath(entry.entityType),
+          data: payload,
+        );
+        if (entry.entityType == 'warehouses') {
+          developer.log(
+            '[WarehouseSync] create mcu=${payload['mcu']} '
+            'response=${response.data}',
+            name: 'sync.warehouse',
+          );
+        }
       case 'update':
         await _dio.patch(path, data: payload);
       case 'delete':
         await _dio.delete(path);
     }
-  }
-
-  Future<int> _pullMutableEntities(DateTime? since) async {
-    final params = since != null
-        ? {'updated_since': since.toIso8601String()}
-        : <String, dynamic>{};
-    var count = 0;
-    count += await _pullEntity('/inventory/', params, _upsertInventoryItem);
-    count += await _pullEntity('/movements/', params, _upsertMovement);
-    count += await _pullEntity('/audit-logs/', params, _upsertAuditLog);
-    return count;
-  }
-
-  Future<int> _pullEntity(
-    String path,
-    Map<String, dynamic> params,
-    Future<void> Function(Map<String, dynamic>) upsert,
-  ) async {
-    try {
-      final res = await _dio.get(path, queryParameters: params);
-      final raw = res.data is Map<String, dynamic> ? res.data['results'] : res.data;
-      final list = (raw as List? ?? const []).cast<Map<String, dynamic>>();
-      for (final json in list) {
-        await upsert(json);
-      }
-      return list.length;
-    } on DioException {
-      return 0;
-    }
-  }
-
-  Future<void> _upsertInventoryItem(Map<String, dynamic> json) {
-    return _inventoryDao.upsertItem(
-      InventoryItemsCompanion.insert(
-        id: json['id'] as String,
-        warehouseId: json['warehouse_id'] as String,
-        name: json['name'] as String,
-        sku: Value(json['sku'] as String?),
-        category: Value(json['category'] as String?),
-        unit: Value(json['unit'] as String? ?? 'pcs'),
-        quantityOnHand:
-            Value((json['quantity_on_hand'] as num?)?.toDouble() ?? 0),
-        reorderLevel: Value((json['reorder_level'] as num?)?.toDouble() ?? 0),
-        syncStatus: const Value('synced'),
-        updatedAt: Value(
-          DateTime.tryParse(json['updated_at'] as String? ?? '') ??
-              DateTime.now(),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _upsertMovement(Map<String, dynamic> json) {
-    return _inventoryDao.upsertMovement(
-      StockMovementsCompanion.insert(
-        id: json['id'] as String,
-        inventoryItemId: json['inventory_item_id'] as String,
-        warehouseId: json['warehouse_id'] as String,
-        movementType: json['movement_type'] as String,
-        quantity: (json['quantity'] as num).toDouble(),
-        quantityBefore: (json['quantity_before'] as num).toDouble(),
-        recordedById: json['recorded_by_id'] as String,
-        notes: Value(json['notes'] as String?),
-        relatedWarehouseId: Value(json['related_warehouse_id'] as String?),
-        syncStatus: const Value('synced'),
-      ),
-    );
-  }
-
-  Future<void> _upsertAuditLog(Map<String, dynamic> json) {
-    return _auditDao.upsertLog(
-      AuditLogsCompanion.insert(
-        id: json['id'] as String,
-        userId: json['user_id'] as String,
-        action: json['action'] as String,
-        warehouseId: Value(json['warehouse_id'] as String?),
-        metadata: Value(json['metadata'] as String?),
-        origin: Value(json['origin'] as String? ?? 'online'),
-        syncStatus: const Value('synced'),
-      ),
-    );
   }
 
   Future<void> _markEntitySynced(String entityType, String entityId) async {
@@ -239,11 +170,12 @@ class SyncManager {
   String _entityPath(String type, String id) => '/${_typeToPath(type)}/$id/';
   String _entityCollectionPath(String type) {
     if (type == 'users') return '/auth/signup';
+    if (type == 'warehouses') return '/collection-centers';
     return '/${_typeToPath(type)}/';
   }
 
   String _typeToPath(String type) => switch (type) {
-        'warehouses' => 'warehouses',
+        'warehouses' => 'collection-centers',
         'users' => 'users',
         'inventoryItems' => 'inventory',
         'stockMovements' => 'movements',
@@ -268,17 +200,37 @@ class OwnerSyncStrategy implements SyncRoleStrategy {
   Future<int> pull(DateTime? since) async {
     var count = 0;
     count += await pullReferenceData(since: since);
-    count += await _ref.read(warehouseRepoProvider).pullFromServer(since: since);
+    final mcuId = await _requireCurrentUserMcu(_ref);
+    count += await _ref.read(warehouseRepoProvider).pullFromServer(mcuId: mcuId);
+    count += await _ref.read(workerRepoProvider).pullFromServer(mcuId: mcuId);
+    final users = await _ref.read(workerDaoProvider).getAllUsers();
+    final amcosIds = users
+        .where((user) => user.mcu == mcuId && user.amcos != null)
+        .map((user) => user.amcos!)
+        .where((id) => id > 0)
+        .toSet();
+    count += await _ref
+        .read(amcosRepositoryProvider)
+        .pullByIds(amcosIds, since: since);
+    count += await _ref
+        .read(farmerRepoProvider)
+        .pullFromServer(amcosIds: amcosIds);
+    count += await _ref
+        .read(harvestRepositoryProvider)
+        .pullFromServer(amcosIds: amcosIds);
     return count;
   }
 
   @override
   Future<int> pullReferenceData({DateTime? since}) async {
     var count = 0;
+    final mcuId = await _requireCurrentUserMcu(_ref);
     count += await _ref.read(cropRepositoryProvider).pullDownstream();
     count += await _ref.read(harvestRepositoryProvider).pullReferenceData();
     count += await _ref.read(locationRepositoryProvider).pullDownstream(since: since);
-    count += await _ref.read(amcosRepositoryProvider).pullDownstream(since: since);
+    count += await _ref
+        .read(amcosRepositoryProvider)
+        .pullDownstream(since: since, mcuId: mcuId);
     return count;
   }
 
@@ -301,17 +253,21 @@ class WorkerSyncStrategy implements SyncRoleStrategy {
   Future<int> pull(DateTime? since) async {
     var count = 0;
     count += await pullReferenceData(since: since);
-    count += await _ref.read(warehouseRepoProvider).pullFromServer(since: since);
+    final mcuId = await _requireCurrentUserMcu(_ref);
+    count += await _ref.read(warehouseRepoProvider).pullFromServer(mcuId: mcuId);
     return count;
   }
 
   @override
   Future<int> pullReferenceData({DateTime? since}) async {
     var count = 0;
+    final mcuId = await _requireCurrentUserMcu(_ref);
     count += await _ref.read(cropRepositoryProvider).pullDownstream();
     count += await _ref.read(harvestRepositoryProvider).pullReferenceData();
     count += await _ref.read(locationRepositoryProvider).pullDownstream(since: since);
-    count += await _ref.read(amcosRepositoryProvider).pullDownstream(since: since);
+    count += await _ref
+        .read(amcosRepositoryProvider)
+        .pullDownstream(since: since, mcuId: mcuId);
     return count;
   }
 
@@ -320,6 +276,14 @@ class WorkerSyncStrategy implements SyncRoleStrategy {
 
   @override
   Future<void> markUserConflict(String id) async {}
+}
+
+Future<int> _requireCurrentUserMcu(Ref ref) async {
+  final mcuId = await ref.read(currentUserMcuProvider.future);
+  if (mcuId == null) {
+    throw StateError('The signed-in user has no MCU assignment.');
+  }
+  return mcuId;
 }
 
 class SyncResult {

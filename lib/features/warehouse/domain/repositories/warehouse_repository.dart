@@ -25,6 +25,6 @@ abstract class WarehouseRepository {
   });
 
   Future<void> deleteWarehouse(String id);
-  Future<int> pullFromServer({DateTime? since});
+  Future<int> pullFromServer({required int mcuId});
   Future<void> upsertDownstream(Map<String, dynamic> json);
 }

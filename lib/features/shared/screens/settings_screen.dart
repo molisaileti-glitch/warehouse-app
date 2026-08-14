@@ -34,14 +34,14 @@ class SettingsScreen extends ConsumerWidget {
         ? const AsyncValue<User?>.data(null)
         : ref.watch(_settingsUserProvider(userId));
     final user = userAsync.valueOrNull;
-    final displayName = _displayName(user, auth);
+    final displayName = _displayName(user, auth, l10n);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          tooltip: 'Back',
+          tooltip: l10n.back,
           onPressed: () => context.go(_homeRoute(role)),
         ),
         title: Text(l10n.settings),
@@ -53,41 +53,41 @@ class SettingsScreen extends ConsumerWidget {
             _ProfileHeader(
               initials: _initials(displayName),
               name: displayName,
-              subtitle: _roleLabel(role),
+              subtitle: _roleLabel(role, l10n),
             ),
             const SizedBox(height: 26),
-            const _SectionTitle(title: 'Profile'),
+            _SectionTitle(title: l10n.profile),
             const SizedBox(height: 8),
             _SettingsRow(
               icon: Icons.person_outline_rounded,
-              title: 'Edit Profile',
-              onTap: () => _showComingSoon(context, 'Edit profile'),
+              title: l10n.editProfile,
+              onTap: () => _showComingSoon(context, l10n.editProfile),
             ),
             _SettingsRow(
               icon: Icons.lock_outline_rounded,
-              title: 'Change Password',
+              title: l10n.changePassword,
               onTap: () => _showChangePasswordSheet(context, ref),
             ),
             const SizedBox(height: 22),
-            const _SectionTitle(title: 'Regional'),
+            _SectionTitle(title: l10n.regional),
             const SizedBox(height: 8),
             _SettingsRow(
               icon: Icons.language_rounded,
               title: l10n.language,
-              subtitle: lang.label,
+              subtitle: _languageLabel(lang, l10n),
               onTap: () => _showLanguageSheet(context, ref),
             ),
             _SettingsRow(
               icon: Icons.logout_rounded,
-              title: 'Logout',
+              title: l10n.logout,
               isDestructive: true,
               onTap: () => _logout(context, ref),
             ),
             const SizedBox(height: 34),
-            const Center(
+            Center(
               child: Text(
-                'App ver $_appVersion',
-                style: TextStyle(
+                l10n.appVersion(_appVersion),
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
@@ -100,11 +100,14 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _displayName(User? user, AuthState? auth) {
+  String _displayName(
+    User? user,
+    AuthState? auth,
+    AppLocalizations l10n,
+  ) {
     final name = user?.fullName.trim();
     if (name != null && name.isNotEmpty) return name;
-    final role = _roleLabel(auth?.role);
-    return role == 'User' ? 'User' : role;
+    return _roleLabel(auth?.role, l10n);
   }
 
   String _initials(String name) {
@@ -119,11 +122,18 @@ class SettingsScreen extends ConsumerWidget {
     return '$first$last'.toUpperCase();
   }
 
-  String _roleLabel(UserRole? role) {
+  String _roleLabel(UserRole? role, AppLocalizations l10n) {
     return switch (role) {
-      UserRole.owner || UserRole.superAdmin => 'Owner',
-      UserRole.worker => 'Worker',
-      null => 'User',
+      UserRole.owner || UserRole.superAdmin => l10n.owner,
+      UserRole.worker => l10n.worker,
+      null => l10n.user,
+    };
+  }
+
+  String _languageLabel(AppLanguage language, AppLocalizations l10n) {
+    return switch (language) {
+      AppLanguage.english => l10n.receiptEnglish,
+      AppLanguage.swahili => l10n.receiptSwahili,
     };
   }
 
@@ -135,6 +145,7 @@ class SettingsScreen extends ConsumerWidget {
 
   void _showLanguageSheet(BuildContext context, WidgetRef ref) {
     final currentLang = ref.read(localeProvider);
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -146,7 +157,7 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: 4),
               for (final lang in AppLanguage.values)
                 ListTile(
-                  title: Text(lang.label),
+                  title: Text(_languageLabel(lang, l10n)),
                   trailing: currentLang == lang
                       ? const Icon(Icons.check_rounded)
                       : null,
@@ -173,19 +184,20 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Logout',
-      description: 'Are you sure you want to logout from this device?',
-      confirmLabel: 'Logout',
+      title: l10n.logout,
+      description: l10n.logoutConfirmMessage,
+      confirmLabel: l10n.logout,
       isDestructive: true,
     );
     if (!confirmed || !context.mounted) return;
 
     showCenteredLoadingDialog(
       context,
-      title: 'Logging Out',
-      description: 'Clearing your local session.',
+      title: l10n.loggingOut,
+      description: l10n.clearingLocalSession,
     );
     await ref.read(authProvider.notifier).logout();
     if (!context.mounted) return;
@@ -195,8 +207,9 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showComingSoon(BuildContext context, String title) {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title coming soon')),
+      SnackBar(content: Text(l10n.comingSoon(title))),
     );
   }
 }
@@ -401,6 +414,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _loading = true;
@@ -408,8 +422,8 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     });
     showCenteredLoadingDialog(
       context,
-      title: 'Changing Password',
-      description: 'Updating your password securely.',
+      title: l10n.changingPassword,
+      description: l10n.updatingPasswordSecurely,
     );
 
     final result = await ref.read(authRepositoryProvider).changePassword(
@@ -421,7 +435,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     setState(() => _loading = false);
 
     if (!result.success) {
-      setState(() => _error = result.error ?? 'Failed to change password.');
+      setState(() => _error = result.error ?? l10n.changePasswordFailed);
       return;
     }
 
@@ -429,14 +443,15 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     if (widget.parentContext.mounted) {
       await showCreationSuccessDialog(
         widget.parentContext,
-        title: 'Password Changed',
-        description: result.message ?? 'Password changed successfully.',
+        title: l10n.passwordChanged,
+        description: result.message ?? l10n.passwordChangedSuccess,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: const BoxDecoration(
@@ -462,9 +477,12 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Change Password',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              Text(
+                l10n.changePassword,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 18),
               if (_error != null) ...[
@@ -473,7 +491,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               ],
               _PasswordField(
                 controller: _currentCtrl,
-                label: 'Current password',
+                label: l10n.currentPassword,
                 obscure: _obscureCurrent,
                 onToggle: () =>
                     setState(() => _obscureCurrent = !_obscureCurrent),
@@ -481,26 +499,30 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               const SizedBox(height: 14),
               _PasswordField(
                 controller: _newCtrl,
-                label: 'New password',
+                label: l10n.newPassword,
                 obscure: _obscureNew,
                 onToggle: () => setState(() => _obscureNew = !_obscureNew),
               ),
               const SizedBox(height: 14),
               _PasswordField(
                 controller: _confirmCtrl,
-                label: 'Confirm new password',
+                label: l10n.confirmNewPassword,
                 obscure: _obscureNew,
                 onToggle: () => setState(() => _obscureNew = !_obscureNew),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Required';
-                  if (value != _newCtrl.text) return 'Passwords do not match';
+                  if (value == null || value.isEmpty) {
+                    return l10n.requiredField;
+                  }
+                  if (value != _newCtrl.text) {
+                    return l10n.passwordsDoNotMatch;
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 22),
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
-                child: const Text('Change Password'),
+                child: Text(l10n.changePassword),
               ),
             ],
           ),
@@ -527,6 +549,7 @@ class _PasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return TextFormField(
       controller: controller,
       obscureText: obscure,
@@ -545,9 +568,9 @@ class _PasswordField extends StatelessWidget {
       ),
       validator: validator ??
           (value) {
-            if (value == null || value.isEmpty) return 'Required';
+            if (value == null || value.isEmpty) return l10n.requiredField;
             if (value.length < 6) {
-              return 'Password must be at least 6 characters';
+              return l10n.passwordMinLength;
             }
             return null;
           },

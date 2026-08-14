@@ -1,7 +1,7 @@
 // lib/core/network/auth_interceptor.dart
 //
 // Attaches Authorization header on every request.
-// On 401: pauses queue, refreshes token, replays all queued requests.
+// On 401: refreshes the token and replays queued requests.
 
 import 'dart:async';
 import 'package:dio/dio.dart';
@@ -65,7 +65,12 @@ class AuthInterceptor extends Interceptor {
     }
 
     _isRefreshing = true;
-    final success = await _onRefresh();
+    var success = false;
+    try {
+      success = await _onRefresh();
+    } catch (_) {
+      success = false;
+    }
 
     if (success) {
       // Replay the failed request with the new token.

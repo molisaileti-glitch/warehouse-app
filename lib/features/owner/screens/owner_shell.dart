@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class OwnerShell extends StatelessWidget {
   final Widget child;
@@ -11,27 +12,22 @@ class OwnerShell extends StatelessWidget {
   static const _tabs = [
     (
       icon: Icons.dashboard_rounded,
-      label: 'Dashboard',
       route: AppRoutes.ownerDashboard,
     ),
     (
       icon: Icons.warehouse_rounded,
-      label: 'Warehouse',
       route: AppRoutes.ownerWarehouses,
     ),
     (
       icon: Icons.groups_rounded,
-      label: 'Workers',
       route: AppRoutes.ownerUsers,
     ),
     (
       icon: Icons.inventory_2_rounded,
-      label: 'Harvests',
       route: AppRoutes.ownerHarvests,
     ),
     (
       icon: Icons.agriculture_rounded,
-      label: 'Farmers',
       route: AppRoutes.ownerFarmers,
     ),
   ];
@@ -46,6 +42,7 @@ class OwnerShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final location = GoRouterState.of(context).matchedLocation;
     final index = _selectedIndex(location);
 
@@ -69,7 +66,13 @@ class OwnerShell extends StatelessWidget {
                 Expanded(
                   child: _OwnerNavItem(
                     icon: _tabs[i].icon,
-                    label: _tabs[i].label,
+                    label: switch (i) {
+                      0 => l10n.dashboard,
+                      1 => l10n.warehouse,
+                      2 => l10n.workers,
+                      3 => l10n.harvests,
+                      _ => l10n.farmers,
+                    },
                     selected: i == index,
                     onTap: () => context.go(_tabs[i].route),
                   ),

@@ -6,6 +6,7 @@ import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class OwnerFarmersScreen extends ConsumerStatefulWidget {
   const OwnerFarmersScreen({super.key});
@@ -26,15 +27,16 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final farmersAsync = ref.watch(allFarmersProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Farmers'),
+        title: Text(l10n.farmers),
         actions: [
           IconButton(
-            tooltip: 'Add farmer',
+            tooltip: l10n.addFarmer,
             onPressed: () => context.push(AppRoutes.ownerFarmerRegistration),
             icon: const Icon(Icons.add_rounded),
           ),
@@ -51,9 +53,9 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
                   children: [
                     TextField(
                       controller: _searchCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Search farmers...',
-                        prefixIcon: Icon(Icons.search_rounded),
+                      decoration: InputDecoration(
+                        hintText: l10n.searchFarmers,
+                        prefixIcon: const Icon(Icons.search_rounded),
                       ),
                       onChanged: (value) =>
                           setState(() => _query = value.trim().toLowerCase()),
@@ -80,12 +82,12 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
                       }).toList();
 
                 if (filtered.isEmpty) {
-                  return const SliverFillRemaining(
+                  return SliverFillRemaining(
                     hasScrollBody: false,
                     child: EmptyState(
                       icon: Icons.people_alt_outlined,
-                      title: 'No farmers found',
-                      subtitle: 'Worker-registered farmers will appear here.',
+                      title: l10n.noFarmersFound,
+                      subtitle: l10n.workerFarmersSubtitle,
                     ),
                   );
                 }
@@ -198,6 +200,7 @@ class _FarmerStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final active = status.trim().toLowerCase() == 'active';
     final color = active ? AppColors.success : AppColors.textMuted;
 
@@ -208,7 +211,7 @@ class _FarmerStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
-        active ? 'Active' : status,
+        active ? l10n.active : status,
         style: TextStyle(
           color: color,
           fontSize: 11,

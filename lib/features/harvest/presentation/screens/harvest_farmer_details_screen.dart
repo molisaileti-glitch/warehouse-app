@@ -7,6 +7,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_receiving_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class HarvestFarmerDetailsScreen extends ConsumerStatefulWidget {
   final String warehouseId;
@@ -64,6 +65,7 @@ class _HarvestFarmerDetailsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final warehouseAsync = ref.watch(warehouseByIdProvider(widget.warehouseId));
     final farmersAsync = ref.watch(allFarmersProvider);
     final cropsAsync = ref.watch(allCropsProvider);
@@ -71,23 +73,23 @@ class _HarvestFarmerDetailsScreenState
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(title: const Text('Farmer Details')),
+      appBar: AppBar(title: Text(l10n.farmerDetails)),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'farmer_details_next_${widget.warehouseId}',
         backgroundColor: AppColors.ownerColor,
         foregroundColor: Colors.white,
         onPressed: () => _continue(unitsAsync.valueOrNull ?? const []),
         icon: const Icon(Icons.arrow_forward_rounded),
-        label: const Text('Next'),
+        label: Text(l10n.next),
       ),
       body: warehouseAsync.when(
-        loading: () => const LoadingView(message: 'Loading warehouse...'),
+        loading: () => LoadingView(message: l10n.loadingWarehouse),
         error: (e, _) => ErrorView(message: '$e'),
         data: (warehouse) {
           if (warehouse == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.warehouse_outlined,
-              title: 'Warehouse not found',
+              title: l10n.warehouseNotFound,
             );
           }
 
@@ -106,6 +108,7 @@ class _HarvestFarmerDetailsScreenState
     required AsyncValue<List<Farmer>> farmersAsync,
     required AsyncValue<List<Crop>> cropsAsync,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     final farmers = farmersAsync.valueOrNull ?? const <Farmer>[];
     final crops = cropsAsync.valueOrNull ?? const <Crop>[];
     final selectedFarmer = farmers.where((f) => f.id == _farmerId).firstOrNull;
@@ -132,9 +135,9 @@ class _HarvestFarmerDetailsScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Collection center',
-                          style: TextStyle(
+                        Text(
+                          l10n.collectionCenter,
+                          style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
                           ),
@@ -155,20 +158,20 @@ class _HarvestFarmerDetailsScreenState
               ),
             ),
             const SizedBox(height: 18),
-            _sectionTitle('Farmer'),
+            _sectionTitle(l10n.receiptFarmer),
             _farmerPicker(farmersAsync, farmers),
             const SizedBox(height: 18),
-            _sectionTitle('Crop'),
+            _sectionTitle(l10n.crop),
             _asyncGate(
               async: cropsAsync,
-              emptyTitle: 'No crops available',
-              emptySubtitle: 'Sync crop reference data first.',
+              emptyTitle: l10n.noCropsAvailable,
+              emptySubtitle: l10n.syncCropDataFirst,
               child: DropdownButtonFormField<int>(
                 initialValue: _cropId,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Crop',
-                  prefixIcon: Icon(Icons.grass_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.crop,
+                  prefixIcon: const Icon(Icons.grass_outlined),
                 ),
                 items: crops.map((crop) {
                   return DropdownMenuItem(
@@ -180,7 +183,7 @@ class _HarvestFarmerDetailsScreenState
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => _cropId = value),
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
             ),
           ],
@@ -193,6 +196,7 @@ class _HarvestFarmerDetailsScreenState
     AsyncValue<List<Farmer>> farmersAsync,
     List<Farmer> farmers,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final query = _farmerSearchCtrl.text.trim().toLowerCase();
     final filtered = query.isEmpty
         ? farmers
@@ -207,8 +211,8 @@ class _HarvestFarmerDetailsScreenState
 
     return _asyncGate(
       async: farmersAsync,
-      emptyTitle: 'No farmers available',
-      emptySubtitle: 'Sync or register farmers before receiving crops.',
+      emptyTitle: l10n.noFarmersAvailable,
+      emptySubtitle: l10n.syncOrRegisterFarmers,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardBg,
@@ -222,12 +226,12 @@ class _HarvestFarmerDetailsScreenState
               controller: _farmerSearchCtrl,
               focusNode: _farmerSearchFocus,
               decoration: InputDecoration(
-                hintText: 'Search',
+                hintText: l10n.search,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _farmerSearchCtrl.text.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Clear search',
+                        tooltip: l10n.clearSearch,
                         onPressed: () {
                           _farmerSearchCtrl.clear();
                           setState(() {
@@ -249,11 +253,11 @@ class _HarvestFarmerDetailsScreenState
             if (_showFarmerResults) ...[
               const Divider(height: 1),
               if (filtered.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: EmptyState(
                     icon: Icons.person_search_outlined,
-                    title: 'No matching farmers',
+                    title: l10n.noMatchingFarmers,
                   ),
                 )
               else
@@ -300,13 +304,14 @@ class _HarvestFarmerDetailsScreenState
   }
 
   void _continue(List<MeasurementUnit> units) {
+    final l10n = AppLocalizations.of(context)!;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_farmerId == null) {
-      _showError('Select a farmer.');
+      _showError(l10n.selectFarmer);
       return;
     }
     if (_cropId == null) {
-      _showError('Select a crop.');
+      _showError(l10n.selectCrop);
       return;
     }
 
@@ -356,7 +361,9 @@ class _HarvestFarmerDetailsScreenState
         .map((v) => v.trim())
         .where((v) => v.isNotEmpty)
         .join(' ');
-    return name.isEmpty ? 'Farmer ${farmer.id}' : name;
+    return name.isEmpty
+        ? AppLocalizations.of(context)!.farmerNumber(farmer.id)
+        : name;
   }
 
   void _showError(String message) {

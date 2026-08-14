@@ -5,6 +5,7 @@ import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_providers.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 final _workerHarvestByUuidProvider = StreamProvider.family
     .autoDispose<FarmerHarvest?, ({String warehouseId, String harvestUuid})>(
@@ -32,6 +33,7 @@ class WorkerHarvestDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final harvestAsync = ref.watch(
       _workerHarvestByUuidProvider(
         (warehouseId: warehouseId, harvestUuid: harvestUuid),
@@ -39,20 +41,20 @@ class WorkerHarvestDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Harvest Details')),
+      appBar: AppBar(title: Text(l10n.harvestDetails)),
       body: harvestAsync.when(
         loading: () => const LoadingView(),
         error: (error, _) => ErrorView(message: '$error'),
         data: (harvest) {
           if (harvest == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.receipt_long_outlined,
-              title: 'Harvest not found',
-              subtitle: 'This record may have been removed locally.',
+              title: l10n.harvestNotFound,
+              subtitle: l10n.harvestRemovedLocally,
             );
           }
 
-          final date = DateFormat('MMM d, yyyy HH:mm').format(
+          final date = DateFormat('MMM d, yyyy HH:mm', l10n.localeName).format(
             harvest.receivedAt,
           );
           final uom = harvest.uomName ?? 'kg';
@@ -89,35 +91,38 @@ class WorkerHarvestDetailScreen extends ConsumerWidget {
               AppCard(
                 child: Column(
                   children: [
-                    _DetailRow(label: 'Farmer', value: harvest.farmerName),
                     _DetailRow(
-                      label: 'Phone',
+                      label: l10n.receiptFarmer,
+                      value: harvest.farmerName,
+                    ),
+                    _DetailRow(
+                      label: l10n.phone,
                       value: harvest.farmerPhoneNumber,
                     ),
-                    _DetailRow(label: 'Crop', value: harvest.cropName),
+                    _DetailRow(label: l10n.crop, value: harvest.cropName),
                     if (_showGrade(harvest))
                       _DetailRow(
-                        label: 'Grade',
+                        label: l10n.grade,
                         value: harvest.cropGradeName!,
                       ),
                     _DetailRow(
-                      label: 'Warehouse',
+                      label: l10n.warehouse,
                       value: harvest.collectionCenterName,
                     ),
                     _DetailRow(
-                      label: 'Gross',
+                      label: l10n.receiptGross,
                       value: '${_weight(harvest.grossWeight)} $uom',
                     ),
                     _DetailRow(
-                      label: 'Tare',
+                      label: l10n.receiptTare,
                       value: '${_weight(harvest.packagingWeight)} $uom',
                     ),
                     _DetailRow(
-                      label: 'Moisture',
+                      label: l10n.moisture,
                       value: '${_weight(harvest.moistureContent)}%',
                     ),
                     _DetailRow(
-                      label: 'Net',
+                      label: l10n.receiptNet,
                       value: '${_weight(harvest.netWeight)} $uom',
                     ),
                   ],

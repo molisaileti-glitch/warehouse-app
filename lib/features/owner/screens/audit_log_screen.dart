@@ -9,6 +9,7 @@ import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 final _auditLogsProvider = FutureProvider.autoDispose<List<AuditLog>>((ref) {
   return ref.watch(auditLogDaoProvider).getLogsPage(pageSize: 100);
@@ -19,6 +20,7 @@ class AuditLogScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final logsAsync = ref.watch(_auditLogsProvider);
 
     return Scaffold(
@@ -28,7 +30,7 @@ class AuditLogScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go(AppRoutes.ownerDashboard),
         ),
-        title: const Text('Recent Activity'),
+        title: Text(l10n.recentActivity),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -39,10 +41,10 @@ class AuditLogScreen extends ConsumerWidget {
       body: logsAsync.when(
         data: (logs) {
           if (logs.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.history_rounded,
-              title: 'No activity yet',
-              subtitle: 'Actions performed in the app will appear here',
+              title: l10n.noActivityYet,
+              subtitle: l10n.activityWillAppear,
             );
           }
           return ListView.separated(
@@ -69,8 +71,10 @@ class _AuditTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final details = _activityDetails(log);
-    final date = DateFormat('MMM d, y HH:mm').format(log.createdAt);
+    final l10n = AppLocalizations.of(context)!;
+    final details = _activityDetails(log, l10n);
+    final date =
+        DateFormat('MMM d, y HH:mm', l10n.localeName).format(log.createdAt);
 
     return AppCard(
       padding: const EdgeInsets.all(14),
@@ -126,13 +130,13 @@ class _AuditTile extends StatelessWidget {
   }
 }
 
-_ActivityDetails _activityDetails(AuditLog log) {
+_ActivityDetails _activityDetails(AuditLog log, AppLocalizations l10n) {
   final metadata = _metadata(log.metadata);
   final subtitle = _firstUsefulValue(metadata);
 
   if (log.action.contains('create')) {
     return _ActivityDetails(
-      title: _titleFromAction(log.action),
+      title: _titleFromAction(log.action, l10n),
       subtitle: subtitle,
       icon: Icons.add_circle_rounded,
       color: AppColors.success,
@@ -140,7 +144,7 @@ _ActivityDetails _activityDetails(AuditLog log) {
   }
   if (log.action.contains('delete')) {
     return _ActivityDetails(
-      title: _titleFromAction(log.action),
+      title: _titleFromAction(log.action, l10n),
       subtitle: subtitle,
       icon: Icons.remove_circle_rounded,
       color: AppColors.error,
@@ -148,7 +152,7 @@ _ActivityDetails _activityDetails(AuditLog log) {
   }
   if (log.action.contains('transfer')) {
     return _ActivityDetails(
-      title: _titleFromAction(log.action),
+      title: _titleFromAction(log.action, l10n),
       subtitle: subtitle,
       icon: Icons.swap_horiz_rounded,
       color: AppColors.info,
@@ -156,7 +160,7 @@ _ActivityDetails _activityDetails(AuditLog log) {
   }
   if (log.action.contains('stock')) {
     return _ActivityDetails(
-      title: _titleFromAction(log.action),
+      title: _titleFromAction(log.action, l10n),
       subtitle: subtitle,
       icon: Icons.inventory_rounded,
       color: AppColors.warning,
@@ -164,7 +168,7 @@ _ActivityDetails _activityDetails(AuditLog log) {
   }
 
   return _ActivityDetails(
-    title: _titleFromAction(log.action),
+    title: _titleFromAction(log.action, l10n),
     subtitle: subtitle,
     icon: Icons.history_rounded,
     color: AppColors.textSecondary,
@@ -197,7 +201,19 @@ String? _firstUsefulValue(Map<String, dynamic> metadata) {
   return null;
 }
 
-String _titleFromAction(String action) {
+String _titleFromAction(String action, AppLocalizations l10n) {
+  final known = switch (action.toLowerCase()) {
+    'warehouse.create' => l10n.warehouseCreatedActivity,
+    'warehouse.update' => l10n.warehouseUpdatedActivity,
+    'warehouse.delete' => l10n.warehouseDeletedActivity,
+    'worker.create' => l10n.workerCreatedActivity,
+    'worker.update' => l10n.workerUpdated,
+    'worker.delete' => l10n.workerDeleted,
+    'farmer.create' => l10n.farmerRegisteredActivity,
+    'harvest.create' => l10n.harvestRecordedActivity,
+    _ => null,
+  };
+  if (known != null) return known;
   return action
       .split('.')
       .where((part) => part.trim().isNotEmpty)

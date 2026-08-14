@@ -9,6 +9,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/warehouse/presentation/providers/warehouse_providers.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 final _ownerHarvestsProvider = StreamProvider<List<FarmerHarvest>>((ref) {
   return ref.watch(harvestDaoProvider).watchAllHarvests();
@@ -34,6 +35,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final harvestsAsync = ref.watch(_ownerHarvestsProvider);
     final ownerId = ref.watch(currentUserIdProvider);
     final warehousesAsync = ownerId == null
@@ -43,7 +45,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Harvests'),
+        title: Text(l10n.harvests),
         actions: [
           warehousesAsync.maybeWhen(
             loading: () => const Padding(
@@ -60,7 +62,7 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
               ),
             ),
             orElse: () => IconButton(
-              tooltip: 'Receive crop',
+              tooltip: l10n.receiveCrop,
               onPressed: () =>
                   _startHarvestReceiving(warehousesAsync.valueOrNull ?? []),
               icon: const Icon(Icons.add_rounded),
@@ -79,9 +81,9 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                   children: [
                     TextField(
                       controller: _searchCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Search harvests...',
-                        prefixIcon: Icon(Icons.search_rounded),
+                      decoration: InputDecoration(
+                        hintText: l10n.searchHarvests,
+                        prefixIcon: const Icon(Icons.search_rounded),
                       ),
                       onChanged: (value) =>
                           setState(() => _query = value.trim().toLowerCase()),
@@ -106,12 +108,12 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                       }).toList();
 
                 if (filtered.isEmpty) {
-                  return const SliverFillRemaining(
+                  return SliverFillRemaining(
                     hasScrollBody: false,
                     child: EmptyState(
                       icon: Icons.inventory_2_outlined,
-                      title: 'No harvests found',
-                      subtitle: 'Worker harvest records will appear here.',
+                      title: l10n.noHarvestsFound,
+                      subtitle: l10n.workerHarvestsSubtitle,
                     ),
                   );
                 }
@@ -140,11 +142,12 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
   }
 
   Future<void> _startHarvestReceiving(List<Warehouse> warehouses) async {
+    final l10n = AppLocalizations.of(context)!;
     final activeWarehouses = warehouses.where((item) => item.isActive).toList();
     if (activeWarehouses.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Create an active warehouse before receiving crops.'),
+        SnackBar(
+          content: Text(l10n.createWarehouseBeforeReceiving),
           backgroundColor: AppColors.error,
         ),
       );
@@ -169,14 +172,17 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Choose Warehouse',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                Text(
+                  l10n.chooseWarehouse,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Select where this crop receiving session will be recorded.',
-                  style: TextStyle(color: AppColors.textSecondary),
+                Text(
+                  l10n.chooseWarehouseMessage,
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 14),
                 Flexible(
@@ -239,7 +245,9 @@ class _HarvestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('MMM d, HH:mm').format(harvest.receivedAt);
+    final l10n = AppLocalizations.of(context)!;
+    final date =
+        DateFormat('MMM d, HH:mm', l10n.localeName).format(harvest.receivedAt);
 
     return AppCard(
       onTap: () => context.push(AppRoutes.ownerHarvestDetailFor(harvest.uuid)),

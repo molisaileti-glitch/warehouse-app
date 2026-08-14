@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 
@@ -11,22 +13,44 @@ class AmcosRepository {
   })  : _dio = dio,
         _dao = dao;
 
-  Future<int> pullDownstream({DateTime? since}) async {
+  Future<int> pullDownstream({DateTime? since, int? mcuId}) async {
     try {
       final res = await _dio.get(
-        '/amcos',
-        queryParameters: since == null
+        mcuId == null ? '/amcos' : '/amcos/mcu/$mcuId',
+        queryParameters: mcuId != null || since == null
             ? null
             : {'updated_since': since.toIso8601String()},
       );
-      print('RAW RESPONSE for /amcos: ${res.data}');
       final rows = _asList(res.data);
-      print('PARSED ROWS: ${rows.length}');
-      await _dao.upsertAmcosList(rows.map(_fromJson).toList()); 
+      developer.log(
+        '[AmcosSync] source=${mcuId == null ? 'catalog' : 'mcu/$mcuId'} '
+        'rows=${rows.length}',
+        name: 'sync.amcos',
+      );
+      await _dao.upsertAmcosList(rows.map(_fromJson).toList());
       return rows.length;
     } on DioException {
       return 0;
     }
+  }
+
+  Future<int> pullByIds(Set<int> ids, {DateTime? since}) async {
+    if (ids.isEmpty) return 0;
+
+    final res = await _dio.get(
+      '/amcos',
+      queryParameters:
+          since == null ? null : {'updated_since': since.toIso8601String()},
+    );
+    final rows = _asList(res.data)
+        .where((row) => ids.contains(_int(row['id'])))
+        .toList();
+    await _dao.upsertAmcosList(rows.map(_fromJson).toList());
+    developer.log(
+      '[AmcosSync] requestedIds=$ids matched=${rows.length}',
+      name: 'sync.amcos',
+    );
+    return rows.length;
   }
 
   AmcosTableCompanion _fromJson(Map<String, dynamic> json) {
@@ -67,7 +91,7 @@ class AmcosRepository {
 
   List<Map<String, dynamic>> _asList(Object? data) {
     final raw = data is Map<String, dynamic>
-        ? data['records'] ?? data['results'] ?? data['data']
+        ? data['content'] ?? data['records'] ?? data['results'] ?? data['data']
         : data;
     final rows = <Map<String, dynamic>>[];
 

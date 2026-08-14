@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/repository_providers.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── AppCard ───────────────────────────────────────────────────────────────────
 
@@ -46,14 +47,19 @@ class SyncStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final normalized = status.trim().toLowerCase();
     if (normalized != 'synced' && normalized != 'conflict') {
       return const SizedBox.shrink();
     }
 
     final (color, icon, label) = switch (normalized) {
-      'synced' => (AppColors.syncSynced, Icons.cloud_done_rounded, 'Synced'),
-      _ => (AppColors.syncConflict, Icons.warning_rounded, 'Conflict'),
+      'synced' => (
+          AppColors.syncSynced,
+          Icons.cloud_done_rounded,
+          l10n.allSynced
+        ),
+      _ => (AppColors.syncConflict, Icons.warning_rounded, l10n.conflict),
     };
 
     return Container(
@@ -85,6 +91,7 @@ class SyncIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final pendingAsync = ref.watch(syncPendingCountProvider);
     final count = pendingAsync.valueOrNull ?? 0;
 
@@ -92,7 +99,7 @@ class SyncIndicator extends ConsumerWidget {
       return IconButton(
         onPressed: onTap,
         icon: const Icon(Icons.cloud_done_rounded, color: Colors.white70),
-        tooltip: 'All synced',
+        tooltip: l10n.allSyncedTooltip,
       );
     }
 
@@ -101,7 +108,7 @@ class SyncIndicator extends ConsumerWidget {
         IconButton(
           onPressed: onTap,
           icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white),
-          tooltip: '$count pending',
+          tooltip: l10n.pendingTooltip(count),
         ),
         Positioned(
           right: 6,
@@ -409,14 +416,17 @@ Future<void> showInfoDialog(
   BuildContext context, {
   required String title,
   required String description,
-  String actionLabel = 'OK',
+  String? actionLabel,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   return showAppDialog<void>(
     context,
     title: title,
     description: description,
     type: AppDialogType.info,
-    actions: [AppDialogAction<void>(label: actionLabel, isPrimary: true)],
+    actions: [
+      AppDialogAction<void>(label: actionLabel ?? l10n.ok, isPrimary: true),
+    ],
   );
 }
 
@@ -424,14 +434,17 @@ Future<void> showSuccessDialog(
   BuildContext context, {
   required String title,
   required String description,
-  String actionLabel = 'OK',
+  String? actionLabel,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   return showAppDialog<void>(
     context,
     title: title,
     description: description,
     type: AppDialogType.success,
-    actions: [AppDialogAction<void>(label: actionLabel, isPrimary: true)],
+    actions: [
+      AppDialogAction<void>(label: actionLabel ?? l10n.ok, isPrimary: true),
+    ],
   );
 }
 
@@ -439,14 +452,17 @@ Future<void> showWarningDialog(
   BuildContext context, {
   required String title,
   required String description,
-  String actionLabel = 'OK',
+  String? actionLabel,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   return showAppDialog<void>(
     context,
     title: title,
     description: description,
     type: AppDialogType.warning,
-    actions: [AppDialogAction<void>(label: actionLabel, isPrimary: true)],
+    actions: [
+      AppDialogAction<void>(label: actionLabel ?? l10n.ok, isPrimary: true),
+    ],
   );
 }
 
@@ -454,14 +470,17 @@ Future<void> showErrorDialog(
   BuildContext context, {
   required String title,
   required String description,
-  String actionLabel = 'OK',
+  String? actionLabel,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   return showAppDialog<void>(
     context,
     title: title,
     description: description,
     type: AppDialogType.error,
-    actions: [AppDialogAction<void>(label: actionLabel, isPrimary: true)],
+    actions: [
+      AppDialogAction<void>(label: actionLabel ?? l10n.ok, isPrimary: true),
+    ],
   );
 }
 
@@ -472,6 +491,7 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -486,7 +506,7 @@ class ErrorView extends StatelessWidget {
                 style: const TextStyle(color: AppColors.textSecondary)),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+              OutlinedButton(onPressed: onRetry, child: Text(l10n.retry)),
             ],
           ],
         ),
@@ -501,22 +521,23 @@ Future<bool> showConfirmDialog(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Confirm',
+  String? confirmLabel,
   bool isDestructive = false,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final result = await showAppDialog<bool>(
     context,
     title: title,
     description: message,
     type: AppDialogType.confirmation,
     actions: [
-      const AppDialogAction<bool>(
-        label: 'Cancel',
+      AppDialogAction<bool>(
+        label: l10n.cancel,
         result: false,
         isPrimary: false,
       ),
       AppDialogAction<bool>(
-        label: confirmLabel,
+        label: confirmLabel ?? l10n.confirm,
         result: true,
         isPrimary: true,
         isDestructive: isDestructive,
@@ -624,6 +645,7 @@ class RoleBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isOwner = role == 'owner';
     final color = isOwner ? AppColors.ownerColor : AppColors.workerColor;
     return Container(
@@ -633,7 +655,7 @@ class RoleBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        isOwner ? 'Owner' : 'Worker',
+        isOwner ? l10n.owner : l10n.worker,
         style:
             TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
       ),

@@ -108,9 +108,7 @@ class _WorkerBody extends ConsumerWidget {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-        
               color: AppColors.workerColor,
-              
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(children: [
@@ -175,8 +173,8 @@ class _WorkerBody extends ConsumerWidget {
             delegate: SliverChildListDelegate([
               _ActionButton(
                 icon: Icons.person_add_alt_1_rounded,
-                label: 'Register Farmer',
-                subtitle: 'Create farmer records at point of contact',
+                label: l10n.registerFarmerAction,
+                subtitle: l10n.createFarmerAtContact,
                 color: AppColors.workerColor,
                 onTap: () => context.go(AppRoutes.workerFarmerRegistration),
               ),

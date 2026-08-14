@@ -13,6 +13,8 @@ import 'package:warehouse_app/features/farmer/domain/models/farmer_dependant_mod
 import 'package:warehouse_app/features/farmer/domain/models/farmer_model.dart';
 import 'package:warehouse_app/features/farmer/presentation/widgets/dependant_form.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/l10n/localized_values.dart';
 
 const kFarmerSexValues = ['MALE', 'FEMALE'];
 const kFarmerIdTypes = ['VOTER', 'NIN', 'OTHER'];
@@ -87,6 +89,7 @@ class _FarmerRegistrationScreenState
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_validateFarmerStep()) {
       _stepperKey.currentState?.goToStep(0);
       return;
@@ -94,9 +97,9 @@ class _FarmerRegistrationScreenState
 
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Create Farmer',
-      description: 'Confirm these details and create this farmer record?',
-      confirmLabel: 'Create',
+      title: l10n.createFarmer,
+      description: l10n.createFarmerConfirm,
+      confirmLabel: l10n.create,
     );
     if (!confirmed) return;
     if (!mounted) return;
@@ -105,8 +108,7 @@ class _FarmerRegistrationScreenState
     if (!mounted) return;
     if (mcuId == null) {
       setState(() {
-        _submitError =
-            'Could not determine MCU for this worker. Please sync your profile or contact the owner.';
+        _submitError = l10n.workerMcuUnavailable;
       });
       _stepperKey.currentState?.goToStep(2);
       return;
@@ -118,8 +120,8 @@ class _FarmerRegistrationScreenState
     });
     showCenteredLoadingDialog(
       context,
-      title: 'Creating Farmer',
-      description: 'Saving this farmer locally.',
+      title: l10n.creatingFarmer,
+      description: l10n.savingFarmerLocally,
     );
 
     final result = await ref.read(farmerRepoProvider).createFarmer(
@@ -154,18 +156,18 @@ class _FarmerRegistrationScreenState
     setState(() => _submitting = false);
 
     if (!result.success) {
-      setState(() => _submitError = result.error ?? 'Failed to create farmer.');
+      setState(() => _submitError = result.error ?? l10n.createFarmerFailed);
       return;
     }
 
     ref.invalidate(allFarmersProvider);
     final dependantMessage = result.dependantErrors.isEmpty
-        ? '${result.createdDependants} dependant(s) added.'
-        : '${result.createdDependants} dependant(s) added. Some dependants failed.';
+        ? l10n.dependantsAdded(result.createdDependants)
+        : l10n.someDependantsFailed(result.createdDependants);
     await showCreationSuccessDialog(
       context,
-      title: 'Farmer Registered',
-      description: 'Farmer successfully registered. $dependantMessage',
+      title: l10n.farmerRegistered,
+      description: l10n.farmerRegisteredMessage(dependantMessage),
     );
     if (!mounted) return;
     context.go(widget.returnRoute);
@@ -187,6 +189,7 @@ class _FarmerRegistrationScreenState
   }
 
   Widget _buildFarmerStep(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final cropsAsync = ref.watch(allCropsProvider);
     final crops = cropsAsync.valueOrNull ?? const <Crop>[];
     final amcosAsync = ref.watch(amcosDaoProvider).watchAllAmcos();
@@ -198,7 +201,7 @@ class _FarmerRegistrationScreenState
           _errorBanner(),
           AppTextFormField(
             controller: _firstNameCtrl,
-            labelText: 'First name',
+            labelText: l10n.firstName,
             icon: Icons.person_outline,
             textCapitalization: TextCapitalization.words,
             validator: _required,
@@ -206,31 +209,34 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _middleNameCtrl,
-            labelText: 'Middle name',
+            labelText: l10n.middleName,
             icon: Icons.person_outline,
             textCapitalization: TextCapitalization.words,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _lastNameCtrl,
-            labelText: 'Last name',
+            labelText: l10n.lastName,
             icon: Icons.person_outline,
             textCapitalization: TextCapitalization.words,
             validator: _required,
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: 'Sex',
+            labelText: l10n.sex,
             icon: Icons.wc_rounded,
             value: _sex,
             items: kFarmerSexValues
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                .map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(localizedReferenceValue(l10n, item)),
+                    ))
                 .toList(),
             onChanged: (value) => setState(() => _sex = value!),
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: 'ID type',
+            labelText: l10n.idType,
             icon: Icons.badge_outlined,
             value: _idType,
             items: kFarmerIdTypes
@@ -241,14 +247,14 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _idNumberCtrl,
-            labelText: 'ID number',
+            labelText: l10n.idNumber,
             icon: Icons.numbers_outlined,
             validator: _required,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _dobCtrl,
-            labelText: 'Date of birth',
+            labelText: l10n.dateOfBirth,
             icon: Icons.calendar_today_outlined,
             hintText: 'YYYY-MM-DD',
             readOnly: true,
@@ -259,17 +265,17 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _phoneCtrl,
-            labelText: 'Phone number',
+            labelText: l10n.phoneNumber,
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             validator: _required,
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<Crop>(
-            labelText: 'Main crop',
+            labelText: l10n.mainCrop,
             icon: Icons.grass_outlined,
             value: _mainCrop,
-            hintText: 'Select main crop',
+            hintText: l10n.selectMainCrop,
             items: crops
                 .map((crop) => DropdownMenuItem(
                       value: crop,
@@ -277,14 +283,14 @@ class _FarmerRegistrationScreenState
                     ))
                 .toList(),
             onChanged: (value) => setState(() => _mainCrop = value),
-            validator: (value) => value == null ? 'Required' : null,
+            validator: (value) => value == null ? l10n.requiredField : null,
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<Crop>(
-            labelText: 'Secondary crop',
+            labelText: l10n.secondaryCrop,
             icon: Icons.spa_outlined,
             value: _secondaryCrop,
-            hintText: 'Select secondary crop',
+            hintText: l10n.selectSecondaryCrop,
             items: crops
                 .map((crop) => DropdownMenuItem(
                       value: crop,
@@ -293,11 +299,11 @@ class _FarmerRegistrationScreenState
                 .toList(),
             onChanged: (value) => setState(() => _secondaryCrop = value),
             validator: (value) {
-              if (value == null) return 'Required';
+              if (value == null) return l10n.requiredField;
               if (crops.length > 1 &&
                   _mainCrop != null &&
                   value.id == _mainCrop!.id) {
-                return 'Secondary crop must be different from main crop';
+                return l10n.secondaryCropDifferent;
               }
               return null;
             },
@@ -308,10 +314,10 @@ class _FarmerRegistrationScreenState
             builder: (context, snapshot) {
               final amcosList = snapshot.data ?? const <Amcos>[];
               return AppDropdownFormField<Amcos>(
-                labelText: 'AMCOS',
+                labelText: l10n.amcos,
                 icon: Icons.account_tree_outlined,
                 value: _selectedAmcos,
-                hintText: 'Select AMCOS',
+                hintText: l10n.selectAmcos,
                 items: amcosList
                     .map((amcos) => DropdownMenuItem(
                           value: amcos,
@@ -319,76 +325,82 @@ class _FarmerRegistrationScreenState
                         ))
                     .toList(),
                 onChanged: (value) => setState(() => _selectedAmcos = value),
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               );
             },
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: 'Member type',
+            labelText: l10n.memberType,
             icon: Icons.groups_outlined,
             value: _memberType,
             items: kFarmerMemberTypes
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                .map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(localizedReferenceValue(l10n, item)),
+                    ))
                 .toList(),
             onChanged: (value) => setState(() => _memberType = value!),
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: 'Marital status',
+            labelText: l10n.maritalStatus,
             icon: Icons.favorite_border_rounded,
             value: _maritalStatus,
             items: kFarmerMaritalStatuses
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                .map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(localizedReferenceValue(l10n, item)),
+                    ))
                 .toList(),
             onChanged: (value) => setState(() => _maritalStatus = value!),
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _amcosMemberCtrl,
-            labelText: 'AMCOS member ID',
+            labelText: l10n.amcosMemberId,
             icon: Icons.assignment_ind_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _tumeCtrl,
-            labelText: 'TUME number',
+            labelText: l10n.tumeNumber,
             icon: Icons.confirmation_number_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _ttbCtrl,
-            labelText: 'TTB number',
+            labelText: l10n.ttbNumber,
             icon: Icons.receipt_long_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _tinCtrl,
-            labelText: 'TIN number',
+            labelText: l10n.tinNumber,
             icon: Icons.badge_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _voterCtrl,
-            labelText: 'Voter ID',
+            labelText: l10n.voterId,
             icon: Icons.how_to_vote_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _driversLicenseCtrl,
-            labelText: 'Drivers license',
+            labelText: l10n.driversLicense,
             icon: Icons.credit_card_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _sharesCtrl,
-            labelText: 'Number of shares',
+            labelText: l10n.numberOfShares,
             icon: Icons.pie_chart_outline,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: (value) {
               if (value == null || value.trim().isEmpty) return null;
               return double.tryParse(value.trim()) == null
-                  ? 'Enter a valid number'
+                  ? l10n.enterValidNumber
                   : null;
             },
           ),
@@ -398,15 +410,15 @@ class _FarmerRegistrationScreenState
   }
 
   Widget _buildDependantsStep(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_dependants.isEmpty)
-          const EmptyState(
+          EmptyState(
             icon: Icons.family_restroom_rounded,
-            title: 'No dependants added',
-            subtitle:
-                'This step is optional. Dependants can also be added later.',
+            title: l10n.noDependantsAdded,
+            subtitle: l10n.dependantsOptional,
           )
         else
           for (var i = 0; i < _dependants.length; i++) ...[
@@ -420,37 +432,44 @@ class _FarmerRegistrationScreenState
         OutlinedButton.icon(
           onPressed: _showDependantSheet,
           icon: const Icon(Icons.add_rounded),
-          label: const Text('Add Dependant'),
+          label: Text(l10n.addDependant),
         ),
       ],
     );
   }
 
   Widget _buildReviewStep(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _errorBanner(),
-        _reviewHeader('Farmer'),
-        _reviewRow('Name', _fullName),
-        _reviewRow('Sex', _sex),
-        _reviewRow('ID type', _idType),
-        _reviewRow('ID number', _idNumberCtrl.text),
-        _reviewRow('Date of birth', _dobCtrl.text),
-        _reviewRow('Phone', _phoneCtrl.text),
-        _reviewRow('Main crop', _mainCrop?.name ?? ''),
-        _reviewRow('Secondary crop', _secondaryCrop?.name ?? ''),
-        _reviewRow('AMCOS', _selectedAmcos?.name ?? ''),
-        _reviewRow('Member type', _memberType),
-        _reviewRow('Marital status', _maritalStatus),
-        _reviewRow('Education level', 'PRIMARY'),
+        _reviewHeader(l10n.receiptFarmer),
+        _reviewRow(l10n.name, _fullName),
+        _reviewRow(l10n.sex, localizedReferenceValue(l10n, _sex)),
+        _reviewRow(l10n.idType, _idType),
+        _reviewRow(l10n.idNumber, _idNumberCtrl.text),
+        _reviewRow(l10n.dateOfBirth, _dobCtrl.text),
+        _reviewRow(l10n.phone, _phoneCtrl.text),
+        _reviewRow(l10n.mainCrop, _mainCrop?.name ?? ''),
+        _reviewRow(l10n.secondaryCrop, _secondaryCrop?.name ?? ''),
+        _reviewRow(l10n.amcos, _selectedAmcos?.name ?? ''),
+        _reviewRow(
+          l10n.memberType,
+          localizedReferenceValue(l10n, _memberType),
+        ),
+        _reviewRow(
+          l10n.maritalStatus,
+          localizedReferenceValue(l10n, _maritalStatus),
+        ),
+        _reviewRow(l10n.educationLevel, l10n.primaryEducation),
         const SizedBox(height: 14),
-        _reviewHeader('Dependants'),
-        _reviewRow('Total', '${_dependants.length}'),
+        _reviewHeader(l10n.dependants),
+        _reviewRow(l10n.total, '${_dependants.length}'),
         if (_dependants.isNotEmpty)
           for (final dependant in _dependants)
             _reviewRow(
-              dependant.relationship,
+              localizedReferenceValue(l10n, dependant.relationship),
               [
                 dependant.firstName,
                 dependant.middleName,
@@ -468,31 +487,32 @@ class _FarmerRegistrationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(title: const Text('Register Farmer')),
+      appBar: AppBar(title: Text(l10n.registerFarmer)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           child: AppStepper(
             key: _stepperKey,
-            completeLabel: 'Create Farmer',
+            completeLabel: l10n.createFarmer,
             onComplete: _submitting ? () {} : _submit,
             steps: [
               AppStep(
-                title: 'Farmer Details',
-                description: 'Capture the farmer record at point of contact.',
+                title: l10n.farmerDetails,
+                description: l10n.captureFarmerDescription,
                 contentBuilder: _buildFarmerStep,
                 validate: _validateFarmerStep,
               ),
               AppStep(
-                title: 'Dependants',
-                description: 'Add dependants now, or leave this for later.',
+                title: l10n.dependants,
+                description: l10n.addDependantsDescription,
                 contentBuilder: _buildDependantsStep,
               ),
               AppStep(
-                title: 'Review',
-                description: 'Confirm the details before creating the farmer.',
+                title: l10n.review,
+                description: l10n.reviewFarmerDescription,
                 contentBuilder: _buildReviewStep,
               ),
             ],
@@ -574,15 +594,18 @@ class _FarmerRegistrationScreenState
   }
 
   String? _required(String? value) {
-    return value == null || value.trim().isEmpty ? 'Required' : null;
+    return value == null || value.trim().isEmpty
+        ? AppLocalizations.of(context)!.requiredField
+        : null;
   }
 
   String? _date(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Required';
+    final l10n = AppLocalizations.of(context)!;
+    if (value == null || value.trim().isEmpty) return l10n.requiredField;
     final text = value.trim();
     final datePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
     return !datePattern.hasMatch(text) || DateTime.tryParse(text) == null
-        ? 'Use YYYY-MM-DD'
+        ? l10n.useDateFormat
         : null;
   }
 
@@ -625,6 +648,7 @@ class _DependantSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: const BoxDecoration(
@@ -648,9 +672,12 @@ class _DependantSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
-              'Add Dependant',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            Text(
+              l10n.addDependant,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 18),
             DependantForm(onSubmit: onSubmit),
@@ -672,6 +699,7 @@ class _DependantTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final name = [
       dependant.firstName,
       dependant.middleName,
@@ -693,7 +721,8 @@ class _DependantTile extends StatelessWidget {
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
                 Text(
-                  '${dependant.relationship} · ${dependant.gender}',
+                  '${localizedReferenceValue(l10n, dependant.relationship)} - '
+                  '${localizedReferenceValue(l10n, dependant.gender)}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -706,7 +735,7 @@ class _DependantTile extends StatelessWidget {
             onPressed: onRemove,
             icon: const Icon(Icons.delete_outline_rounded),
             color: AppColors.error,
-            tooltip: 'Remove dependant',
+            tooltip: l10n.removeDependant,
           ),
         ],
       ),

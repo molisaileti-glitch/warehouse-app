@@ -8,6 +8,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class HarvestConnectScaleScreen extends ConsumerStatefulWidget {
   final String warehouseId;
@@ -41,10 +42,11 @@ class _HarvestConnectScaleScreenState
   @override
   Widget build(BuildContext context) {
     final scaleState = ref.watch(weightScaleControllerProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(title: const Text('Connect Scale')),
+      appBar: AppBar(title: Text(l10n.connectScale)),
       floatingActionButton: scaleState.isConnected
           ? FloatingActionButton.extended(
               heroTag: 'connect_scale_next_${widget.warehouseId}',
@@ -56,7 +58,7 @@ class _HarvestConnectScaleScreenState
                     : AppRoutes.workerFarmerDetailsFor(widget.warehouseId),
               ),
               icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text('Next'),
+              label: Text(l10n.next),
             )
           : null,
       body: SingleChildScrollView(
@@ -82,18 +84,18 @@ class _HarvestConnectScaleScreenState
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    'Connect the scale',
-                    style: TextStyle(
+                  Text(
+                    l10n.connectTheScale,
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Connect a Bluetooth scale before measuring crops. Scan nearby devices when the scale is ready.',
-                    style: TextStyle(
+                  Text(
+                    l10n.connectScaleDescription,
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       height: 1.4,
                     ),
@@ -120,8 +122,8 @@ class _HarvestConnectScaleScreenState
                       children: [
                         Text(
                           scaleState.isConnected
-                              ? 'Connected'
-                              : 'Not connected',
+                              ? l10n.connected
+                              : l10n.notConnected,
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                           ),
@@ -130,7 +132,7 @@ class _HarvestConnectScaleScreenState
                         Text(
                           scaleState.isConnected
                               ? scaleState.deviceName
-                              : 'Scan nearby devices to find your scale.',
+                              : l10n.scanNearbyScale,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -147,7 +149,7 @@ class _HarvestConnectScaleScreenState
             if (scaleState.lastError.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
-                scaleState.lastError,
+                _localizedScaleError(l10n, scaleState.lastError),
                 style: const TextStyle(color: AppColors.error),
               ),
             ],
@@ -161,7 +163,7 @@ class _HarvestConnectScaleScreenState
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.bluetooth_searching_rounded),
-              label: Text(_scanning ? 'Scanning...' : 'Scan Devices'),
+              label: Text(_scanning ? l10n.scanning : l10n.scanDevices),
             ),
           ],
         ),
@@ -170,6 +172,7 @@ class _HarvestConnectScaleScreenState
   }
 
   Future<void> _openDevicesSheet() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _scanning = true);
     final controller = ref.read(weightScaleControllerProvider.notifier);
     var devices = await controller.scanForScales();
@@ -209,17 +212,17 @@ class _HarvestConnectScaleScreenState
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Available Devices',
-                            style: TextStyle(
+                            l10n.availableDevices,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Refresh devices',
+                          tooltip: l10n.refreshDevices,
                           onPressed: refreshing ? null : refresh,
                           icon: refreshing
                               ? const SizedBox(
@@ -235,13 +238,12 @@ class _HarvestConnectScaleScreenState
                     ),
                     const SizedBox(height: 10),
                     if (sheetDevices.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
                         child: EmptyState(
                           icon: Icons.bluetooth_disabled_rounded,
-                          title: 'No devices found',
-                          subtitle:
-                              'Turn on the scale, Bluetooth, and Location, then refresh.',
+                          title: l10n.noDevicesFound,
+                          subtitle: l10n.deviceScanHelp,
                         ),
                       )
                     else
@@ -277,6 +279,7 @@ class _HarvestConnectScaleScreenState
 
   Future<bool> _showBluetoothLocationDialogIfNeeded(
       {bool force = false}) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_requirementDialogVisible || (!force && _hasShownRequirementDialog)) {
       return false;
     }
@@ -287,12 +290,11 @@ class _HarvestConnectScaleScreenState
     _hasShownRequirementDialog = true;
     await showAppFeedbackDialog<void>(
       context,
-      title: 'Bluetooth and Location Required',
-      description:
-          'Please allow Bluetooth and Location permissions, and keep Bluetooth and Location turned on before scanning devices.',
+      title: l10n.bluetoothLocationRequired,
+      description: l10n.bluetoothLocationMessage,
       type: AppFeedbackType.info,
       actions: [
-        const AppFeedbackAction<void>(label: 'OK', isPrimary: true),
+        AppFeedbackAction<void>(label: l10n.ok, isPrimary: true),
       ],
     );
     _requirementDialogVisible = false;
@@ -314,6 +316,31 @@ class _HarvestConnectScaleScreenState
   }
 }
 
+String _localizedScaleError(AppLocalizations l10n, String error) {
+  if (error.startsWith('Bluetooth permissions are required')) {
+    return l10n.scaleBluetoothPermissionError;
+  }
+  if (error.startsWith('Turn on Bluetooth')) {
+    return l10n.turnOnBluetoothToScan;
+  }
+  if (error.startsWith('Failed to scan for scales')) {
+    return l10n.scaleScanError;
+  }
+  if (error.startsWith('Connection failed')) {
+    return l10n.scaleConnectionError;
+  }
+  if (error.startsWith('No scale connected')) {
+    return l10n.noScaleConnected;
+  }
+  if (error.startsWith('Failed to start scale stream')) {
+    return l10n.scaleStreamError;
+  }
+  if (error.startsWith('Failed to request scale data')) {
+    return l10n.scaleReadError;
+  }
+  return l10n.errorWithDetails(error);
+}
+
 class _DeviceCard extends StatelessWidget {
   final ScanResult result;
   final Future<void> Function() onConnect;
@@ -325,8 +352,9 @@ class _DeviceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final device = result.device;
-    final name = _deviceName(device);
+    final name = _deviceName(device, l10n.unknownScale);
     final likelyScale = _looksLikeScale(result);
 
     return AppCard(
@@ -359,7 +387,7 @@ class _DeviceCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   likelyScale
-                      ? 'Likely scale - ${result.rssi} dBm'
+                      ? l10n.likelyScale(result.rssi)
                       : '${device.remoteId} - ${result.rssi} dBm',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -374,19 +402,19 @@ class _DeviceCard extends StatelessWidget {
           const SizedBox(width: 10),
           FilledButton(
             onPressed: onConnect,
-            child: const Text('Connect'),
+            child: Text(l10n.connect),
           ),
         ],
       ),
     );
   }
 
-  String _deviceName(BluetoothDevice device) {
+  String _deviceName(BluetoothDevice device, [String unknownName = '']) {
     final advertisedName = device.advName.trim();
     final platformName = device.platformName.trim();
     if (advertisedName.isNotEmpty) return advertisedName;
     if (platformName.isNotEmpty) return platformName;
-    return 'Unknown Scale';
+    return unknownName;
   }
 
   bool _looksLikeScale(ScanResult result) {

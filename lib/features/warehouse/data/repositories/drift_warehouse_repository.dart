@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
@@ -49,6 +50,7 @@ class DriftWarehouseRepository implements WarehouseRepository {
       uuid: id,
       id: id,
       name: name,
+      ownerId: _currentUserId,
       gpsLocation: gpsLocation,
       amcos: amcos,
       amcosName: amcosName,
@@ -58,10 +60,7 @@ class DriftWarehouseRepository implements WarehouseRepository {
       syncAction: 'created',
       createdAt: DateTime.now(),
     );
-     final companion = model.toCompanion().copyWith(
-          ownerId: Value(_currentUserId),
-        );
-
+    final companion = model.toCompanion();
 
     await _dao.insertWarehouse(companion);
     await _enqueue(id: id, operation: 'create', payload: model.toSyncPayload());
@@ -128,13 +127,15 @@ class DriftWarehouseRepository implements WarehouseRepository {
   }
 
   @override
-  Future<int> pullFromServer({DateTime? since}) async {
+  Future<int> pullFromServer({required int mcuId}) async {
     try {
-      final params = since != null
-          ? {'updated_since': since.toIso8601String()}
-          : <String, dynamic>{};
-      final res = await _dio.get('/warehouses/', queryParameters: params);
-      final rows = (res.data as List).cast<Map<String, dynamic>>();
+      final res = await _dio.get('/collection-centers/mcu/$mcuId');
+      final rows = _asList(res.data);
+      developer.log(
+        '[WarehouseSync] pull requestedMcu=$mcuId rows=${rows.length} '
+        'returnedMcus=${rows.map((row) => row['mcu']).toSet()}',
+        name: 'sync.warehouse',
+      );
       for (final json in rows) {
         await upsertDownstream(json);
       }
@@ -142,6 +143,14 @@ class DriftWarehouseRepository implements WarehouseRepository {
     } on DioException {
       return 0;
     }
+  }
+
+  List<Map<String, dynamic>> _asList(Object? data) {
+    final raw = data is Map<String, dynamic>
+        ? data['records'] ?? data['results'] ?? data['data']
+        : data;
+    if (raw is! List) return const [];
+    return raw.whereType<Map<String, dynamic>>().toList();
   }
 
   @override
@@ -210,6 +219,7 @@ class DriftWarehouseRepository implements WarehouseRepository {
     if (current?.uuid != null && current!.uuid.isNotEmpty) {
       payload['uuid'] = current.uuid;
     }
+    payload['mcu'] = int.tryParse(_currentUserId) ?? _currentUserId;
     if (c.name.present) payload['name'] = c.name.value;
     if (c.gpsLocation.present) payload['gpsLocation'] = c.gpsLocation.value;
     if (c.amcos.present) payload['amcos'] = c.amcos.value;

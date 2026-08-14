@@ -6,6 +6,7 @@ abstract class FarmerRepository {
   Stream<List<Farmer>> watchAllFarmers();
   Stream<Farmer?> watchFarmerById(int id);
   Stream<List<FarmerDependant>> watchDependantsForFarmer(int farmerId);
+  Future<int> pullFromServer({required Set<int> amcosIds});
 
   Future<FarmerCreateResult> createFarmer({
     required FarmerCreateInput farmer,

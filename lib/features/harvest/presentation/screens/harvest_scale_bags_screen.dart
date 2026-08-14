@@ -13,6 +13,7 @@ import 'package:warehouse_app/features/harvest/domain/models/harvest_model.dart'
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_receiving_controller.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class HarvestScaleBagsScreen extends ConsumerStatefulWidget {
   final String warehouseId;
@@ -47,6 +48,7 @@ class _HarvestScaleBagsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(
       harvestReceivingControllerProvider(widget.warehouseId),
     );
@@ -58,15 +60,15 @@ class _HarvestScaleBagsScreenState
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(title: const Text('Scale')),
+      appBar: AppBar(title: Text(l10n.scale)),
       body: warehouseAsync.when(
-        loading: () => const LoadingView(message: 'Loading scale...'),
+        loading: () => LoadingView(message: l10n.loadingScale),
         error: (e, _) => ErrorView(message: '$e'),
         data: (warehouse) {
           if (warehouse == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.warehouse_outlined,
-              title: 'Warehouse not found',
+              title: l10n.warehouseNotFound,
             );
           }
 
@@ -91,6 +93,7 @@ class _HarvestScaleBagsScreenState
     required AsyncValue<List<Crop>> cropsAsync,
     required AsyncValue<List<MeasurementUnit>> unitsAsync,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     if (!session.hasDetails) {
       return _missingDetails();
     }
@@ -117,7 +120,7 @@ class _HarvestScaleBagsScreenState
           const SizedBox(height: 16),
           _scaleCard(scaleState),
           const SizedBox(height: 18),
-          _sectionTitle('Bag'),
+          _sectionTitle(l10n.bag),
           Form(
             key: _bagFormKey,
             child: Column(
@@ -128,8 +131,8 @@ class _HarvestScaleBagsScreenState
                     Expanded(
                       child: TextFormField(
                         controller: _tagCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Bag tag',
+                        decoration: InputDecoration(
+                          labelText: l10n.bagTag,
                           prefixIcon: Icon(Icons.qr_code_2_outlined),
                         ),
                         textCapitalization: TextCapitalization.characters,
@@ -143,7 +146,7 @@ class _HarvestScaleBagsScreenState
                     ),
                     const SizedBox(width: 10),
                     IconButton.filledTonal(
-                      tooltip: 'Generate bag tag',
+                      tooltip: l10n.generateBagTag,
                       onPressed: _generateBagTag,
                       icon: const Icon(Icons.casino_outlined),
                     ),
@@ -152,8 +155,8 @@ class _HarvestScaleBagsScreenState
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _packagingCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Packaging weight (kg)',
+                  decoration: InputDecoration(
+                    labelText: l10n.packagingWeightKg,
                     prefixIcon: Icon(Icons.inventory_2_outlined),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -178,7 +181,7 @@ class _HarvestScaleBagsScreenState
                     backgroundColor: AppColors.workerColor,
                   ),
                   icon: const Icon(Icons.add_shopping_cart_rounded),
-                  label: const Text('Add Bag'),
+                  label: Text(l10n.addBag),
                 ),
               ),
               const SizedBox(width: 10),
@@ -186,7 +189,7 @@ class _HarvestScaleBagsScreenState
                 height: 52,
                 width: 58,
                 child: IconButton.filledTonal(
-                  tooltip: 'View bags',
+                  tooltip: l10n.viewBags,
                   onPressed: () => _showBagsSheet(
                     session: session,
                     warehouse: warehouse,
@@ -204,7 +207,7 @@ class _HarvestScaleBagsScreenState
           ),
           const SizedBox(height: 14),
           Text(
-            'Moisture is set to ${_formatWeight(_moisturePercent)}%. Net weight will appear on the receipt.',
+            l10n.moistureReceiptMessage(_formatWeight(_moisturePercent)),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -216,13 +219,14 @@ class _HarvestScaleBagsScreenState
   }
 
   Widget _missingDetails() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: EmptyState(
         icon: Icons.assignment_outlined,
-        title: 'Farmer details needed',
-        subtitle: 'Select farmer and crop details before weighing bags.',
-        actionLabel: 'Go to Details',
+        title: l10n.farmerDetailsNeeded,
+        subtitle: l10n.farmerDetailsNeededMessage,
+        actionLabel: l10n.goToDetails,
         onAction: () => context.go(
           widget.ownerFlow
               ? AppRoutes.ownerFarmerDetailsFor(widget.warehouseId)
@@ -237,6 +241,7 @@ class _HarvestScaleBagsScreenState
     required Crop? crop,
     required Warehouse warehouse,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       child: Row(
         children: [
@@ -250,7 +255,7 @@ class _HarvestScaleBagsScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  farmer == null ? 'Selected farmer' : _farmerName(farmer),
+                  farmer == null ? l10n.selectedFarmer : _farmerName(farmer),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w800),
@@ -269,7 +274,7 @@ class _HarvestScaleBagsScreenState
             ),
           ),
           IconButton(
-            tooltip: 'Edit details',
+            tooltip: l10n.editDetails,
             onPressed: () => context.push(
               widget.ownerFlow
                   ? AppRoutes.ownerFarmerDetailsFor(widget.warehouseId)
@@ -283,6 +288,7 @@ class _HarvestScaleBagsScreenState
   }
 
   Widget _scaleCard(WeightScaleState scaleState) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = scaleState.isConnected && scaleState.isStable
         ? AppColors.success
         : scaleState.isConnected
@@ -290,9 +296,9 @@ class _HarvestScaleBagsScreenState
             : AppColors.textMuted;
     final statusText = scaleState.isConnected
         ? scaleState.isStable
-            ? 'Stable'
-            : 'Unstable'
-        : 'Not connected';
+            ? l10n.stable
+            : l10n.unstable
+        : l10n.notConnected;
 
     return AppCard(
       child: Column(
@@ -317,9 +323,9 @@ class _HarvestScaleBagsScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Scale Reading',
-                      style: TextStyle(
+                    Text(
+                      l10n.scaleReading,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
                       ),
@@ -327,7 +333,7 @@ class _HarvestScaleBagsScreenState
                     Text(
                       scaleState.isConnected
                           ? scaleState.deviceName
-                          : 'Connect scale before weighing',
+                          : l10n.connectScaleBeforeWeighing,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -376,7 +382,7 @@ class _HarvestScaleBagsScreenState
                     : AppRoutes.workerConnectScaleFor(widget.warehouseId),
               ),
               icon: const Icon(Icons.bluetooth_searching_rounded),
-              label: const Text('Connect Scale'),
+              label: Text(l10n.connectScale),
             ),
           ],
         ],
@@ -394,21 +400,21 @@ class _HarvestScaleBagsScreenState
   void _addBag(WeightScaleState scaleState) {
     if (!(_bagFormKey.currentState?.validate() ?? false)) return;
     if (!scaleState.isConnected || !scaleState.isStreaming) {
-      _showError('Connect the scale before adding a bag.');
+      _showError(AppLocalizations.of(context)!.connectScaleBeforeBag);
       return;
     }
     if (!scaleState.isStable) {
-      _showError('Please wait until the scale reading is stable.');
+      _showError(AppLocalizations.of(context)!.waitForStableScale);
       return;
     }
     if (scaleState.weight <= 0) {
-      _showError('Weight must be greater than zero.');
+      _showError(AppLocalizations.of(context)!.weightGreaterThanZero);
       return;
     }
 
     final packagingWeight = _packagingWeightValue();
     if (packagingWeight >= scaleState.weight) {
-      _showError('Packaging weight must be less than gross weight.');
+      _showError(AppLocalizations.of(context)!.packagingLessThanGross);
       return;
     }
 
@@ -434,6 +440,7 @@ class _HarvestScaleBagsScreenState
     required Crop? crop,
     required MeasurementUnit? unit,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -454,10 +461,10 @@ class _HarvestScaleBagsScreenState
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Bags',
-                            style: TextStyle(
+                            l10n.receiptBags,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
                             ),
@@ -471,11 +478,11 @@ class _HarvestScaleBagsScreenState
                     ),
                     const SizedBox(height: 12),
                     if (currentSession.bags.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
                         child: EmptyState(
                           icon: Icons.inventory_2_outlined,
-                          title: 'No bags added yet',
+                          title: l10n.noBagsAdded,
                         ),
                       )
                     else ...[
@@ -516,7 +523,7 @@ class _HarvestScaleBagsScreenState
                                         unit: unit,
                                       ),
                               icon: const Icon(Icons.receipt_long_outlined),
-                              label: const Text('Complete Harvest'),
+                              label: Text(l10n.completeHarvest),
                             ),
                     ],
                   ],
@@ -537,17 +544,17 @@ class _HarvestScaleBagsScreenState
     required Crop crop,
     required MeasurementUnit? unit,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     if (session.bags.isEmpty) {
-      _showError('Add at least one bag before completing harvest.');
+      _showError(l10n.addBagBeforeComplete);
       return;
     }
 
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Complete Harvest',
-      description:
-          'Save ${session.bags.length} bag(s) and generate one receipt?',
-      confirmLabel: 'Save',
+      title: l10n.completeHarvest,
+      description: l10n.completeHarvestConfirm(session.bags.length),
+      confirmLabel: l10n.saveButton,
     );
     if (!confirmed) return;
     if (!mounted) return;
@@ -555,8 +562,8 @@ class _HarvestScaleBagsScreenState
     setState(() => _submitting = true);
     showCenteredLoadingDialog(
       context,
-      title: 'Saving Harvest',
-      description: 'Saving this harvest locally.',
+      title: l10n.savingHarvest,
+      description: l10n.savingHarvestLocally,
     );
     final result = await ref.read(harvestRepositoryProvider).recordHarvest(
           HarvestCreateInput(
@@ -575,7 +582,7 @@ class _HarvestScaleBagsScreenState
     setState(() => _submitting = false);
 
     if (!result.success) {
-      _showError(result.error ?? 'Failed to save harvest.');
+      _showError(_localizedHarvestError(result.error, l10n));
       return;
     }
 
@@ -589,8 +596,8 @@ class _HarvestScaleBagsScreenState
 
     await showCreationSuccessDialog(
       context,
-      title: 'Harvest Saved',
-      description: 'Harvest successfully saved. Receipt is ready.',
+      title: l10n.harvestSaved,
+      description: l10n.harvestSavedMessage,
     );
     if (!mounted) return;
 
@@ -599,6 +606,20 @@ class _HarvestScaleBagsScreenState
           ? AppRoutes.ownerReceiptFor(widget.warehouseId)
           : AppRoutes.workerReceiptFor(widget.warehouseId),
     );
+  }
+
+  String _localizedHarvestError(String? error, AppLocalizations l10n) {
+    return switch (error) {
+      'Harvest was not saved locally.' => l10n.saveHarvestFailed,
+      'Add at least one bag.' => l10n.addBagBeforeComplete,
+      'Gross weight must be greater than zero.' => l10n.weightGreaterThanZero,
+      'Packaging weight cannot be negative.' => l10n.enterValidWeight,
+      'Packaging weight cannot be greater than gross weight.' =>
+        l10n.packagingLessThanGross,
+      'Moisture content must be between 0 and 100.' => l10n.enterValidNumber,
+      null => l10n.saveHarvestFailed,
+      _ => l10n.errorWithDetails(error),
+    };
   }
 
   bool _canAddBag(WeightScaleState scaleState) {
@@ -649,14 +670,17 @@ class _HarvestScaleBagsScreenState
   }
 
   String? _required(String? value) {
-    return value == null || value.trim().isEmpty ? 'Required' : null;
+    return value == null || value.trim().isEmpty
+        ? AppLocalizations.of(context)!.requiredField
+        : null;
   }
 
   String? _packagingValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Required';
+    final l10n = AppLocalizations.of(context)!;
+    if (value == null || value.trim().isEmpty) return l10n.requiredField;
     final parsed = double.tryParse(value.trim());
-    if (parsed == null) return 'Enter a valid weight';
-    if (parsed < 0) return 'Cannot be negative';
+    if (parsed == null) return l10n.enterValidWeight;
+    if (parsed < 0) return l10n.cannotBeNegative;
     return null;
   }
 
@@ -674,7 +698,9 @@ class _HarvestScaleBagsScreenState
         .map((v) => v.trim())
         .where((v) => v.isNotEmpty)
         .join(' ');
-    return name.isEmpty ? 'Farmer ${farmer.id}' : name;
+    return name.isEmpty
+        ? AppLocalizations.of(context)!.farmerNumber(farmer.id)
+        : name;
   }
 
   String _formatWeight(double value) {
@@ -702,6 +728,7 @@ class _BagTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -733,7 +760,10 @@ class _BagTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Gross ${_formatWeight(bag.grossWeight)} kg - Packaging ${_formatWeight(bag.packagingWeight)} kg',
+                  l10n.bagWeightSummary(
+                    _formatWeight(bag.grossWeight),
+                    _formatWeight(bag.packagingWeight),
+                  ),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -743,7 +773,7 @@ class _BagTile extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Remove bag',
+            tooltip: l10n.removeBag,
             onPressed: onRemove,
             icon: const Icon(Icons.delete_outline_rounded),
           ),

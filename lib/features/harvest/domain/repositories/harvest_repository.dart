@@ -8,4 +8,5 @@ abstract class HarvestRepository {
 
   Future<HarvestCreateResult> recordHarvest(HarvestCreateInput input);
   Future<int> pullReferenceData();
+  Future<int> pullFromServer({required Set<int> amcosIds});
 }

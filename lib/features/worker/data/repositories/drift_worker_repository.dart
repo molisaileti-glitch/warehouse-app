@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
+import 'package:dio/dio.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/utils/uuid_helper.dart';
 import 'package:warehouse_app/features/worker/domain/models/worker_model.dart';
@@ -9,16 +11,19 @@ class DriftWorkerRepository implements WorkerRepository {
   final WorkerDao _dao;
   final SyncQueueDao _syncDao;
   final AuditLogDao _auditDao;
+  final Dio _dio;
   final String _currentUserId;
 
   const DriftWorkerRepository({
     required WorkerDao dao,
     required SyncQueueDao syncDao,
     required AuditLogDao auditDao,
+    required Dio dio,
     required String currentUserId,
   })  : _dao = dao,
         _syncDao = syncDao,
         _auditDao = auditDao,
+        _dio = dio,
         _currentUserId = currentUserId;
 
   @override
@@ -37,6 +42,53 @@ class DriftWorkerRepository implements WorkerRepository {
 
   @override
   Stream<User?> watchWorkerById(String id) => _dao.watchUserById(id);
+
+  @override
+  Future<int> pullFromServer({required int mcuId}) async {
+    final response = await _dio.get('/users/mcu/$mcuId');
+    final rows = _asList(response.data)
+        .where((row) => _isWorkerRole(_string(row['role'])))
+        .toList();
+
+    for (final row in rows) {
+      final serverId = _string(row['id']);
+      final email = _string(row['email']);
+      if (serverId.isEmpty || email.isEmpty) continue;
+
+      final existing = await _dao.getUserByEmail(email);
+      final serverWarehouseId = _nullableString(
+        row['warehouseId'] ?? row['warehouse_id'] ?? row['collectionCenter'],
+      );
+      if (existing != null && existing.id != serverId) {
+        await _dao.deleteUserById(existing.id);
+      }
+
+      await _dao.upsertUser(
+        UsersCompanion.insert(
+          id: serverId,
+          fullName: _string(row['fullName']),
+          email: email,
+          phoneNumber: Value(_string(row['phoneNumber'])),
+          role: Value(_string(row['role'], fallback: 'USER')),
+          mcu: Value(_nullableInt(row['mcu']) ?? mcuId),
+          amcos: Value(_nullableInt(row['amcos'])),
+          warehouseId: Value(serverWarehouseId ?? existing?.warehouseId),
+          isActive: Value(
+            _string(row['status'], fallback: 'ACTIVE').toUpperCase() ==
+                'ACTIVE',
+          ),
+          syncStatus: const Value('synced'),
+          updatedAt: Value(_date(row['updatedAt']) ?? DateTime.now()),
+        ),
+      );
+    }
+
+    developer.log(
+      '[WorkerSync] pull requestedMcu=$mcuId workers=${rows.length}',
+      name: 'sync.worker',
+    );
+    return rows.length;
+  }
 
   @override
   Future<WorkerCreateResult> createWorker(WorkerModel worker) async {
@@ -176,5 +228,32 @@ class DriftWorkerRepository implements WorkerRepository {
     return normalized == 'worker' ||
         normalized == 'amcos_user' ||
         normalized == 'user';
+  }
+
+  List<Map<String, dynamic>> _asList(Object? data) {
+    final raw = data is Map<String, dynamic>
+        ? data['content'] ?? data['records'] ?? data['results'] ?? data['data']
+        : data;
+    if (raw is! List) return const [];
+    return raw.whereType<Map<String, dynamic>>().toList();
+  }
+
+  int? _nullableInt(Object? value) {
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
+  }
+
+  DateTime? _date(Object? value) {
+    return DateTime.tryParse(value?.toString() ?? '');
+  }
+
+  String _string(Object? value, {String fallback = ''}) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? fallback : text;
+  }
+
+  String? _nullableString(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

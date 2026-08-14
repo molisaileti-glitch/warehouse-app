@@ -9,12 +9,14 @@ import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class PendingSyncsScreen extends ConsumerWidget {
   const PendingSyncsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final pendingAsync = ref.watch(_pendingSyncsProvider);
 
     return Scaffold(
@@ -23,17 +25,17 @@ class PendingSyncsScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go(AppRoutes.ownerDashboard),
-          tooltip: 'Back',
+          tooltip: l10n.back,
         ),
-        title: const Text('Pending Syncs'),
+        title: Text(l10n.pendingSyncs),
       ),
       body: pendingAsync.when(
         data: (entries) {
           if (entries.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.cloud_done_rounded,
-              title: 'All synced',
-              subtitle: 'There are no local owner changes waiting to upload.',
+              title: l10n.allSynced,
+              subtitle: l10n.noPendingOwnerChanges,
             );
           }
 
@@ -49,16 +51,16 @@ class PendingSyncsScreen extends ConsumerWidget {
                     color: AppColors.warning.withValues(alpha: 0.22),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline_rounded,
+                    const Icon(Icons.info_outline_rounded,
                         color: AppColors.warning, size: 18),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Use the sync button on the dashboard to upload these changes.',
-                        style: TextStyle(
+                        l10n.useDashboardSync,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
                           height: 1.35,
@@ -99,8 +101,10 @@ class _PendingSyncTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final details = _syncDetails(entry);
-    final time = DateFormat('MMM d, HH:mm').format(entry.createdAt);
+    final l10n = AppLocalizations.of(context)!;
+    final details = _syncDetails(entry, l10n);
+    final time =
+        DateFormat('MMM d, HH:mm', l10n.localeName).format(entry.createdAt);
 
     return AppCard(
       padding: const EdgeInsets.all(14),
@@ -148,25 +152,25 @@ class _PendingSyncTile extends StatelessWidget {
   }
 }
 
-_SyncDetails _syncDetails(SyncQueueData entry) {
+_SyncDetails _syncDetails(SyncQueueData entry, AppLocalizations l10n) {
   final payload = _payload(entry.payload);
-  final operation = _operationLabel(entry.operation);
+  final operation = _operationLabel(entry.operation, l10n);
 
   return switch (entry.entityType) {
     'warehouses' => _SyncDetails(
-        title: '$operation warehouse',
-        subtitle: _stringValue(payload, 'name') ?? 'Warehouse record',
+        title: l10n.operationWarehouse(operation),
+        subtitle: _stringValue(payload, 'name') ?? l10n.warehouseRecord,
         icon: Icons.warehouse_rounded,
         color: AppColors.ownerColor,
       ),
     'users' => _SyncDetails(
-        title: '$operation worker',
-        subtitle: _stringValue(payload, 'fullName') ?? 'Worker account',
+        title: l10n.operationWorker(operation),
+        subtitle: _stringValue(payload, 'fullName') ?? l10n.workerAccount,
         icon: Icons.person_add_alt_1_rounded,
         color: AppColors.workerColor,
       ),
     _ => _SyncDetails(
-        title: '$operation ${entry.entityType}',
+        title: l10n.operationRecord(operation, entry.entityType),
         subtitle: entry.entityId,
         icon: Icons.cloud_upload_rounded,
         color: AppColors.warning,
@@ -183,9 +187,12 @@ Map<String, dynamic> _payload(String value) {
   }
 }
 
-String _operationLabel(String operation) {
+String _operationLabel(String operation, AppLocalizations l10n) {
   final text = operation.trim().toLowerCase();
-  if (text.isEmpty) return 'Sync';
+  if (text.isEmpty) return l10n.sync;
+  if (text == 'create' || text == 'created') return l10n.create;
+  if (text == 'update' || text == 'updated') return l10n.update;
+  if (text == 'delete' || text == 'deleted') return l10n.delete;
   return '${text[0].toUpperCase()}${text.substring(1)}';
 }
 

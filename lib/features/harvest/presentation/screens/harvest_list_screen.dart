@@ -8,6 +8,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_receiving_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class HarvestListScreen extends ConsumerWidget {
   final String warehouseId;
@@ -16,16 +17,17 @@ class HarvestListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final harvestsAsync = ref.watch(harvestsByWarehouseProvider(warehouseId));
     final harvests = harvestsAsync.valueOrNull ?? const <FarmerHarvest>[];
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Harvest'),
+        title: Text(l10n.harvest),
         actions: [
           IconButton(
-            tooltip: 'New harvest',
+            tooltip: l10n.newHarvest,
             onPressed: () {
               ref
                   .read(
@@ -41,10 +43,10 @@ class HarvestListScreen extends ConsumerWidget {
       body: harvestsAsync.hasError && harvests.isEmpty
           ? ErrorView(message: '${harvestsAsync.error}')
           : harvests.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.receipt_long_outlined,
-                  title: 'No harvests yet',
-                  subtitle: 'Tap + to connect a scale and receive crops.',
+                  title: l10n.noHarvestsYet,
+                  subtitle: l10n.newHarvestSubtitle,
                 )
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -70,7 +72,9 @@ class _HarvestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('MMM d, HH:mm').format(harvest.receivedAt);
+    final l10n = AppLocalizations.of(context)!;
+    final date =
+        DateFormat('MMM d, HH:mm', l10n.localeName).format(harvest.receivedAt);
 
     return AppCard(
       onTap: () => context.push(

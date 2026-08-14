@@ -210,7 +210,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (regions.isEmpty) {
         setState(() {
           _regions = [];
-          _regionsError = 'No valid regions were returned from the server.';
+          _regionsError = AppLocalizations.of(context)!.noValidRegions;
           _loadingRegions = false;
         });
         if (_regionsLoadingDialogVisible &&
@@ -402,7 +402,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             labelText: l10n.businessType,
             icon: Icons.category_outlined,
             value: _selectedType,
-            hintText: 'Select business type',
+            hintText: l10n.selectBusinessType,
             items: kBusinessTypes
                 .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                 .toList(),
@@ -413,7 +413,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             labelText: l10n.region,
             icon: Icons.map_outlined,
             value: _selectedRegion,
-            hintText: 'Select region',
+            hintText: l10n.selectRegion,
             items: _regions
                 .map((r) => DropdownMenuItem(value: r, child: Text(r.name)))
                 .toList(),
@@ -453,7 +453,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
-            hintText: 'Enter business email',
+            hintText: l10n.enterBusinessEmail,
             validator: (v) {
               if (v == null || v.isEmpty) return l10n.validationEmailRequired;
               if (!v.contains('@')) return l10n.validationEmailInvalid;
@@ -513,7 +513,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
-            hintText: 'Enter contact email',
+            hintText: l10n.enterContactEmail,
             validator: (v) {
               if (v == null || v.isEmpty) return l10n.enterContactEmail;
               if (!v.contains('@')) return l10n.validationEmailInvalid;
@@ -545,7 +545,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
               ),
-              tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+              tooltip: _obscurePassword ? l10n.showPassword : l10n.hidePassword,
             ),
             validator: (v) {
               if (v == null || v.isEmpty) {
@@ -642,8 +642,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
-        body: const Center(
-          child: LoadingView(message: 'Preparing registration regions...'),
+        body: Center(
+          child: LoadingView(message: l10n.preparingRegistrationRegions),
         ),
       );
     }
@@ -738,23 +738,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onComplete: _submit,
                     steps: [
                       AppStep(
-                        title: 'Business Info',
-                        description:
-                            'Tell us who the business is and where it operates.',
+                        title: l10n.businessInfo,
+                        description: l10n.businessInfoDescription,
                         contentBuilder: _buildBusinessStep,
                         validate: _validateBusinessStep,
                       ),
                       AppStep(
-                        title: 'Contact Person',
-                        description:
-                            'Add the person we should reach for day-to-day communication.',
+                        title: l10n.contactPerson,
+                        description: l10n.contactPersonDescription,
                         contentBuilder: _buildContactStep,
                         validate: _validateContactStep,
                       ),
                       AppStep(
-                        title: 'Review',
-                        description:
-                            'Check everything once before we create the account.',
+                        title: l10n.review,
+                        description: l10n.registrationReviewDescription,
                         contentBuilder: _buildReviewStep,
                         validate: () => true,
                       ),

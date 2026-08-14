@@ -5,6 +5,7 @@ import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class FarmerListScreen extends ConsumerStatefulWidget {
   const FarmerListScreen({super.key});
@@ -26,13 +27,14 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
   @override
   Widget build(BuildContext context) {
     final farmersAsync = ref.watch(allFarmersProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Farmers'),
+        title: Text(l10n.farmers),
         actions: [
           IconButton(
-            tooltip: 'Add farmer',
+            tooltip: l10n.addFarmer,
             onPressed: () => context.push(AppRoutes.workerFarmerRegistration),
             icon: const Icon(Icons.add_rounded),
           ),
@@ -44,9 +46,9 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: TextField(
               controller: _searchCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Search farmers...',
-                prefixIcon: Icon(Icons.search_rounded),
+              decoration: InputDecoration(
+                hintText: l10n.searchFarmers,
+                prefixIcon: const Icon(Icons.search_rounded),
               ),
               onChanged: (value) => setState(() {
                 _query = value.trim().toLowerCase();
@@ -68,10 +70,10 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                       }).toList();
 
                 if (filtered.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                     icon: Icons.people_alt_outlined,
-                    title: 'No farmers yet',
-                    subtitle: 'Register a farmer at point of contact.',
+                    title: l10n.noFarmersYet,
+                    subtitle: l10n.registerFarmerSubtitle,
                   );
                 }
 

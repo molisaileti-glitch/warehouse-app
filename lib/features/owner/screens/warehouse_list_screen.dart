@@ -8,6 +8,7 @@ import 'package:warehouse_app/core/providers/auth_provider.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 String buildWarehouseGpsLocation({
   String? regionName,
@@ -45,6 +46,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userId = ref.watch(currentUserIdProvider);
     final warehousesAsync = userId != null
         ? ref.watch(warehousesByOwnerProvider(userId))
@@ -54,10 +56,10 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Warehouses'),
+        title: Text(l10n.warehouses),
         actions: [
           IconButton(
-            tooltip: 'Add warehouse',
+            tooltip: l10n.addWarehouse,
             onPressed: () => _showCreateSheet(context),
             icon: const Icon(Icons.add_rounded),
           ),
@@ -73,7 +75,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
               final filtered = query.isEmpty
                   ? baseList
                   : baseList.where((warehouse) {
-                      final location = _warehouseLocation(warehouse);
+                      final location = _warehouseLocation(warehouse, l10n);
                       return warehouse.name.toLowerCase().contains(query) ||
                           location.toLowerCase().contains(query);
                     }).toList();
@@ -91,9 +93,9 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                         children: [
                           TextField(
                             controller: _search,
-                            decoration: const InputDecoration(
-                              hintText: 'Search warehouses...',
-                              prefixIcon: Icon(Icons.search_rounded),
+                            decoration: InputDecoration(
+                              hintText: l10n.searchWarehouses,
+                              prefixIcon: const Icon(Icons.search_rounded),
                             ),
                             onChanged: (value) =>
                                 setState(() => _query = value),
@@ -104,33 +106,33 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                               Expanded(
                                 child: _WarehouseSummaryCard(
                                   value: '${warehouses.length}',
-                                  label: 'Total',
+                                  label: l10n.total,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _WarehouseSummaryCard(
                                   value: '$workerCount',
-                                  label: 'Workers',
+                                  label: l10n.workers,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _WarehouseSummaryCard(
                                   value: '$activeCount/${warehouses.length}',
-                                  label: 'Active',
+                                  label: l10n.active,
                                   highlighted: true,
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 20),
-                          const Row(
+                          Row(
                             children: [
                               Expanded(
                                 child: Text(
-                                  'All Warehouses',
-                                  style: TextStyle(
+                                  l10n.allWarehouses,
+                                  style: const TextStyle(
                                     color: AppColors.textPrimary,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800,
@@ -145,12 +147,12 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                     ),
                   ),
                   if (filtered.isEmpty)
-                    const SliverFillRemaining(
+                    SliverFillRemaining(
                       hasScrollBody: false,
                       child: EmptyState(
                         icon: Icons.warehouse_rounded,
-                        title: 'No warehouses found',
-                        subtitle: 'Tap + to create your first warehouse.',
+                        title: l10n.noWarehousesFound,
+                        subtitle: l10n.createFirstWarehouse,
                       ),
                     )
                   else
@@ -256,7 +258,8 @@ class _WarehouseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final location = _warehouseLocation(warehouse);
+    final l10n = AppLocalizations.of(context)!;
+    final location = _warehouseLocation(warehouse, l10n);
     final active = warehouse.isActive;
 
     return AppCard(
@@ -325,6 +328,7 @@ class _WarehouseStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = active ? AppColors.success : AppColors.textMuted;
 
     return Container(
@@ -334,7 +338,7 @@ class _WarehouseStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
-        active ? 'Active' : 'Inactive',
+        active ? l10n.active : l10n.inactive,
         style: TextStyle(
           color: color,
           fontSize: 11,
@@ -345,7 +349,7 @@ class _WarehouseStatusBadge extends StatelessWidget {
   }
 }
 
-String _warehouseLocation(Warehouse warehouse) {
+String _warehouseLocation(Warehouse warehouse, AppLocalizations l10n) {
   final value = warehouse.gpsLocation?.trim();
   if (value != null && value.isNotEmpty) {
     return value.split(',').first.trim();
@@ -354,7 +358,7 @@ String _warehouseLocation(Warehouse warehouse) {
   if (village != null && village.isNotEmpty) return village;
   final amcos = warehouse.amcosName?.trim();
   if (amcos != null && amcos.isNotEmpty) return amcos;
-  return 'Location not set';
+  return l10n.locationNotSet;
 }
 
 class _CreateWarehouseSheet extends ConsumerStatefulWidget {
@@ -386,12 +390,13 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Create Warehouse',
-      description: 'Create ${_nameCtrl.text.trim()} as a new warehouse?',
-      confirmLabel: 'Create',
+      title: l10n.createWarehouse,
+      description: l10n.createWarehouseConfirm(_nameCtrl.text.trim()),
+      confirmLabel: l10n.create,
     );
     if (!confirmed) return;
     if (!mounted) return;
@@ -399,8 +404,8 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
     setState(() => _loading = true);
     showCenteredLoadingDialog(
       context,
-      title: 'Creating Warehouse',
-      description: 'Saving this warehouse locally.',
+      title: l10n.creatingWarehouse,
+      description: l10n.savingWarehouseLocally,
     );
 
     try {
@@ -426,8 +431,8 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
       if (widget.parentContext.mounted) {
         await showCreationSuccessDialog(
           widget.parentContext,
-          title: 'Warehouse Created',
-          description: 'Warehouse successfully created.',
+          title: l10n.warehouseCreated,
+          description: l10n.warehouseCreatedSuccess,
         );
       }
     } catch (error) {
@@ -437,7 +442,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $error'),
+            content: Text(l10n.errorWithDetails('$error')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -473,6 +478,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: const BoxDecoration(
@@ -498,20 +504,24 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'New Warehouse',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              Text(
+                l10n.newWarehouse,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Warehouse name'),
-                validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Required' : null,
+                decoration: InputDecoration(labelText: l10n.warehouseName),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? l10n.requiredField
+                    : null,
               ),
               const SizedBox(height: 12),
               _buildLocationDropdown<Region>(
-                label: 'Region',
+                label: l10n.region,
                 value: _selectedRegion,
                 streamBuilder: () =>
                     ref.read(regionDaoProvider).watchAllRegions(),
@@ -533,11 +543,11 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                         buildWarehouseGpsLocation(regionName: value?.name);
                   });
                 },
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
               _buildLocationDropdown<District>(
-                label: 'District',
+                label: l10n.district,
                 value: _selectedDistrict,
                 streamBuilder: () => _selectedRegion == null
                     ? Stream.value(const <District>[])
@@ -563,11 +573,11 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                     );
                   });
                 },
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
               _buildLocationDropdown<Ward>(
-                label: 'Ward',
+                label: l10n.ward,
                 value: _selectedWard,
                 streamBuilder: () => _selectedDistrict == null
                     ? Stream.value(const <Ward>[])
@@ -593,11 +603,11 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                     );
                   });
                 },
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
               _buildLocationDropdown<Village>(
-                label: 'Village',
+                label: l10n.village,
                 value: _selectedVillage,
                 streamBuilder: () => _selectedWard == null
                     ? Stream.value(const <Village>[])
@@ -623,11 +633,11 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                     );
                   });
                 },
-                validator: (value) => value == null ? 'Required' : null,
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
               _buildLocationDropdown<Amcos>(
-                label: 'AMCOS',
+                label: l10n.amcos,
                 value: _selectedAmcos,
                 streamBuilder: () => ref.read(amcosDaoProvider).watchAllAmcos(),
                 itemBuilder: (amcosList) => amcosList
@@ -639,15 +649,15 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                     )
                     .toList(),
                 onChanged: (value) => setState(() => _selectedAmcos = value),
+                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _gpsCtrl,
                 readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: 'GPS location / address',
-                  hintText:
-                      'Auto-built from region, district, ward and village',
+                decoration: InputDecoration(
+                  labelText: l10n.gpsLocationAddress,
+                  hintText: l10n.locationAutoBuilt,
                 ),
               ),
               const SizedBox(height: 24),
@@ -659,7 +669,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                     )
                   : ElevatedButton(
                       onPressed: _submit,
-                      child: const Text('Create Warehouse'),
+                      child: Text(l10n.createWarehouse),
                     ),
             ],
           ),

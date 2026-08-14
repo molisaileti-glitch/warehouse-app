@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 enum AppFeedbackType { success, error, warning, info, confirmation, loading }
 
@@ -188,15 +189,16 @@ Future<void> showCreationSuccessDialog(
   BuildContext context, {
   required String title,
   required String description,
-  String actionLabel = 'OK',
+  String? actionLabel,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   return showAppFeedbackDialog<void>(
     context,
     title: title,
     description: description,
     type: AppFeedbackType.success,
     actions: [
-      AppFeedbackAction<void>(label: actionLabel, isPrimary: true),
+      AppFeedbackAction<void>(label: actionLabel ?? l10n.ok, isPrimary: true),
     ],
   );
 }
@@ -205,18 +207,19 @@ Future<bool> showCreationConfirmDialog(
   BuildContext context, {
   required String title,
   required String description,
-  String confirmLabel = 'Create',
+  String? confirmLabel,
   bool isDestructive = false,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final result = await showAppFeedbackDialog<bool>(
     context,
     title: title,
     description: description,
     type: AppFeedbackType.confirmation,
     actions: [
-      const AppFeedbackAction<bool>(label: 'Cancel', result: false),
+      AppFeedbackAction<bool>(label: l10n.cancel, result: false),
       AppFeedbackAction<bool>(
-        label: confirmLabel,
+        label: confirmLabel ?? l10n.create,
         result: true,
         isPrimary: true,
         isDestructive: isDestructive,

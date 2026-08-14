@@ -4,6 +4,7 @@
 // a focused content area, and a sticky bottom action rail.
 
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class AppStep {
   final String title;
@@ -24,18 +25,18 @@ class AppStep {
 class AppStepper extends StatefulWidget {
   final List<AppStep> steps;
   final VoidCallback onComplete;
-  final String nextLabel;
-  final String completeLabel;
-  final String backLabel;
+  final String? nextLabel;
+  final String? completeLabel;
+  final String? backLabel;
   final bool stickyActions;
 
   const AppStepper({
     super.key,
     required this.steps,
     required this.onComplete,
-    this.nextLabel = 'Next',
-    this.completeLabel = 'Create Account',
-    this.backLabel = 'Back',
+    this.nextLabel,
+    this.completeLabel,
+    this.backLabel,
     this.stickyActions = true,
   });
 
@@ -101,6 +102,7 @@ class AppStepperState extends State<AppStepper> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final step = widget.steps[_currentStep];
@@ -114,7 +116,7 @@ class AppStepperState extends State<AppStepper> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Step ${_currentStep + 1} of ${widget.steps.length}',
+            l10n.stepProgress(_currentStep + 1, widget.steps.length),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -171,6 +173,7 @@ class AppStepperState extends State<AppStepper> {
   }
 
   Widget _buildStickyActionRail(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final hasBack = _currentStep > 0;
     final isLast = _currentStep == widget.steps.length - 1;
@@ -185,15 +188,21 @@ class AppStepperState extends State<AppStepper> {
           ? FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(56),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              backgroundColor: destructive ? theme.colorScheme.error : theme.colorScheme.primary,
+              backgroundColor: destructive
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18)),
             )
           : OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(56),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              foregroundColor: destructive ? theme.colorScheme.error : theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              foregroundColor: destructive
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18)),
             );
 
       return primary
@@ -223,7 +232,9 @@ class AppStepperState extends State<AppStepper> {
               SizedBox(
                 width: double.infinity,
                 child: actionButton(
-                  label: isLast ? widget.completeLabel : widget.nextLabel,
+                  label: isLast
+                      ? widget.completeLabel ?? l10n.createAccount
+                      : widget.nextLabel ?? l10n.next,
                   onPressed: _handleContinue,
                   primary: true,
                   destructive: false,
@@ -234,7 +245,7 @@ class AppStepperState extends State<AppStepper> {
                 children: [
                   Expanded(
                     child: actionButton(
-                      label: widget.backLabel,
+                      label: widget.backLabel ?? l10n.back,
                       onPressed: _handleCancel,
                       primary: false,
                       destructive: false,
@@ -243,7 +254,9 @@ class AppStepperState extends State<AppStepper> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: actionButton(
-                      label: isLast ? widget.completeLabel : widget.nextLabel,
+                      label: isLast
+                          ? widget.completeLabel ?? l10n.createAccount
+                          : widget.nextLabel ?? l10n.next,
                       onPressed: _handleContinue,
                       primary: true,
                       destructive: false,

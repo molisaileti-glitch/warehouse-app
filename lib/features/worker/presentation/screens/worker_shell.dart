@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class WorkerShell extends ConsumerWidget {
   final Widget child;
@@ -13,6 +14,7 @@ class WorkerShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final location = GoRouterState.of(context).matchedLocation;
     final userId = ref.watch(currentUserIdProvider);
     final userAsync = userId != null
@@ -39,15 +41,16 @@ class WorkerShell extends ConsumerWidget {
           }
           if (i == 3) context.go(AppRoutes.workerFarmers);
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded), label: 'Home'),
+              icon: const Icon(Icons.home_rounded), label: l10n.home),
           BottomNavigationBarItem(
-              icon: Icon(Icons.inventory_2_rounded), label: 'Inventory'),
+              icon: const Icon(Icons.inventory_2_rounded),
+              label: l10n.inventory),
           BottomNavigationBarItem(
-              icon: Icon(Icons.grass_rounded), label: 'Harvest'),
+              icon: const Icon(Icons.grass_rounded), label: l10n.harvest),
           BottomNavigationBarItem(
-              icon: Icon(Icons.people_alt_rounded), label: 'Farmers'),
+              icon: const Icon(Icons.people_alt_rounded), label: l10n.farmers),
         ],
       ),
     );

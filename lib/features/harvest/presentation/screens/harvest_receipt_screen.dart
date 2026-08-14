@@ -76,7 +76,8 @@ class _HarvestReceiptScreenState extends ConsumerState<HarvestReceiptScreen> {
     FarmerHarvest harvest,
     int bagCount,
   ) {
-    final date = DateFormat('MMM d, yyyy HH:mm').format(harvest.receivedAt);
+    final date = DateFormat('MMM d, yyyy HH:mm', l10n.localeName)
+        .format(harvest.receivedAt);
     final uom = harvest.uomName ?? 'kg';
 
     return SingleChildScrollView(
@@ -248,10 +249,15 @@ class _HarvestReceiptScreenState extends ConsumerState<HarvestReceiptScreen> {
       if (loadingShown) {
         Navigator.of(context, rootNavigator: true).pop();
       }
+      if (error is ReceiptPrinterException &&
+          error.message == 'No printer was selected.') {
+        return;
+      }
       await showAppFeedbackDialog<void>(
         context,
         title: appL10n.printerError,
-        description: error is ReceiptPrinterException
+        description: error is ReceiptPrinterException &&
+                error.message == appL10n.bluetoothPermissionRequired
             ? error.message
             : appL10n.printerLoadError,
         type: AppFeedbackType.error,

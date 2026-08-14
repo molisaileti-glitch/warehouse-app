@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
@@ -30,6 +32,31 @@ class DriftFarmerRepository implements FarmerRepository {
   }
 
   @override
+  Future<int> pullFromServer({required Set<int> amcosIds}) async {
+    var count = 0;
+    final sortedIds = amcosIds.where((id) => id > 0).toList()..sort();
+
+    for (final amcosId in sortedIds) {
+      final response = await _dio.get('/farmers/amcos/$amcosId');
+      final rows = _asList(response.data);
+      for (final row in rows) {
+        final model = FarmerModel.fromJson(row);
+        if (model.id <= 0) continue;
+        await _ensureCropReference(model.mainCrop);
+        await _ensureCropReference(model.secondaryCrop);
+        await _dao.upsertFarmer(model.toCompanion());
+        count++;
+      }
+    }
+
+    developer.log(
+      '[FarmerSync] amcosIds=$sortedIds farmers=$count',
+      name: 'sync.farmer',
+    );
+    return count;
+  }
+
+  @override
   Future<FarmerCreateResult> createFarmer({
     required FarmerCreateInput farmer,
     List<FarmerDependantInput> dependants = const [],
@@ -39,7 +66,7 @@ class DriftFarmerRepository implements FarmerRepository {
         ...farmer.toJson(),
         'uuid': const Uuid().v4(),
       };
-      print('POST /farmers payload: $payload');
+      developer.log('POST /farmers payload: $payload', name: 'farmer.api');
       final res = await _dio.post('/farmers', data: payload);
       final data = _asMap(res.data);
       final model = FarmerModel.fromJson(data);
@@ -68,9 +95,10 @@ class DriftFarmerRepository implements FarmerRepository {
         dependantErrors: dependantErrors,
       );
     } on DioException catch (e) {
-      print(
+      developer.log(
         'POST /farmers failed: '
         'status=${e.response?.statusCode}, data=${e.response?.data}',
+        name: 'farmer.api',
       );
       return FarmerCreateResult.failure(_dioMessage(e));
     } catch (e) {
@@ -86,12 +114,18 @@ class DriftFarmerRepository implements FarmerRepository {
     try {
       final beforeCount = (await _dao.getDependantsForFarmer(farmerId)).length;
       final payload = [dependant.toJson()];
-      print('POST /farmer-dependants/$farmerId payload: $payload');
+      developer.log(
+        'POST /farmer-dependants/$farmerId payload: $payload',
+        name: 'farmer.api',
+      );
       final res = await _dio.post(
         '/farmer-dependants/$farmerId',
         data: payload,
       );
-      print('POST /farmer-dependants/$farmerId response: ${res.data}');
+      developer.log(
+        'POST /farmer-dependants/$farmerId response: ${res.data}',
+        name: 'farmer.api',
+      );
       final data = _asMap(res.data);
       final responseDependants = data['dependants'] ?? data['farmerDependants'];
       if (responseDependants is List) {
@@ -175,13 +209,17 @@ class DriftFarmerRepository implements FarmerRepository {
       );
       return FarmerDependantCreateResult.success();
     } on DioException catch (e) {
-      print(
+      developer.log(
         'POST /farmer-dependants/$farmerId failed: '
         'status=${e.response?.statusCode}, data=${e.response?.data}',
+        name: 'farmer.api',
       );
       return FarmerDependantCreateResult.failure(_dioMessage(e));
     } catch (e) {
-      print('POST /farmer-dependants/$farmerId failed: $e');
+      developer.log(
+        'POST /farmer-dependants/$farmerId failed: $e',
+        name: 'farmer.api',
+      );
       return FarmerDependantCreateResult.failure(e.toString());
     }
   }
@@ -192,9 +230,10 @@ class DriftFarmerRepository implements FarmerRepository {
     required int beforeCount,
   }) async {
     final saved = await _dao.getDependantsForFarmer(farmerId);
-    print(
+    developer.log(
       'Local dependants for farmer $farmerId: '
       'before=$beforeCount, after=${saved.length}',
+      name: 'farmer.local',
     );
     if (saved.length > beforeCount) return;
 
@@ -204,9 +243,10 @@ class DriftFarmerRepository implements FarmerRepository {
     );
     await _dao.upsertDependant(fallback.toCompanion());
     final afterFallback = await _dao.getDependantsForFarmer(farmerId);
-    print(
+    developer.log(
       'Inserted local fallback dependant for farmer $farmerId. '
       'after=${afterFallback.length}',
+      name: 'farmer.local',
     );
   }
 
@@ -242,6 +282,17 @@ class DriftFarmerRepository implements FarmerRepository {
       return data.map((key, value) => MapEntry(key.toString(), value));
     }
     return const {};
+  }
+
+  List<Map<String, dynamic>> _asList(Object? data) {
+    final raw = data is Map<String, dynamic>
+        ? data['content'] ?? data['records'] ?? data['results'] ?? data['data']
+        : data;
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map>()
+        .map((row) => _asMap(row))
+        .toList();
   }
 
   Future<void> _ensureCropReference(int cropId) async {

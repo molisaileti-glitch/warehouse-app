@@ -8,13 +8,15 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../shared/widgets/common_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class InventoryListScreen extends ConsumerStatefulWidget {
   final String warehouseId;
   const InventoryListScreen({super.key, required this.warehouseId});
 
   @override
-  ConsumerState<InventoryListScreen> createState() => _InventoryListScreenState();
+  ConsumerState<InventoryListScreen> createState() =>
+      _InventoryListScreenState();
 }
 
 class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
@@ -24,17 +26,25 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
   late TabController _tabs;
 
   @override
-  void initState() { super.initState(); _tabs = TabController(length: 2, vsync: this); }
+  void initState() {
+    super.initState();
+    _tabs = TabController(length: 2, vsync: this);
+  }
 
   @override
-  void dispose() { _search.dispose(); _tabs.dispose(); super.dispose(); }
+  void dispose() {
+    _search.dispose();
+    _tabs.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final itemsAsync = ref.watch(inventoryItemsProvider(widget.warehouseId));
     final lowAsync = ref.watch(lowStockProvider(widget.warehouseId));
     final whAsync = ref.watch(warehouseByIdProvider(widget.warehouseId));
-    final whName = whAsync.valueOrNull?.name ?? 'Inventory';
+    final whName = whAsync.valueOrNull?.name ?? l10n.inventory;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,8 +56,8 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
           unselectedLabelColor: Colors.white60,
           indicatorColor: Colors.white,
           tabs: [
-            Tab(text: 'All (${itemsAsync.valueOrNull?.length ?? 0})'),
-            Tab(text: 'Low Stock (${lowAsync.valueOrNull?.length ?? 0})'),
+            Tab(text: l10n.allItems(itemsAsync.valueOrNull?.length ?? 0)),
+            Tab(text: l10n.lowStockItems(lowAsync.valueOrNull?.length ?? 0)),
           ],
         ),
       ),
@@ -55,7 +65,7 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
         onPressed: () => _showAddItemSheet(context),
         backgroundColor: AppColors.workerColor,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Add Item', style: TextStyle(color: Colors.white)),
+        label: Text(l10n.addItem, style: const TextStyle(color: Colors.white)),
       ),
       body: Column(
         children: [
@@ -63,7 +73,9 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: TextField(
               controller: _search,
-              decoration: const InputDecoration(hintText: 'Search items…', prefixIcon: Icon(Icons.search_rounded)),
+              decoration: InputDecoration(
+                  hintText: l10n.searchItems,
+                  prefixIcon: const Icon(Icons.search_rounded)),
               onChanged: (v) => setState(() => _query = v.toLowerCase()),
             ),
           ),
@@ -71,11 +83,17 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
             child: TabBarView(
               controller: _tabs,
               children: [
-                _ItemList(itemsAsync: itemsAsync, query: _query, warehouseId: widget.warehouseId),
-                _ItemList(itemsAsync: lowAsync, query: _query, warehouseId: widget.warehouseId,
+                _ItemList(
+                    itemsAsync: itemsAsync,
+                    query: _query,
+                    warehouseId: widget.warehouseId),
+                _ItemList(
+                    itemsAsync: lowAsync,
+                    query: _query,
+                    warehouseId: widget.warehouseId,
                     emptyIcon: Icons.check_circle_rounded,
-                    emptyTitle: 'No low-stock items',
-                    emptySubtitle: 'All items are above reorder level'),
+                    emptyTitle: l10n.noLowStockItems,
+                    emptySubtitle: l10n.allAboveReorder),
               ],
             ),
           ),
@@ -86,7 +104,9 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen>
 
   void _showAddItemSheet(BuildContext context) {
     showModalBottomSheet(
-      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => _AddItemSheet(warehouseId: widget.warehouseId),
     );
   }
@@ -97,34 +117,43 @@ class _ItemList extends ConsumerWidget {
   final String query;
   final String warehouseId;
   final IconData emptyIcon;
-  final String emptyTitle;
+  final String? emptyTitle;
   final String? emptySubtitle;
 
   const _ItemList({
-    required this.itemsAsync, required this.query, required this.warehouseId,
+    required this.itemsAsync,
+    required this.query,
+    required this.warehouseId,
     this.emptyIcon = Icons.inventory_2_rounded,
-    this.emptyTitle = 'No items yet',
+    this.emptyTitle,
     this.emptySubtitle,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return itemsAsync.when(
       data: (list) {
         final filtered = query.isEmpty
             ? list
-            : list.where((i) => i.name.toLowerCase().contains(query) ||
-                (i.category?.toLowerCase().contains(query) ?? false)).toList();
+            : list
+                .where((i) =>
+                    i.name.toLowerCase().contains(query) ||
+                    (i.category?.toLowerCase().contains(query) ?? false))
+                .toList();
 
         if (filtered.isEmpty) {
-          return EmptyState(icon: emptyIcon, title: emptyTitle,
-              subtitle: emptySubtitle ?? 'Tap + Add Item to get started');
+          return EmptyState(
+              icon: emptyIcon,
+              title: emptyTitle ?? l10n.noItemsYet,
+              subtitle: emptySubtitle ?? l10n.addItemToStart);
         }
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
           itemCount: filtered.length,
           separatorBuilder: (_, __) => const SizedBox(height: 4),
-          itemBuilder: (_, i) => _InventoryItemCard(item: filtered[i], warehouseId: warehouseId),
+          itemBuilder: (_, i) =>
+              _InventoryItemCard(item: filtered[i], warehouseId: warehouseId),
         );
       },
       loading: () => const LoadingView(),
@@ -140,8 +169,11 @@ class _InventoryItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isLow = item.quantityOnHand <= item.reorderLevel;
-    final pct = item.reorderLevel > 0 ? (item.quantityOnHand / (item.reorderLevel * 2)).clamp(0.0, 1.0) : 1.0;
+    final pct = item.reorderLevel > 0
+        ? (item.quantityOnHand / (item.reorderLevel * 2)).clamp(0.0, 1.0)
+        : 1.0;
 
     return AppCard(
       onTap: () => context.go(
@@ -151,20 +183,29 @@ class _InventoryItemCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Expanded(child: Column(
+            Expanded(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                Text(item.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 15)),
                 if (item.category != null)
-                  Text(item.category!, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                  Text(item.category!,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 12)),
               ],
             )),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${item.quantityOnHand % 1 == 0 ? item.quantityOnHand.toInt() : item.quantityOnHand.toStringAsFixed(1)} ${item.unit}',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16,
-                        color: isLow ? AppColors.error : AppColors.textPrimary)),
+                Text(
+                    '${item.quantityOnHand % 1 == 0 ? item.quantityOnHand.toInt() : item.quantityOnHand.toStringAsFixed(1)} ${item.unit}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color:
+                            isLow ? AppColors.error : AppColors.textPrimary)),
                 SyncStatusBadge(status: item.syncStatus),
               ],
             ),
@@ -172,19 +213,30 @@ class _InventoryItemCard extends StatelessWidget {
           if (item.reorderLevel > 0) ...[
             const SizedBox(height: 10),
             Row(children: [
-              Expanded(child: ClipRRect(
+              Expanded(
+                  child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: pct, minHeight: 5, backgroundColor: AppColors.divider,
-                  valueColor: AlwaysStoppedAnimation(isLow ? AppColors.error : AppColors.success),
+                  value: pct,
+                  minHeight: 5,
+                  backgroundColor: AppColors.divider,
+                  valueColor: AlwaysStoppedAnimation(
+                      isLow ? AppColors.error : AppColors.success),
                 ),
               )),
               const SizedBox(width: 8),
               if (isLow)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                  child: const Text('Reorder', style: TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.w600)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: AppColors.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4)),
+                  child: Text(l10n.reorder,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600)),
                 ),
             ]),
           ],
@@ -212,25 +264,34 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _skuCtrl.dispose(); _catCtrl.dispose(); _unitCtrl.dispose(); _reorderCtrl.dispose();
+    _nameCtrl.dispose();
+    _skuCtrl.dispose();
+    _catCtrl.dispose();
+    _unitCtrl.dispose();
+    _reorderCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
       await ref.read(inventoryRepoProvider).createItem(
-        warehouseId: widget.warehouseId,
-        name: _nameCtrl.text.trim(),
-        sku: _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
-        category: _catCtrl.text.trim().isEmpty ? null : _catCtrl.text.trim(),
-        unit: _unitCtrl.text.trim(),
-        reorderLevel: double.tryParse(_reorderCtrl.text) ?? 0,
-      );
+            warehouseId: widget.warehouseId,
+            name: _nameCtrl.text.trim(),
+            sku: _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
+            category:
+                _catCtrl.text.trim().isEmpty ? null : _catCtrl.text.trim(),
+            unit: _unitCtrl.text.trim(),
+            reorderLevel: double.tryParse(_reorderCtrl.text) ?? 0,
+          );
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l10n.errorWithDetails('$e')),
+            backgroundColor: AppColors.error));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -238,9 +299,12 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Form(
         key: _formKey,
@@ -249,32 +313,59 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 36, height: 4,
-                  decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
+              Center(
+                  child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 20),
-              const Text('Add Inventory Item', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              Text(l10n.addInventoryItem,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 20),
-              TextFormField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Item name *'),
-                  validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null),
+              TextFormField(
+                  controller: _nameCtrl,
+                  decoration: InputDecoration(labelText: l10n.itemName),
+                  validator: (v) =>
+                      (v?.isEmpty ?? true) ? l10n.requiredField : null),
               const SizedBox(height: 10),
               Row(children: [
-                Expanded(child: TextFormField(controller: _skuCtrl, decoration: const InputDecoration(labelText: 'SKU'))),
+                Expanded(
+                    child: TextFormField(
+                        controller: _skuCtrl,
+                        decoration: InputDecoration(labelText: l10n.sku))),
                 const SizedBox(width: 10),
-                Expanded(child: TextFormField(controller: _catCtrl, decoration: const InputDecoration(labelText: 'Category'))),
+                Expanded(
+                    child: TextFormField(
+                        controller: _catCtrl,
+                        decoration: InputDecoration(labelText: l10n.category))),
               ]),
               const SizedBox(height: 10),
               Row(children: [
-                Expanded(child: TextFormField(controller: _unitCtrl, decoration: const InputDecoration(labelText: 'Unit'))),
+                Expanded(
+                    child: TextFormField(
+                        controller: _unitCtrl,
+                        decoration: InputDecoration(labelText: l10n.unit))),
                 const SizedBox(width: 10),
-                Expanded(child: TextFormField(controller: _reorderCtrl, keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Reorder level'))),
+                Expanded(
+                    child: TextFormField(
+                        controller: _reorderCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                            InputDecoration(labelText: l10n.reorderLevel))),
               ]),
               const SizedBox(height: 24),
               _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.workerColor))
-                  : ElevatedButton(onPressed: _submit,
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.workerColor),
-                      child: const Text('Add Item')),
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: AppColors.workerColor))
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.workerColor),
+                      child: Text(l10n.addItem)),
             ],
           ),
         ),

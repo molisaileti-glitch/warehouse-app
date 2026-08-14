@@ -24,6 +24,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/database/database_provider.dart';
 import '../../worker/domain/models/worker_model.dart';
 import '../../shared/widgets/common_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
@@ -36,15 +37,16 @@ class UserManagementScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final usersAsync = ref.watch(_workersProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Workers'),
+        title: Text(l10n.workers),
         actions: [
           IconButton(
-            tooltip: 'Add worker',
+            tooltip: l10n.addWorkerTooltip,
             onPressed: () => _showAddWorkerSheet(context, ref),
             icon: const Icon(Icons.add_rounded),
           ),
@@ -61,10 +63,10 @@ class UserManagementScreen extends ConsumerWidget {
               data: (users) {
                 final workers = users;
                 if (workers.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                     icon: Icons.people_rounded,
-                    title: 'No workers yet',
-                    subtitle: 'Use + to create your first worker account',
+                    title: l10n.noWorkersYet,
+                    subtitle: l10n.createFirstWorker,
                   );
                 }
                 return ListView.separated(
@@ -101,6 +103,7 @@ class _WorkerTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final warehouseAsync = user.warehouseId != null
         ? ref.watch(warehouseByIdProvider(user.warehouseId!))
         : const AsyncValue.data(null);
@@ -155,7 +158,7 @@ class _WorkerTile extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              user.isActive ? 'Active' : 'Inactive',
+              user.isActive ? l10n.active : l10n.inactive,
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -204,9 +207,10 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedWarehouseId == null) {
-      setState(() => _error = 'Please assign this worker to a warehouse.');
+      setState(() => _error = l10n.assignWorkerWarehouse);
       return;
     }
 
@@ -218,7 +222,7 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
 
     if (warehouse == null) {
       setState(() {
-        _error = 'Selected warehouse not found. Please try again.';
+        _error = l10n.selectedWarehouseNotFound;
       });
       return;
     }
@@ -226,8 +230,7 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     final amcosId = warehouse.amcos;
     if (amcosId == null) {
       setState(() {
-        _error =
-            '"${warehouse.name}" has no AMCOS assigned. Please select a different warehouse.';
+        _error = l10n.warehouseMissingAmcos(warehouse.name);
       });
       return;
     }
@@ -237,7 +240,7 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     final mcuId = int.tryParse(currentUserId ?? '');
     if (mcuId == null) {
       setState(() {
-        _error = 'Could not determine owner ID. Please log out and back in.';
+        _error = l10n.ownerIdUnavailable;
       });
       return;
     }
@@ -245,10 +248,12 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     // ── Call API ──────────────────────────────────────────────────────────────
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Create Worker',
-      description:
-          'Create an account for ${_nameCtrl.text.trim()} and assign this worker to ${warehouse.name}?',
-      confirmLabel: 'Create',
+      title: l10n.createWorker,
+      description: l10n.createWorkerConfirm(
+        _nameCtrl.text.trim(),
+        warehouse.name,
+      ),
+      confirmLabel: l10n.create,
     );
     if (!confirmed) return;
     if (!mounted) return;
@@ -259,8 +264,8 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     });
     showCenteredLoadingDialog(
       context,
-      title: 'Creating Worker',
-      description: 'Saving this worker locally.',
+      title: l10n.creatingWorker,
+      description: l10n.savingWorkerLocally,
     );
 
     final result = await ref.read(workerRepoProvider).createWorker(
@@ -284,8 +289,8 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
       if (widget.parentContext.mounted) {
         await showCreationSuccessDialog(
           widget.parentContext,
-          title: 'Worker Created',
-          description: 'Worker successfully created.',
+          title: l10n.workerCreated,
+          description: l10n.workerCreatedSuccess,
         );
       }
     } else {
@@ -365,6 +370,7 @@ class _FormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final warehouses =
         warehousesAsync.valueOrNull?.where((w) => w.isActive).toList() ?? [];
 
@@ -399,14 +405,14 @@ class _FormView extends StatelessWidget {
                     color: AppColors.ownerColor, size: 22),
               ),
               const SizedBox(width: 12),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Add Worker',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                  Text('Fill in details and assign a warehouse',
-                      style: TextStyle(
+                  Text(l10n.addWorker,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w700)),
+                  Text(l10n.fillWorkerDetails,
+                      style: const TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
@@ -441,12 +447,12 @@ class _FormView extends StatelessWidget {
             TextFormField(
               controller: nameCtrl,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Full name',
-                prefixIcon: Icon(Icons.person_outline_rounded),
+              decoration: InputDecoration(
+                labelText: l10n.fullName,
+                prefixIcon: const Icon(Icons.person_outline_rounded),
               ),
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Enter worker name' : null,
+                  (v == null || v.trim().isEmpty) ? l10n.enterWorkerName : null,
             ),
             const SizedBox(height: 12),
 
@@ -455,13 +461,13 @@ class _FormView extends StatelessWidget {
               controller: emailCtrl,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
+              decoration: InputDecoration(
+                labelText: l10n.emailAddress,
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Enter worker email';
-                if (!v.contains('@')) return 'Enter a valid email';
+                if (v == null || v.isEmpty) return l10n.enterWorkerEmail;
+                if (!v.contains('@')) return l10n.validationEmailInvalid;
                 return null;
               },
             ),
@@ -471,12 +477,13 @@ class _FormView extends StatelessWidget {
             TextFormField(
               controller: phoneCtrl,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Phone number',
-                prefixIcon: Icon(Icons.phone_outlined),
+              decoration: InputDecoration(
+                labelText: l10n.phoneNumber,
+                prefixIcon: const Icon(Icons.phone_outlined),
               ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Enter phone number' : null,
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? l10n.enterPhoneNumber
+                  : null,
             ),
             const SizedBox(height: 12),
 
@@ -487,7 +494,7 @@ class _FormView extends StatelessWidget {
               autocorrect: false,
               enableSuggestions: false,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: l10n.password,
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
                 suffixIcon: IconButton(
                   icon: Icon(obscurePassword
@@ -497,9 +504,9 @@ class _FormView extends StatelessWidget {
                 ),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Enter a password';
+                if (v == null || v.isEmpty) return l10n.enterPassword;
                 if (v.length < 6) {
-                  return 'Password must be at least 6 characters';
+                  return l10n.passwordMinLength;
                 }
                 return null;
               },
@@ -511,15 +518,16 @@ class _FormView extends StatelessWidget {
             DropdownButtonFormField<String>(
               initialValue: selectedWarehouseId,
               isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Assign to warehouse',
-                prefixIcon: Icon(Icons.warehouse_rounded),
-                helperText:
-                    'AMCOS is derived automatically from this selection',
-                helperStyle:
-                    TextStyle(fontSize: 11, color: AppColors.textMuted),
+              decoration: InputDecoration(
+                labelText: l10n.assignToWarehouse,
+                prefixIcon: const Icon(Icons.warehouse_rounded),
+                helperText: l10n.amcosDerivedFromWarehouse,
+                helperStyle: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                ),
               ),
-              hint: const Text('Select warehouse'),
+              hint: Text(l10n.selectWarehouse),
               selectedItemBuilder: (context) => warehouses
                   .map(
                     (w) => Text(
@@ -538,7 +546,7 @@ class _FormView extends StatelessWidget {
                       ))
                   .toList(),
               onChanged: onWarehouseChanged,
-              validator: (v) => v == null ? 'Please assign a warehouse' : null,
+              validator: (v) => v == null ? l10n.assignWarehouseRequired : null,
             ),
             const SizedBox(height: 28),
 
@@ -551,7 +559,7 @@ class _FormView extends StatelessWidget {
                     onPressed: onSubmit,
                     style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.ownerColor),
-                    child: const Text('Create Worker Account'),
+                    child: Text(l10n.createWorkerAccount),
                   ),
           ],
         ),

@@ -1,6 +1,7 @@
 // lib/core/providers/auth_provider.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../database/database_provider.dart';
 import '../repositories/auth_repository.dart';
 import '../enums/sync_status.dart';
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -102,4 +103,16 @@ final currentUserIdProvider = Provider<String?>((ref) {
 
 final currentRoleProvider = Provider<UserRole?>((ref) {
   return ref.watch(authProvider).valueOrNull?.role;
+});
+
+final currentUserMcuProvider = FutureProvider<int?>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return null;
+  final role = ref.watch(currentRoleProvider);
+  final user = await ref.watch(workerDaoProvider).getUserById(userId);
+
+  if (role == UserRole.owner || role == UserRole.superAdmin) {
+    return int.tryParse(userId) ?? user?.mcu;
+  }
+  return user?.mcu;
 });

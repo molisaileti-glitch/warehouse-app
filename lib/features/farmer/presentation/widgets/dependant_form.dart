@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/farmer/domain/models/farmer_dependant_model.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/l10n/localized_values.dart';
 
 const kDependantRelationships = [
   'FATHER',
@@ -16,13 +18,13 @@ const kDependantRelationships = [
 class DependantForm extends StatefulWidget {
   final FarmerDependantInput? initialValue;
   final ValueChanged<FarmerDependantInput> onSubmit;
-  final String submitLabel;
+  final String? submitLabel;
 
   const DependantForm({
     super.key,
     this.initialValue,
     required this.onSubmit,
-    this.submitLabel = 'Add Dependant',
+    this.submitLabel,
   });
 
   @override
@@ -81,6 +83,7 @@ class _DependantFormState extends State<DependantForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       child: Form(
         key: _formKey,
@@ -89,7 +92,7 @@ class _DependantFormState extends State<DependantForm> {
           children: [
             AppTextFormField(
               controller: _firstNameCtrl,
-              labelText: 'First name',
+              labelText: l10n.firstName,
               icon: Icons.person_outline,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -99,7 +102,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _middleNameCtrl,
-              labelText: 'Middle name',
+              labelText: l10n.middleName,
               icon: Icons.person_outline,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -108,7 +111,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _lastNameCtrl,
-              labelText: 'Last name',
+              labelText: l10n.lastName,
               icon: Icons.person_outline,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -117,33 +120,42 @@ class _DependantFormState extends State<DependantForm> {
             ),
             const SizedBox(height: 14),
             AppDropdownFormField<String>(
-              labelText: 'Relationship',
+              labelText: l10n.relationship,
               icon: Icons.family_restroom_rounded,
               value: _relationship,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
               items: kDependantRelationships
-                  .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                  .map((item) => DropdownMenuItem(
+                        value: item,
+                        child: Text(localizedReferenceValue(l10n, item)),
+                      ))
                   .toList(),
               onChanged: (value) => setState(() => _relationship = value!),
             ),
             const SizedBox(height: 14),
             AppDropdownFormField<String>(
-              labelText: 'Gender',
+              labelText: l10n.gender,
               icon: Icons.wc_rounded,
               value: _gender,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
-              items: const [
-                DropdownMenuItem(value: 'MALE', child: Text('MALE')),
-                DropdownMenuItem(value: 'FEMALE', child: Text('FEMALE')),
+              items: [
+                DropdownMenuItem(
+                  value: 'MALE',
+                  child: Text(l10n.male),
+                ),
+                DropdownMenuItem(
+                  value: 'FEMALE',
+                  child: Text(l10n.female),
+                ),
               ],
               onChanged: (value) => setState(() => _gender = value!),
             ),
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _dobCtrl,
-              labelText: 'Date of birth',
+              labelText: l10n.dateOfBirth,
               icon: Icons.calendar_today_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -156,7 +168,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _phoneCtrl,
-              labelText: 'Phone number',
+              labelText: l10n.phoneNumber,
               icon: Icons.phone_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -165,7 +177,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _emailCtrl,
-              labelText: 'Email',
+              labelText: l10n.emailAddress,
               icon: Icons.email_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -173,13 +185,13 @@ class _DependantFormState extends State<DependantForm> {
               autocorrect: false,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) return null;
-                return value.contains('@') ? null : 'Enter a valid email';
+                return value.contains('@') ? null : l10n.validationEmailInvalid;
               },
             ),
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _addressCtrl,
-              labelText: 'Address',
+              labelText: l10n.address,
               icon: Icons.location_on_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -189,7 +201,7 @@ class _DependantFormState extends State<DependantForm> {
             ElevatedButton.icon(
               onPressed: _submit,
               icon: const Icon(Icons.check_rounded),
-              label: Text(widget.submitLabel),
+              label: Text(widget.submitLabel ?? l10n.addDependant),
               style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.workerColor),
             ),
@@ -200,15 +212,18 @@ class _DependantFormState extends State<DependantForm> {
   }
 
   String? _required(String? value) {
-    return value == null || value.trim().isEmpty ? 'Required' : null;
+    return value == null || value.trim().isEmpty
+        ? AppLocalizations.of(context)!.requiredField
+        : null;
   }
 
   String? _date(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Required';
+    final l10n = AppLocalizations.of(context)!;
+    if (value == null || value.trim().isEmpty) return l10n.requiredField;
     final text = value.trim();
     final datePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
     return !datePattern.hasMatch(text) || DateTime.tryParse(text) == null
-        ? 'Use YYYY-MM-DD'
+        ? l10n.useDateFormat
         : null;
   }
 

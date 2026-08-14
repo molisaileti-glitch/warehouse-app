@@ -8,6 +8,8 @@ import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/farmer/domain/models/farmer_dependant_model.dart';
 import 'package:warehouse_app/features/farmer/presentation/widgets/dependant_form.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/l10n/localized_values.dart';
 
 class FarmerDetailScreen extends ConsumerStatefulWidget {
   final int farmerId;
@@ -26,6 +28,7 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final farmerAsync = ref.watch(farmerByIdProvider(widget.farmerId));
     final dependantsAsync =
         ref.watch(farmerDependantsProvider(widget.farmerId));
@@ -39,12 +42,12 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Farmer Details'),
+        title: Text(l10n.farmerDetails),
       ),
       body: farmerAsync.when(
         data: (farmer) {
           if (farmer == null) {
-            return const ErrorView(message: 'Farmer not found');
+            return ErrorView(message: l10n.farmerNotFound);
           }
           final name = [
             farmer.firstName,
@@ -104,38 +107,45 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
                   child: AppCard(
                     child: Column(
                       children: [
-                        _DetailRow(label: 'Sex', value: farmer.sex),
-                        _DetailRow(label: 'Date of birth', value: farmer.dob),
                         _DetailRow(
-                          label: 'AMCOS',
+                          label: l10n.sex,
+                          value: localizedReferenceValue(l10n, farmer.sex),
+                        ),
+                        _DetailRow(label: l10n.dateOfBirth, value: farmer.dob),
+                        _DetailRow(
+                          label: l10n.amcos,
                           value: farmer.amcosName ?? farmer.amcos.toString(),
                         ),
                         _DetailRow(
-                          label: 'Member type',
-                          value: farmer.memberType,
+                          label: l10n.memberType,
+                          value:
+                              localizedReferenceValue(l10n, farmer.memberType),
                         ),
                         _DetailRow(
-                          label: 'Marital status',
-                          value: farmer.maritalStatus,
+                          label: l10n.maritalStatus,
+                          value: localizedReferenceValue(
+                              l10n, farmer.maritalStatus),
                         ),
                         _DetailRow(
-                          label: 'Main crop',
+                          label: l10n.mainCrop,
                           value: _cropName(
                             farmer.mainCrop,
                             crops,
                             cropsLoading,
+                            l10n,
                           ),
                         ),
                         _DetailRow(
-                          label: 'Secondary crop',
+                          label: l10n.secondaryCrop,
                           value: _cropName(
                             farmer.secondaryCrop,
                             crops,
                             cropsLoading,
+                            l10n,
                           ),
                         ),
                         _DetailRow(
-                          label: 'Shares',
+                          label: l10n.shares,
                           value: farmer.noOfShares?.toString() ?? '-',
                         ),
                       ],
@@ -145,20 +155,21 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
               ),
               SliverToBoxAdapter(
                 child: SectionHeader(
-                  title: 'Dependants',
-                  actionLabel: 'Add',
+                  title: l10n.dependants,
+                  actionLabel: l10n.add,
                   onAction: _adding ? null : _showAddDependantSheet,
                 ),
               ),
               dependantsAsync.when(
                 data: (dependants) {
                   if (dependants.isEmpty) {
-                    return const SliverToBoxAdapter(
+                    return SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Text(
-                          'No dependants have been added for this farmer.',
-                          style: TextStyle(color: AppColors.textSecondary),
+                          l10n.noDependantsForFarmer,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
                     );
@@ -188,11 +199,16 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
     );
   }
 
-  String _cropName(int cropId, List<Crop> crops, bool loading) {
+  String _cropName(
+    int cropId,
+    List<Crop> crops,
+    bool loading,
+    AppLocalizations l10n,
+  ) {
     for (final crop in crops) {
       if (crop.id == cropId) return crop.name;
     }
-    return loading ? 'Loading crop...' : 'Unknown crop (ID $cropId)';
+    return loading ? l10n.loadingCrop : l10n.unknownCrop(cropId);
   }
 
   void _showAddDependantSheet() {
@@ -208,11 +224,12 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
   }
 
   Future<void> _addDependant(FarmerDependantInput dependant) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showCreationConfirmDialog(
       context,
-      title: 'Add Dependant',
-      description: 'Add this dependant to the farmer record?',
-      confirmLabel: 'Add',
+      title: l10n.addDependant,
+      description: l10n.addDependantConfirm,
+      confirmLabel: l10n.add,
     );
     if (!confirmed) return;
     if (!mounted) return;
@@ -220,8 +237,8 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
     setState(() => _adding = true);
     showCenteredLoadingDialog(
       context,
-      title: 'Adding Dependant',
-      description: 'Saving this dependant locally.',
+      title: l10n.addingDependant,
+      description: l10n.savingDependantLocally,
     );
     final result = await ref.read(farmerRepoProvider).addDependant(
           farmerId: widget.farmerId,
@@ -237,13 +254,13 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
     if (result.success) {
       await showCreationSuccessDialog(
         context,
-        title: 'Dependant Added',
-        description: 'Dependant successfully added.',
+        title: l10n.dependantAdded,
+        description: l10n.dependantAddedSuccess,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result.error ?? 'Failed to add dependant.'),
+          content: Text(result.error ?? l10n.dependantAddFailed),
           backgroundColor: AppColors.error,
         ),
       );
@@ -262,6 +279,7 @@ class _AddDependantSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final mediaQuery = MediaQuery.of(context);
     return Container(
       constraints: BoxConstraints(maxHeight: mediaQuery.size.height * 0.88),
@@ -283,11 +301,11 @@ class _AddDependantSheet extends StatelessWidget {
               primary: false,
               automaticallyImplyLeading: false,
               leading: IconButton(
-                tooltip: 'Back',
+                tooltip: l10n.back,
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back_rounded),
               ),
-              title: const Text('Add Dependant'),
+              title: Text(l10n.addDependant),
               elevation: 0,
             ),
           ),
@@ -299,7 +317,7 @@ class _AddDependantSheet extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (loading)
-                    const LoadingView(message: 'Adding dependant...')
+                    LoadingView(message: l10n.addingDependantProgress)
                   else
                     DependantForm(onSubmit: onSubmit),
                 ],
@@ -319,6 +337,7 @@ class _DependantRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final name = [
       dependant.firstName,
       dependant.middleName,
@@ -343,7 +362,8 @@ class _DependantRow extends StatelessWidget {
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
                 Text(
-                  '${dependant.relationship} - ${dependant.gender}',
+                  '${localizedReferenceValue(l10n, dependant.relationship)} - '
+                  '${localizedReferenceValue(l10n, dependant.gender)}',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

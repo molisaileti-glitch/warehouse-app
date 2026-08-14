@@ -4,6 +4,7 @@ class WarehouseModel {
   final String uuid;
   final String id;
   final String name;
+  final String? ownerId;
   final String? gpsLocation;
   final int? amcos;
   final String? amcosName;
@@ -18,6 +19,7 @@ class WarehouseModel {
     required this.uuid,
     required this.id,
     required this.name,
+    this.ownerId,
     this.gpsLocation,
     this.amcos,
     this.amcosName,
@@ -34,6 +36,7 @@ class WarehouseModel {
       uuid: warehouse.uuid,
       id: warehouse.id,
       name: warehouse.name,
+      ownerId: warehouse.ownerId,
       gpsLocation: warehouse.gpsLocation,
       amcos: warehouse.amcos,
       amcosName: warehouse.amcosName,
@@ -52,6 +55,7 @@ class WarehouseModel {
       uuid: _stringFromJson(json, ['uuid', 'UUID']) ?? idValue.toString(),
       id: idValue == null ? '' : idValue.toString(),
       name: _stringFromJson(json, ['name']) ?? '',
+      ownerId: _stringFromJson(json, ['mcu', 'ownerId', 'owner_id']),
       gpsLocation:
           _stringFromJson(json, ['gpsLocation', 'gps_location', 'location']),
       amcos: _intFromJson(json, ['amcos']),
@@ -76,6 +80,7 @@ class WarehouseModel {
       uuid: Value(uuid),
       id: id,
       name: name,
+      ownerId: Value(ownerId),
       gpsLocation: Value(gpsLocation),
       amcos: Value(amcos),
       amcosName: Value(amcosName),
@@ -94,6 +99,7 @@ class WarehouseModel {
       'uuid': uuid,
       'id': int.tryParse(id) ?? id,
       'name': name,
+      if (ownerId != null) 'mcu': int.tryParse(ownerId!) ?? ownerId,
       if (gpsLocation != null) 'gpsLocation': gpsLocation,
       if (amcos != null) 'amcos': amcos,
       if (amcosName != null) 'amcosName': amcosName,
@@ -110,6 +116,7 @@ class WarehouseModel {
     return {
       'uuid': uuid,
       'name': name,
+      if (ownerId != null) 'mcu': int.tryParse(ownerId!) ?? ownerId,
       if (gpsLocation != null) 'gpsLocation': gpsLocation,
       if (amcos != null) 'amcos': amcos,
       if (amcosName != null) 'amcosName': amcosName,

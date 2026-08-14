@@ -12,6 +12,9 @@ final harvestRepositoryProvider = Provider<HarvestRepository>((ref) {
 
   return DriftHarvestRepository(
     dao: ref.watch(harvestDaoProvider),
+    farmerDao: ref.watch(farmerDaoProvider),
+    warehouseDao: ref.watch(warehouseDaoProvider),
+    cropDao: ref.watch(cropDaoProvider),
     syncDao: ref.watch(syncQueueDaoProvider),
     auditDao: ref.watch(auditLogDaoProvider),
     dio: ref.watch(apiClientProvider).dio,

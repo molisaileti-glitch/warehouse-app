@@ -5,6 +5,7 @@ abstract class WorkerRepository {
   Stream<List<User>> watchAllWorkers();
   Stream<List<User>> watchWorkersByWarehouse(String warehouseId);
   Stream<User?> watchWorkerById(String id);
+  Future<int> pullFromServer({required int mcuId});
 
   Future<WorkerCreateResult> createWorker(WorkerModel worker);
   Future<void> updateWorker({

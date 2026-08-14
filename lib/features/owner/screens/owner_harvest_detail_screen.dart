@@ -6,6 +6,7 @@ import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 final _ownerHarvestByUuidProvider =
     StreamProvider.family<FarmerHarvest?, String>((ref, uuid) {
@@ -22,6 +23,7 @@ class OwnerHarvestDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final harvestAsync = ref.watch(_ownerHarvestByUuidProvider(harvestUuid));
 
     return Scaffold(
@@ -31,20 +33,20 @@ class OwnerHarvestDetailScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Harvest Details'),
+        title: Text(l10n.harvestDetails),
       ),
       body: harvestAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(message: '$e'),
         data: (harvest) {
           if (harvest == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.receipt_long_outlined,
-              title: 'Harvest not found',
+              title: l10n.harvestNotFound,
             );
           }
 
-          final date = DateFormat('MMM d, yyyy HH:mm').format(
+          final date = DateFormat('MMM d, yyyy HH:mm', l10n.localeName).format(
             harvest.receivedAt,
           );
           final uom = harvest.uomName ?? 'kg';
@@ -98,33 +100,36 @@ class OwnerHarvestDetailScreen extends ConsumerWidget {
                 AppCard(
                   child: Column(
                     children: [
-                      _DetailRow(label: 'Farmer', value: harvest.farmerName),
                       _DetailRow(
-                          label: 'Phone', value: harvest.farmerPhoneNumber),
-                      _DetailRow(label: 'Crop', value: harvest.cropName),
+                        label: l10n.receiptFarmer,
+                        value: harvest.farmerName,
+                      ),
+                      _DetailRow(
+                          label: l10n.phone, value: harvest.farmerPhoneNumber),
+                      _DetailRow(label: l10n.crop, value: harvest.cropName),
                       if (_showGrade(harvest))
                         _DetailRow(
-                          label: 'Grade',
+                          label: l10n.grade,
                           value: harvest.cropGradeName!,
                         ),
                       _DetailRow(
-                        label: 'Warehouse',
+                        label: l10n.warehouse,
                         value: harvest.collectionCenterName,
                       ),
                       _DetailRow(
-                        label: 'Gross',
+                        label: l10n.receiptGross,
                         value: '${_weight(harvest.grossWeight)} $uom',
                       ),
                       _DetailRow(
-                        label: 'Tare',
+                        label: l10n.receiptTare,
                         value: '${_weight(harvest.packagingWeight)} $uom',
                       ),
                       _DetailRow(
-                        label: 'Moisture',
+                        label: l10n.moisture,
                         value: '${_weight(harvest.moistureContent)}%',
                       ),
                       _DetailRow(
-                        label: 'Net',
+                        label: l10n.receiptNet,
                         value: '${_weight(harvest.netWeight)} $uom',
                         strong: true,
                       ),

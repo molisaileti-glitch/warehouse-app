@@ -80,14 +80,14 @@ class OwnerDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            tooltip: 'Notifications',
+            tooltip: l10n.notifications,
             onPressed: pendingSyncCount == 0
                 ? null
                 : () => context.go(AppRoutes.ownerPendingSyncs),
           ),
           IconButton(
             icon: const Icon(Icons.settings_rounded),
-            tooltip: 'Settings',
+            tooltip: l10n.settings,
             onPressed: () => context.go(AppRoutes.ownerSettings),
           ),
         ],
@@ -106,7 +106,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 ),
               )
             : const Icon(Icons.sync_rounded),
-        label: Text(syncState.isSyncing ? l10n.syncing : 'Sync'),
+        label: Text(syncState.isSyncing ? l10n.syncing : l10n.sync),
         backgroundColor: AppColors.ownerColor,
         foregroundColor: Colors.white,
       ),
@@ -125,7 +125,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _greetingFor(DateTime.now()),
+                      _greetingFor(DateTime.now(), l10n),
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 26,
@@ -161,34 +161,36 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 ),
                 delegate: SliverChildListDelegate([
                   _DashboardStatCard(
-                    label: 'Warehouses',
+                    label: l10n.warehouses,
                     value: '${warehouses.length}',
-                    subtitle:
-                        '${warehouses.where((w) => w.isActive).length} active',
+                    subtitle: l10n.activeCount(
+                      warehouses.where((w) => w.isActive).length,
+                    ),
                     icon: Icons.warehouse_rounded,
                     color: AppColors.ownerColor,
                     onTap: () => context.go(AppRoutes.ownerWarehouses),
                   ),
                   _DashboardStatCard(
-                    label: 'Workers',
+                    label: l10n.workers,
                     value: '${workers.length}',
-                    subtitle:
-                        '${workers.where((w) => w.isActive).length} active',
+                    subtitle: l10n.activeCount(
+                      workers.where((w) => w.isActive).length,
+                    ),
                     icon: Icons.groups_rounded,
                     color: AppColors.workerColor,
                     onTap: () => context.go(AppRoutes.ownerUsers),
                   ),
                   _DashboardStatCard(
-                    label: 'Farmers',
+                    label: l10n.farmers,
                     value: '${farmers.length}',
-                    subtitle: 'Registered farmers',
+                    subtitle: l10n.registeredFarmers,
                     icon: Icons.agriculture_rounded,
                     color: AppColors.success,
                   ),
                   _DashboardStatCard(
-                    label: 'Harvest',
+                    label: l10n.harvest,
                     value: '$harvestCount',
-                    subtitle: 'Records',
+                    subtitle: l10n.records,
                     icon: Icons.grass_rounded,
                     color: AppColors.info,
                     onTap: () => context.go(AppRoutes.ownerHarvests),
@@ -198,8 +200,8 @@ class OwnerDashboardScreen extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: SectionHeader(
-                title: 'Recent Activity',
-                actionLabel: 'See all',
+                title: l10n.recentActivity,
+                actionLabel: l10n.seeAll,
                 onAction: () => context.go(AppRoutes.ownerAuditLog),
               ),
             ),
@@ -208,11 +210,10 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: SliverToBoxAdapter(
                   child: logs.isEmpty
-                      ? const _EmptyDashboardCard(
+                      ? _EmptyDashboardCard(
                           icon: Icons.history_rounded,
-                          title: 'No owner activity yet',
-                          subtitle:
-                              'Create a warehouse or worker to see activity here.',
+                          title: l10n.noOwnerActivity,
+                          subtitle: l10n.createWarehouseWorkerActivity,
                         )
                       : _RecentActivityList(logs: logs),
                 ),
@@ -221,17 +222,17 @@ class OwnerDashboardScreen extends ConsumerWidget {
               error: (error, _) =>
                   SliverToBoxAdapter(child: ErrorView(message: '$error')),
             ),
-            const SliverToBoxAdapter(
-              child: SectionHeader(title: 'Alerts'),
+            SliverToBoxAdapter(
+              child: SectionHeader(title: l10n.alerts),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
               sliver: SliverToBoxAdapter(
                 child: pendingSyncCount == 0
-                    ? const _EmptyDashboardCard(
+                    ? _EmptyDashboardCard(
                         icon: Icons.cloud_done_rounded,
-                        title: 'No pending syncs',
-                        subtitle: 'All local owner changes are uploaded.',
+                        title: l10n.noPendingSyncs,
+                        subtitle: l10n.allOwnerChangesUploaded,
                       )
                     : _PendingSyncAlert(count: pendingSyncCount),
               ),
@@ -256,6 +257,7 @@ class _OverviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -269,9 +271,9 @@ class _OverviewPanel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Owner operations',
-                  style: TextStyle(
+                Text(
+                  l10n.ownerOperations,
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -279,7 +281,7 @@ class _OverviewPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '$warehouses warehouses',
+                  l10n.quickStatsWarehouses(warehouses),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -288,7 +290,7 @@ class _OverviewPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '$workers workers - $farmers farmers',
+                  l10n.quickStatsPeople(workers, farmers),
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
@@ -313,11 +315,11 @@ class _OverviewPanel extends StatelessWidget {
   }
 }
 
-String _greetingFor(DateTime time) {
+String _greetingFor(DateTime time, AppLocalizations l10n) {
   final hour = time.hour;
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return l10n.goodMorning;
+  if (hour < 17) return l10n.goodAfternoon;
+  return l10n.goodEvening;
 }
 
 void _showTopToast(BuildContext context, String message, Color color) {
@@ -482,7 +484,8 @@ class _ActivityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final details = _activityDetails(log);
+    final l10n = AppLocalizations.of(context)!;
+    final details = _activityDetails(log, l10n);
 
     return Padding(
       padding: const EdgeInsets.all(14),
@@ -512,7 +515,7 @@ class _ActivityTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${details.subtitle} - ${_relativeTime(log.createdAt)}',
+                  '${details.subtitle} - ${_relativeTime(log.createdAt, l10n)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -537,6 +540,7 @@ class _PendingSyncAlert extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       onTap: () => context.go(AppRoutes.ownerPendingSyncs),
       color: AppColors.warning.withValues(alpha: 0.08),
@@ -562,7 +566,7 @@ class _PendingSyncAlert extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$count pending sync${count == 1 ? '' : 's'}',
+                  l10n.pendingSyncCount(count),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 15,
@@ -570,9 +574,9 @@ class _PendingSyncAlert extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                const Text(
-                  'Local warehouse or worker changes need manual sync.',
-                  style: TextStyle(
+                Text(
+                  l10n.manualSyncNeeded,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
@@ -701,32 +705,32 @@ class _SyncBanner extends StatelessWidget {
   }
 }
 
-_ActivityDetails _activityDetails(AuditLog log) {
+_ActivityDetails _activityDetails(AuditLog log, AppLocalizations l10n) {
   final metadata = _metadata(log.metadata);
   final name = _stringValue(metadata, 'name');
 
   return switch (log.action) {
     'warehouse.create' => _ActivityDetails(
-        title: 'Warehouse created',
-        subtitle: name ?? 'Warehouse record',
+        title: l10n.warehouseCreatedActivity,
+        subtitle: name ?? l10n.warehouseRecord,
         icon: Icons.warehouse_rounded,
         color: AppColors.ownerColor,
       ),
     'warehouse.update' => _ActivityDetails(
-        title: 'Warehouse updated',
-        subtitle: name ?? 'Warehouse record',
+        title: l10n.warehouseUpdatedActivity,
+        subtitle: name ?? l10n.warehouseRecord,
         icon: Icons.edit_rounded,
         color: AppColors.info,
       ),
     'worker.create' => _ActivityDetails(
-        title: 'Worker created',
-        subtitle: name ?? 'Worker account',
+        title: l10n.workerCreatedActivity,
+        subtitle: name ?? l10n.workerAccount,
         icon: Icons.person_add_alt_1_rounded,
         color: AppColors.workerColor,
       ),
     _ => _ActivityDetails(
         title: _titleFromAction(log.action),
-        subtitle: name ?? 'Owner activity',
+        subtitle: name ?? l10n.ownerActivity,
         icon: Icons.history_rounded,
         color: AppColors.textSecondary,
       ),
@@ -758,13 +762,15 @@ String _titleFromAction(String action) {
       .join(' ');
 }
 
-String _relativeTime(DateTime time) {
+String _relativeTime(DateTime time, AppLocalizations l10n) {
   final difference = DateTime.now().difference(time);
-  if (difference.inMinutes < 1) return 'Just now';
-  if (difference.inMinutes < 60) return '${difference.inMinutes} min ago';
-  if (difference.inHours < 24) return '${difference.inHours}h ago';
-  if (difference.inDays == 1) return 'Yesterday';
-  return DateFormat('MMM d').format(time);
+  if (difference.inMinutes < 1) return l10n.justNow;
+  if (difference.inMinutes < 60) {
+    return l10n.minutesAgo(difference.inMinutes);
+  }
+  if (difference.inHours < 24) return l10n.hoursAgo(difference.inHours);
+  if (difference.inDays == 1) return l10n.yesterday;
+  return DateFormat('MMM d', l10n.localeName).format(time);
 }
 
 class _ActivityDetails {

@@ -228,9 +228,9 @@ class _LoginCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Welcome Back',
-              style: TextStyle(
+            Text(
+              l10n.welcomeBackTitle,
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -306,7 +306,7 @@ class _LoginCard extends StatelessWidget {
                         : Icons.visibility_off_outlined,
                   ),
                   onPressed: onTogglePassword,
-                  tooltip: obscure ? 'Show password' : 'Hide password',
+                  tooltip: obscure ? l10n.showPassword : l10n.hidePassword,
                 ),
               ),
               validator: (value) {
@@ -337,9 +337,9 @@ class _LoginCard extends StatelessWidget {
             const SizedBox(height: 10),
             TextButton(
               onPressed: loading ? null : onForgotPassword,
-              child: const Text(
-                'Forgot Password?',
-                style: TextStyle(
+              child: Text(
+                l10n.forgotPassword,
+                style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
                 ),
@@ -376,6 +376,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _loading = true;
@@ -383,8 +384,8 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
     });
     showCenteredLoadingDialog(
       context,
-      title: 'Sending Instructions',
-      description: 'Checking this email address.',
+      title: l10n.sendingInstructions,
+      description: l10n.checkingEmail,
     );
 
     final result = await ref.read(authRepositoryProvider).forgotPassword(
@@ -395,7 +396,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
     setState(() => _loading = false);
 
     if (!result.success) {
-      setState(() => _error = result.error ?? 'Failed to send reset email.');
+      setState(() => _error = result.error ?? l10n.sendResetFailed);
       return;
     }
 
@@ -403,14 +404,13 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
     if (!widget.parentContext.mounted) return;
     final resetNow = await showAppFeedbackDialog<bool>(
       widget.parentContext,
-      title: 'Check Your Email',
-      description: result.message ??
-          'Password reset instructions have been sent to your email.',
+      title: l10n.checkYourEmail,
+      description: result.message ?? l10n.resetInstructionsSent,
       type: AppFeedbackType.success,
-      actions: const [
-        AppFeedbackAction<bool>(label: 'OK', result: false),
+      actions: [
+        AppFeedbackAction<bool>(label: l10n.ok, result: false),
         AppFeedbackAction<bool>(
-          label: 'Reset Password',
+          label: l10n.resetPassword,
           result: true,
           isPrimary: true,
         ),
@@ -429,8 +429,9 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _AuthSheetFrame(
-      title: 'Forgot Password',
+      title: l10n.forgotPasswordTitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -445,19 +446,21 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
+              decoration: InputDecoration(
+                labelText: l10n.emailAddress,
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
               validator: (value) {
-                if (value == null || value.trim().isEmpty) return 'Required';
-                return value.contains('@') ? null : 'Enter a valid email';
+                if (value == null || value.trim().isEmpty) {
+                  return l10n.requiredField;
+                }
+                return value.contains('@') ? null : l10n.validationEmailInvalid;
               },
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loading ? null : _submit,
-              child: const Text('Send Instructions'),
+              child: Text(l10n.sendInstructions),
             ),
           ],
         ),
@@ -495,6 +498,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _loading = true;
@@ -502,8 +506,8 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
     });
     showCenteredLoadingDialog(
       context,
-      title: 'Resetting Password',
-      description: 'Saving your new password.',
+      title: l10n.resettingPassword,
+      description: l10n.savingNewPassword,
     );
 
     final result = await ref.read(authRepositoryProvider).resetPassword(
@@ -515,7 +519,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
     setState(() => _loading = false);
 
     if (!result.success) {
-      setState(() => _error = result.error ?? 'Failed to reset password.');
+      setState(() => _error = result.error ?? l10n.resetPasswordFailed);
       return;
     }
 
@@ -523,16 +527,17 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
     if (widget.parentContext.mounted) {
       await showCreationSuccessDialog(
         widget.parentContext,
-        title: 'Password Reset',
-        description: result.message ?? 'Password has been reset successfully.',
+        title: l10n.passwordReset,
+        description: result.message ?? l10n.passwordResetSuccess,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _AuthSheetFrame(
-      title: 'Reset Password',
+      title: l10n.resetPassword,
       child: Form(
         key: _formKey,
         child: Column(
@@ -546,30 +551,31 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
             TextFormField(
               controller: _tokenCtrl,
               autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'Reset token',
-                prefixIcon: Icon(Icons.key_outlined),
+              decoration: InputDecoration(
+                labelText: l10n.resetToken,
+                prefixIcon: const Icon(Icons.key_outlined),
               ),
-              validator: (value) =>
-                  value == null || value.trim().isEmpty ? 'Required' : null,
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? l10n.requiredField
+                  : null,
             ),
             const SizedBox(height: 14),
             _ResetPasswordField(
               controller: _passwordCtrl,
-              label: 'New password',
+              label: l10n.newPassword,
               obscure: _obscure,
               onToggle: () => setState(() => _obscure = !_obscure),
             ),
             const SizedBox(height: 14),
             _ResetPasswordField(
               controller: _confirmCtrl,
-              label: 'Confirm password',
+              label: l10n.confirmPassword,
               obscure: _obscure,
               onToggle: () => setState(() => _obscure = !_obscure),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Required';
+                if (value == null || value.isEmpty) return l10n.requiredField;
                 if (value != _passwordCtrl.text) {
-                  return 'Passwords do not match';
+                  return l10n.passwordsDoNotMatch;
                 }
                 return null;
               },
@@ -577,7 +583,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loading ? null : _submit,
-              child: const Text('Reset Password'),
+              child: Text(l10n.resetPassword),
             ),
           ],
         ),
@@ -647,6 +653,7 @@ class _ResetPasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return TextFormField(
       controller: controller,
       obscureText: obscure,
@@ -665,9 +672,9 @@ class _ResetPasswordField extends StatelessWidget {
       ),
       validator: validator ??
           (value) {
-            if (value == null || value.isEmpty) return 'Required';
+            if (value == null || value.isEmpty) return l10n.requiredField;
             if (value.length < 6) {
-              return 'Password must be at least 6 characters';
+              return l10n.passwordMinLength;
             }
             return null;
           },
@@ -703,13 +710,14 @@ class _RegisterPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        const Text(
-          "Don't have an Account",
-          style: TextStyle(
+        Text(
+          l10n.dontHaveAccount,
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -717,9 +725,9 @@ class _RegisterPrompt extends StatelessWidget {
         ),
         TextButton(
           onPressed: () => context.push('/register'),
-          child: const Text(
-            'Register',
-            style: TextStyle(
+          child: Text(
+            l10n.register,
+            style: const TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.w700,
             ),

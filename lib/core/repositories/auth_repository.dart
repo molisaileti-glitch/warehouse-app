@@ -201,16 +201,25 @@ class AuthRepository {
   Future<bool> refreshToken() async {
     try {
       final refreshToken = await _storage.getRefreshToken();
-      if (refreshToken == null) return false;
+      if (refreshToken == null || refreshToken.isEmpty) return false;
 
-      final res = await _dio.post('/auth/refresh', data: {
-        'refresh_token': refreshToken,
+      final res = await _dio.post('/auth/refresh-token', data: {
+        'refreshToken': refreshToken,
       });
 
-      final data = res.data as Map<String, dynamic>;
+      final responseData = res.data;
+      if (responseData is! Map<String, dynamic>) return false;
+
+      final accessToken = responseData['token'];
+      final rotatedRefreshToken = responseData['refreshToken'];
+      if (accessToken is! String || accessToken.isEmpty) return false;
+
       await _storage.saveTokens(
-        accessToken: data['access_token'] as String,
-        refreshToken: data['refresh_token'] as String,
+        accessToken: accessToken,
+        refreshToken:
+            rotatedRefreshToken is String && rotatedRefreshToken.isNotEmpty
+                ? rotatedRefreshToken
+                : refreshToken,
       );
       return true;
     } catch (_) {
