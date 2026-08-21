@@ -9,6 +9,7 @@ part 'harvest_dao.g.dart';
     FarmerHarvestBags,
     MeasurementUnits,
     CropGrades,
+    SyncQueue,
   ],
 )
 class HarvestDao extends DatabaseAccessor<AppDatabase> with _$HarvestDaoMixin {
@@ -27,7 +28,7 @@ class HarvestDao extends DatabaseAccessor<AppDatabase> with _$HarvestDaoMixin {
         .watch();
   }
 
-  Stream<List<MeasurementUnit>> watchMeasurementUnits() {
+  Stream<List<MeasurementUnit>> watchMeasurementUnits(){
     return (select(measurementUnits)
           ..orderBy([(u) => OrderingTerm.asc(u.name)]))
         .watch();
@@ -69,6 +70,20 @@ class HarvestDao extends DatabaseAccessor<AppDatabase> with _$HarvestDaoMixin {
     });
   }
 
+  Future<void> insertPendingHarvestWithBags({
+    required FarmerHarvestsCompanion harvest,
+    required List<FarmerHarvestBagsCompanion> bags,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await into(farmerHarvests).insert(harvest);
+      if (bags.isNotEmpty) {
+        await batch((batch) => batch.insertAll(farmerHarvestBags, bags));
+      }
+      await into(syncQueue).insert(queueEntry);
+    });
+  }
+
   Future<void> markHarvestSynced(String uuid, {int? serverId}) {
     return (update(farmerHarvests)..where((h) => h.uuid.equals(uuid))).write(
       FarmerHarvestsCompanion(
@@ -99,6 +114,8 @@ class HarvestDao extends DatabaseAccessor<AppDatabase> with _$HarvestDaoMixin {
   Future<void> upsertCropGrades(List<CropGradesCompanion> entries) async {
     for (final entry in entries) {
       await into(cropGrades).insertOnConflictUpdate(entry);
+
     }
+    
   }
 }

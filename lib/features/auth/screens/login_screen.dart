@@ -107,6 +107,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       'errorEmailExists' => l10n.errorEmailExists,
       'errorTooManyAttempts' => l10n.errorTooManyAttempts,
       'errorNetworkError' => l10n.errorNetworkError,
+      'errorInvalidServerResponse' => l10n.errorInvalidServerResponse,
+      'errorMissingMcuAssignment' => l10n.errorMissingMcuAssignment,
       _ => errorKey,
     };
   }

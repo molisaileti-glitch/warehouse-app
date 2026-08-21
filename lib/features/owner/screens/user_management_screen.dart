@@ -25,6 +25,7 @@ import '../../../core/database/database_provider.dart';
 import '../../worker/domain/models/worker_model.dart';
 import '../../shared/widgets/common_widgets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../widgets/owner_drawer.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,7 @@ class UserManagementScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      drawer: const OwnerDrawer(),
       appBar: AppBar(
         title: Text(l10n.workers),
         actions: [
@@ -235,9 +237,8 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
       return;
     }
 
-    // mcu is the logged-in owner's numeric server ID stored in secure storage.
-    final currentUserId = ref.read(currentUserIdProvider);
-    final mcuId = int.tryParse(currentUserId ?? '');
+    final mcuId = await ref.read(currentUserMcuProvider.future);
+    if (!mounted) return;
     if (mcuId == null) {
       setState(() {
         _error = l10n.ownerIdUnavailable;
@@ -303,10 +304,7 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = ref.watch(currentUserIdProvider);
-    final warehousesAsync = currentUserId != null
-        ? ref.watch(warehousesByOwnerProvider(currentUserId))
-        : const AsyncValue<List<Warehouse>>.data([]);
+    final warehousesAsync = ref.watch(currentOwnerWarehousesProvider);
 
     return Container(
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),

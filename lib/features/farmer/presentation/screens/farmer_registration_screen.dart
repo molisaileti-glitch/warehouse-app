@@ -174,18 +174,7 @@ class _FarmerRegistrationScreenState
   }
 
   Future<int?> _deriveMcuId() async {
-    final currentUserId = ref.read(currentUserIdProvider);
-    if (currentUserId == null) return null;
-    final ownerMcuId = int.tryParse(currentUserId);
-    if (ownerMcuId != null) return ownerMcuId;
-    final worker = await ref.read(workerDaoProvider).getUserById(currentUserId);
-    if (worker?.mcu != null) return worker!.mcu;
-    final warehouseId = worker?.warehouseId;
-    if (warehouseId == null) return null;
-    final warehouse = await ref.read(warehouseDaoProvider).getWarehouseById(
-          warehouseId,
-        );
-    return int.tryParse(warehouse?.ownerId ?? '');
+    return ref.read(currentUserMcuProvider.future);
   }
 
   Widget _buildFarmerStep(BuildContext context) {

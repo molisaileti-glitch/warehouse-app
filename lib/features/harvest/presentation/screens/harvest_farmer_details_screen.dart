@@ -47,7 +47,6 @@ class _HarvestFarmerDetailsScreenState
         setState(() => _showFarmerResults = true);
       }
     });
-    Future.microtask(_pullReferenceData);
   }
 
   @override
@@ -55,12 +54,6 @@ class _HarvestFarmerDetailsScreenState
     _farmerSearchCtrl.dispose();
     _farmerSearchFocus.dispose();
     super.dispose();
-  }
-
-  Future<void> _pullReferenceData() async {
-    await ref.read(harvestRepositoryProvider).pullReferenceData();
-    if (!mounted) return;
-    ref.invalidate(measurementUnitsProvider);
   }
 
   @override
@@ -261,22 +254,33 @@ class _HarvestFarmerDetailsScreenState
                   ),
                 )
               else
-                for (final farmer in filtered.take(8))
-                  _FarmerSearchRow(
-                    name: _farmerName(farmer),
-                    selected: farmer.id == _farmerId,
-                    onTap: () {
-                      _farmerSearchCtrl.text = _farmerName(farmer);
-                      _farmerSearchCtrl.selection = TextSelection.collapsed(
-                        offset: _farmerSearchCtrl.text.length,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 320),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final farmer = filtered[index];
+                      return _FarmerSearchRow(
+                        name: _farmerName(farmer),
+                        selected: farmer.id == _farmerId,
+                        onTap: () {
+                          _farmerSearchCtrl.text = _farmerName(farmer);
+                          _farmerSearchCtrl.selection = TextSelection.collapsed(
+                            offset: _farmerSearchCtrl.text.length,
+                          );
+                          _farmerSearchFocus.unfocus();
+                          setState(() {
+                            _farmerId = farmer.id;
+                            _showFarmerResults = false;
+                          });
+                        },
                       );
-                      _farmerSearchFocus.unfocus();
-                      setState(() {
-                        _farmerId = farmer.id;
-                        _showFarmerResults = false;
-                      });
                     },
                   ),
+                ),
             ],
           ],
         ),

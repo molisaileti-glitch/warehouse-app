@@ -318,8 +318,9 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
       return;
     }
 
-    final currentUserId = ref.read(currentUserIdProvider);
-    final mcuId = int.tryParse(currentUserId ?? '') ?? widget.worker.mcu;
+    final mcuId =
+        await ref.read(currentUserMcuProvider.future) ?? widget.worker.mcu;
+    if (!mounted) return;
     final confirmed = await showCreationConfirmDialog(
       context,
       title: l10n.saveWorkerChanges,
@@ -376,10 +377,7 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final currentUserId = ref.watch(currentUserIdProvider);
-    final warehousesAsync = currentUserId == null
-        ? const AsyncValue<List<Warehouse>>.data([])
-        : ref.watch(warehousesByOwnerProvider(currentUserId));
+    final warehousesAsync = ref.watch(currentOwnerWarehousesProvider);
     final warehouses =
         warehousesAsync.valueOrNull?.where((w) => w.isActive).toList() ??
             const <Warehouse>[];

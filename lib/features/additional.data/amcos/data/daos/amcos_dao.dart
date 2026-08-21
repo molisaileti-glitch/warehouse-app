@@ -9,8 +9,7 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
   AmcosDao(super.db);
 
   Stream<List<Amcos>> watchAllAmcos() {
-    return (select(amcosTable)
-          ..orderBy([(a) => OrderingTerm.asc(a.name)]))
+    return (select(amcosTable)..orderBy([(a) => OrderingTerm.asc(a.name)]))
         .watch();
   }
 
@@ -26,9 +25,15 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
         .watch();
   }
 
-  Future<List<Amcos>> getAllAmcos() {
+  Stream<List<Amcos>> watchAmcosByMcu(int mcuId) {
     return (select(amcosTable)
+          ..where((a) => a.mcu.equals(mcuId))
           ..orderBy([(a) => OrderingTerm.asc(a.name)]))
+        .watch();
+  }
+
+  Future<List<Amcos>> getAllAmcos() {
+    return (select(amcosTable)..orderBy([(a) => OrderingTerm.asc(a.name)]))
         .get();
   }
 
@@ -40,6 +45,13 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
   Future<List<Amcos>> getAmcosByStatus(String status) {
     return (select(amcosTable)
           ..where((a) => a.status.equals(status))
+          ..orderBy([(a) => OrderingTerm.asc(a.name)]))
+        .get();
+  }
+
+  Future<List<Amcos>> getAmcosByMcu(int mcuId) {
+    return (select(amcosTable)
+          ..where((a) => a.mcu.equals(mcuId))
           ..orderBy([(a) => OrderingTerm.asc(a.name)]))
         .get();
   }
@@ -76,7 +88,8 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
     final companion = AmcosTableCompanion(
       name: name == null ? const Value.absent() : Value(name),
       status: status == null ? const Value.absent() : Value(status),
-      phoneNumber: phoneNumber == null ? const Value.absent() : Value(phoneNumber),
+      phoneNumber:
+          phoneNumber == null ? const Value.absent() : Value(phoneNumber),
       email: email == null ? const Value.absent() : Value(email),
     );
     return (update(amcosTable)..where((a) => a.id.equals(id))).write(companion);
@@ -87,32 +100,34 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
 
   Future<List<AmcosModel>> getAllAmcosModels() async {
     final rows = await getAllAmcos();
-    return rows.map((amcos) => AmcosModel(
-      id: amcos.id,
-      name: amcos.name,
-      memberCategory: amcos.memberCategory,
-      registrationNumber: amcos.registrationNumber,
-      tinNumber: amcos.tinNumber,
-      mcu: amcos.mcu,
-      mcuName: amcos.mcuName,
-      region: amcos.region,
-      regionName: amcos.regionName,
-      district: amcos.district,
-      districtName: amcos.districtName,
-      ward: amcos.ward,
-      wardName: amcos.wardName,
-      village: amcos.village,
-      villageName: amcos.villageName,
-      phoneNumber: amcos.phoneNumber,
-      email: amcos.email,
-      contactPersonName: amcos.contactPersonName,
-      contactPersonPhoneNumber: amcos.contactPersonPhoneNumber,
-      contactPersonEmail: amcos.contactPersonEmail,
-      contactPersonTitle: amcos.contactPersonTitle,
-      website: amcos.website,
-      status: amcos.status,
-      crops: amcos.crops,
-      idCounter: amcos.idCounter,
-    )).toList();
+    return rows
+        .map((amcos) => AmcosModel(
+              id: amcos.id,
+              name: amcos.name,
+              memberCategory: amcos.memberCategory,
+              registrationNumber: amcos.registrationNumber,
+              tinNumber: amcos.tinNumber,
+              mcu: amcos.mcu,
+              mcuName: amcos.mcuName,
+              region: amcos.region,
+              regionName: amcos.regionName,
+              district: amcos.district,
+              districtName: amcos.districtName,
+              ward: amcos.ward,
+              wardName: amcos.wardName,
+              village: amcos.village,
+              villageName: amcos.villageName,
+              phoneNumber: amcos.phoneNumber,
+              email: amcos.email,
+              contactPersonName: amcos.contactPersonName,
+              contactPersonPhoneNumber: amcos.contactPersonPhoneNumber,
+              contactPersonEmail: amcos.contactPersonEmail,
+              contactPersonTitle: amcos.contactPersonTitle,
+              website: amcos.website,
+              status: amcos.status,
+              crops: amcos.crops,
+              idCounter: amcos.idCounter,
+            ))
+        .toList();
   }
 }

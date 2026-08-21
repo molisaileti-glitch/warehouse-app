@@ -13,7 +13,6 @@ class DriftHarvestRepository implements HarvestRepository {
   final FarmerDao _farmerDao;
   final WarehouseDao _warehouseDao;
   final CropDao _cropDao;
-  final SyncQueueDao _syncDao;
   final AuditLogDao _auditDao;
   final Dio _dio;
   final String _currentUserId;
@@ -23,7 +22,6 @@ class DriftHarvestRepository implements HarvestRepository {
     required FarmerDao farmerDao,
     required WarehouseDao warehouseDao,
     required CropDao cropDao,
-    required SyncQueueDao syncDao,
     required AuditLogDao auditDao,
     required Dio dio,
     required String currentUserId,
@@ -31,7 +29,6 @@ class DriftHarvestRepository implements HarvestRepository {
         _farmerDao = farmerDao,
         _warehouseDao = warehouseDao,
         _cropDao = cropDao,
-        _syncDao = syncDao,
         _auditDao = auditDao,
         _dio = dio,
         _currentUserId = currentUserId;
@@ -63,7 +60,8 @@ class DriftHarvestRepository implements HarvestRepository {
     final now = DateTime.now();
     final farmerName = _farmerName(input.farmer);
     final cropName = _normalizeCropName(input.crop.name);
-    final calculatedBags = input.bags.map((bag) => (bag, bag.calculate())).toList();
+    final calculatedBags =
+        input.bags.map((bag) => (bag, bag.calculate())).toList();
     final totalGross = calculatedBags.fold<double>(
       0,
       (sum, item) => sum + item.$2.grossWeight,
@@ -84,11 +82,13 @@ class DriftHarvestRepository implements HarvestRepository {
       0,
       (sum, item) => sum + item.$2.moistureWeight,
     );
-    final moistureContent = totalLoad <= 0 ? 0.0 : (totalMoisture / totalLoad) * 100;
+    final moistureContent =
+        totalLoad <= 0 ? 0.0 : (totalMoisture / totalLoad) * 100;
     final collectionCenter = int.tryParse(input.warehouse.id);
     final receivedBy = int.tryParse(_currentUserId);
     final mcu = input.farmer.mcu == 0 ? null : input.farmer.mcu;
-    final amcos = input.farmer.amcos == 0 ? input.warehouse.amcos : input.farmer.amcos;
+    final amcos =
+        input.farmer.amcos == 0 ? input.warehouse.amcos : input.farmer.amcos;
 
     final harvestCompanion = FarmerHarvestsCompanion.insert(
       uuid: harvestUuid,
@@ -139,13 +139,10 @@ class DriftHarvestRepository implements HarvestRepository {
       );
     }).toList();
 
-    await _dao.insertHarvestWithBags(
+    await _dao.insertPendingHarvestWithBags(
       harvest: harvestCompanion,
       bags: bagCompanions,
-    );
-
-    await _syncDao.enqueue(
-      SyncQueueCompanion.insert(
+      queueEntry: SyncQueueCompanion.insert(
         entityType: 'farmerHarvests',
         entityId: harvestUuid,
         operation: 'create',
@@ -233,83 +230,12 @@ class DriftHarvestRepository implements HarvestRepository {
 
     for (final amcosId in sortedIds) {
       final response = await _dio.get('/farmer-harvests/amcos/$amcosId');
-      for (final row in _readRows(response.data)) {
-        final serverId = _nullableInt(row['id']);
-        final farmerId = _nullableInt(row['farmer']);
-        final cropId = _nullableInt(row['crop']);
-        final collectionCenterId = _nullableInt(row['collectionCenter']);
-        if (serverId == null ||
-            farmerId == null ||
-            cropId == null ||
-            collectionCenterId == null) {
-          skippedMissingDependency++;
-          continue;
-        }
-
-        final farmer = await _farmerDao.getFarmerById(farmerId);
-        final crop = await _cropDao.getCropById(cropId);
-        final warehouse =
-            await _warehouseDao.getWarehouseById(collectionCenterId.toString());
-        if (farmer == null || crop == null || warehouse == null) {
-          skippedMissingDependency++;
-          continue;
-        }
-
-        final rawUuid = _nullableString(row['uuid']);
-        final uuid = rawUuid ?? 'server-harvest-$serverId';
-        final guarantorId = _nullableInt(row['guarantor']);
-        final guarantor = guarantorId == null
-            ? null
-            : await _farmerDao.getFarmerById(guarantorId);
-        final receivedAt = _date(row['receivedAt']) ?? DateTime.now();
-
-        await _dao.insertHarvestWithBags(
-          harvest: FarmerHarvestsCompanion.insert(
-            uuid: uuid,
-            serverId: Value(serverId),
-            farmer: farmerId,
-            farmerUuid: Value(farmer.uuid),
-            farmerName: _string(
-              row['farmerName'],
-              fallback: '${farmer.firstName} ${farmer.lastName}'.trim(),
-            ),
-            farmerPhoneNumber: _string(
-              row['farmerPhoneNumber'],
-              fallback: farmer.phoneNumber,
-            ),
-            guarantor: Value(guarantor?.id),
-            guarantorName: Value(_nullableString(row['guarantorName'])),
-            grossWeight: _double(row['grossWeight']),
-            netWeight: _double(row['netWeight']),
-            packagingWeight: _double(row['packagingWeight']),
-            moistureContent: _double(row['moistureContent']),
-            packaging: Value(_string(row['packaging'], fallback: 'BAGS')),
-            receiptNumber: _string(
-              row['receiptNumber'],
-              fallback: 'SERVER-$serverId',
-            ),
-            amcos: Value(_nullableInt(row['amcos']) ?? amcosId),
-            amcosName: Value(_nullableString(row['amcosName'])),
-            mcu: Value(_nullableInt(row['mcu'])),
-            mcuName: Value(_nullableString(row['mcuName'])),
-            receivedBy: Value(_nullableInt(row['receivedBy'])),
-            receivedByName: Value(_nullableString(row['receivedByName'])),
-            crop: cropId,
-            cropName: _string(row['cropName'], fallback: crop.name),
-            warehouseId: collectionCenterId.toString(),
-            collectionCenter: Value(collectionCenterId),
-            collectionCenterName: _string(
-              row['collectionCenterName'],
-              fallback: warehouse.name,
-            ),
-            receivedAt: Value(receivedAt),
-            syncStatus: const Value('synced'),
-            updatedAt: Value(_date(row['updatedAt']) ?? receivedAt),
-          ),
-          bags: const [],
-        );
-        saved++;
-      }
+      final result = await _saveServerHarvests(
+        _readRows(response.data),
+        fallbackAmcosId: amcosId,
+      );
+      saved += result.saved;
+      skippedMissingDependency += result.skippedMissingDependency;
     }
 
     developer.log(
@@ -320,11 +246,138 @@ class DriftHarvestRepository implements HarvestRepository {
     return saved;
   }
 
+  @override
+  Future<int> pullFromCollectionCenter({
+    required int collectionCenterId,
+  }) async {
+    final response = await _dio.get(
+      '/farmer-harvests/collection-center/$collectionCenterId',
+    );
+    final result = await _saveServerHarvests(_readRows(response.data));
+    developer.log(
+      '[HarvestSync] collectionCenter=$collectionCenterId '
+      'saved=${result.saved} '
+      'skippedMissingDependency=${result.skippedMissingDependency}',
+      name: 'sync.harvest',
+    );
+    return result.saved;
+  }
+
+  Future<({int saved, int skippedMissingDependency})> _saveServerHarvests(
+    List<Map<String, dynamic>> rows, {
+    int? fallbackAmcosId,
+  }) async {
+    var saved = 0;
+    var skippedMissingDependency = 0;
+
+    for (final row in rows) {
+      final serverId = _nullableInt(row['id']);
+      final farmerId =
+          _nullableInt(row['farmerId']) ?? _nullableInt(row['farmer']);
+      final cropId = _nullableInt(row['crop']);
+      final collectionCenterId = _nullableInt(row['collectionCenter']);
+      if (serverId == null ||
+          farmerId == null ||
+          cropId == null ||
+          collectionCenterId == null) {
+        developer.log(
+          '[HarvestSync] skipped malformed harvest id=${row['id']} '
+          'farmer=${row['farmerId'] ?? row['farmer']} crop=${row['crop']} '
+          'collectionCenter=${row['collectionCenter']}',
+          name: 'sync.harvest',
+        );
+        skippedMissingDependency++;
+        continue;
+      }
+
+      final farmer = await _farmerDao.getFarmerByServerId(farmerId) ??
+          await _farmerDao.getFarmerById(farmerId);
+      final crop = await _cropDao.getCropById(cropId);
+      final warehouse =
+          await _warehouseDao.getWarehouseById(collectionCenterId.toString());
+      if (farmer == null || crop == null || warehouse == null) {
+        developer.log(
+          '[HarvestSync] skipped id=$serverId missing '
+          'farmer=${farmer == null} crop=${crop == null} '
+          'warehouse=${warehouse == null}',
+          name: 'sync.harvest',
+        );
+        skippedMissingDependency++;
+        continue;
+      }
+
+      final rawUuid = _nullableString(row['uuid']);
+      final uuid = rawUuid ?? 'server-harvest-$serverId';
+      final guarantorId = _nullableInt(row['guarantor']);
+      final guarantor = guarantorId == null
+          ? null
+          : await _farmerDao.getFarmerByServerId(guarantorId) ??
+              await _farmerDao.getFarmerById(guarantorId);
+      final receivedAt = _date(row['receivedAt']) ?? DateTime.now();
+
+      await _dao.insertHarvestWithBags(
+        harvest: FarmerHarvestsCompanion.insert(
+          uuid: uuid,
+          serverId: Value(serverId),
+          farmer: farmer.id,
+          farmerUuid: Value(farmer.uuid),
+          farmerName: _string(
+            row['farmerName'],
+            fallback: '${farmer.firstName} ${farmer.lastName}'.trim(),
+          ),
+          farmerPhoneNumber: _string(
+            row['farmerPhoneNumber'],
+            fallback: farmer.phoneNumber,
+          ),
+          guarantor: Value(guarantor?.id),
+          guarantorName: Value(_nullableString(row['guarantorName'])),
+          grossWeight: _double(row['grossWeight']),
+          netWeight: _double(row['netWeight']),
+          packagingWeight: _double(row['packagingWeight']),
+          moistureContent: _double(row['moistureContent']),
+          packaging: Value(_string(row['packaging'], fallback: 'BAGS')),
+          receiptNumber: _string(
+            row['receiptNumber'],
+            fallback: 'SERVER-$serverId',
+          ),
+          amcos: Value(_nullableInt(row['amcos']) ?? fallbackAmcosId),
+          amcosName: Value(_nullableString(row['amcosName'])),
+          mcu: Value(_nullableInt(row['mcu'])),
+          mcuName: Value(_nullableString(row['mcuName'])),
+          receivedBy: Value(_nullableInt(row['receivedBy'])),
+          receivedByName: Value(_nullableString(row['receivedByName'])),
+          crop: cropId,
+          cropName: _string(row['cropName'], fallback: crop.name),
+          warehouseId: collectionCenterId.toString(),
+          collectionCenter: Value(collectionCenterId),
+          collectionCenterName: _string(
+            row['collectionCenterName'],
+            fallback: warehouse.name,
+          ),
+          receivedAt: Value(receivedAt),
+          syncStatus: const Value('synced'),
+          updatedAt: Value(_date(row['updatedAt']) ?? receivedAt),
+        ),
+        bags: const [],
+      );
+      saved++;
+    }
+
+    return (
+      saved: saved,
+      skippedMissingDependency: skippedMissingDependency,
+    );
+  }
+
   String? _validate(HarvestCreateInput input) {
     if (input.bags.isEmpty) return 'Add at least one bag.';
     for (final bag in input.bags) {
-      if (bag.grossWeight <= 0) return 'Gross weight must be greater than zero.';
-      if (bag.packagingWeight < 0) return 'Packaging weight cannot be negative.';
+      if (bag.grossWeight <= 0) {
+        return 'Gross weight must be greater than zero.';
+      }
+      if (bag.packagingWeight < 0) {
+        return 'Packaging weight cannot be negative.';
+      }
       if (bag.packagingWeight > bag.grossWeight) {
         return 'Packaging weight cannot be greater than gross weight.';
       }
@@ -407,7 +460,7 @@ class DriftHarvestRepository implements HarvestRepository {
         final weights = item.$2;
         return {
           'netWeight': _round(weights.netWeight),
-          'tag': bag.tag,
+          'tagNumber': bag.tag,
           'loadWeight': _round(weights.loadWeight),
           'grossWeight': _round(weights.grossWeight),
           'moistureWeight': _round(weights.moistureWeight),
@@ -421,7 +474,8 @@ class DriftHarvestRepository implements HarvestRepository {
   List<Map<String, dynamic>> _readRows(dynamic data) {
     final raw = switch (data) {
       List() => data,
-      Map<String, dynamic>() => data['results'] ?? data['records'] ?? data['data'],
+      Map<String, dynamic>() =>
+        data['content'] ?? data['results'] ?? data['records'] ?? data['data'],
       _ => const [],
     };
     return (raw as List? ?? const [])
@@ -430,7 +484,8 @@ class DriftHarvestRepository implements HarvestRepository {
         .toList();
   }
 
-  MeasurementUnitsCompanion? _measurementUnitFromJson(Map<String, dynamic> json) {
+  MeasurementUnitsCompanion? _measurementUnitFromJson(
+      Map<String, dynamic> json) {
     final id = _asInt(json['id']);
     final name = json['name']?.toString();
     if (id == null || name == null || name.isEmpty) return null;
@@ -465,12 +520,16 @@ class DriftHarvestRepository implements HarvestRepository {
     return int.tryParse(value?.toString() ?? '');
   }
 
-  String _farmerName(Farmer farmer){
+  String _farmerName(Farmer farmer) {
     return [
       farmer.firstName,
       farmer.middleName,
       farmer.lastName,
-    ].whereType<String>().map((v) => v.trim()).where((v) => v.isNotEmpty).join(' ');
+    ]
+        .whereType<String>()
+        .map((v) => v.trim())
+        .where((v) => v.isNotEmpty)
+        .join(' ');
   }
 
   String _normalizeCropName(String value) {
@@ -486,7 +545,8 @@ class DriftHarvestRepository implements HarvestRepository {
     final now = DateTime.now();
     final date =
         '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-    final suffix = (now.millisecondsSinceEpoch + Random().nextInt(9000)) % 10000;
+    final suffix =
+        (now.millisecondsSinceEpoch + Random().nextInt(9000)) % 10000;
     return 'RCPT-$date-${suffix.toString().padLeft(4, '0')}';
   }
 

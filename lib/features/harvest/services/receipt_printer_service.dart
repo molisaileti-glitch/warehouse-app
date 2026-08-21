@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
@@ -22,7 +23,7 @@ class ThermalPrinterDevice {
       name: (map['name'] as String?)?.trim().isNotEmpty == true
           ? map['name'] as String
           : 'Bluetooth Printer',
-      address: map['address'] as String,
+      address: (map['address'] as String).trim().toUpperCase(),
     );
   }
 }
@@ -122,6 +123,9 @@ class ReceiptPrinterService {
         'data': bytes,
       });
     } on PlatformException catch (error) {
+      debugPrint(
+        '[ReceiptPrinter] ${error.code}: ${error.message ?? error.details}',
+      );
       throw ReceiptPrinterException(
           error.message ?? 'Could not print receipt.');
     }

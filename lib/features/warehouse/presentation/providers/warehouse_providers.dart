@@ -12,10 +12,10 @@ final warehouseRepoProvider = Provider<WarehouseRepository>((ref) {
 
   return DriftWarehouseRepository(
     dao: ref.watch(warehouseDaoProvider),
-    syncDao: ref.watch(syncQueueDaoProvider),
     auditDao: ref.watch(auditLogDaoProvider),
     dio: ref.watch(apiClientProvider).dio,
     currentUserId: userId,
+    currentMcuId: () => ref.read(secureStorageProvider).getMcuId(),
   );
 });
 
@@ -27,6 +27,29 @@ final warehousesByOwnerProvider =
     StreamProvider.family<List<Warehouse>, String>(
   (ref, ownerId) => ref.watch(warehouseRepoProvider).watchByOwner(ownerId),
 );
+
+final currentOwnerWarehousesProvider = StreamProvider<List<Warehouse>>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+  final mcuId = ref.watch(currentUserMcuProvider).valueOrNull;
+  if (userId == null || mcuId == null) {
+    return Stream.value(const <Warehouse>[]);
+  }
+
+  return ref.watch(warehouseRepoProvider).watchAll().map(
+        (warehouses) => warehouses
+            .where(
+              (warehouse) =>
+                  warehouse.ownerId == mcuId.toString() ||
+                  warehouse.ownerId == userId,
+            )
+            .toList(),
+      );
+});
+
+final warehousesByAmcosProvider =
+    StreamProvider.family<List<Warehouse>, int>((ref, amcosId) {
+  return ref.watch(warehouseRepoProvider).watchByAmcos(amcosId);
+});
 
 final warehouseByIdProvider = StreamProvider.family<Warehouse?, String>(
   (ref, id) => ref.watch(warehouseRepoProvider).watchById(id),

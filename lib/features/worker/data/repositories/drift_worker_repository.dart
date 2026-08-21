@@ -9,19 +9,16 @@ import 'package:warehouse_app/features/worker/domain/repositories/worker_reposit
 
 class DriftWorkerRepository implements WorkerRepository {
   final WorkerDao _dao;
-  final SyncQueueDao _syncDao;
   final AuditLogDao _auditDao;
   final Dio _dio;
   final String _currentUserId;
 
   const DriftWorkerRepository({
     required WorkerDao dao,
-    required SyncQueueDao syncDao,
     required AuditLogDao auditDao,
     required Dio dio,
     required String currentUserId,
   })  : _dao = dao,
-        _syncDao = syncDao,
         _auditDao = auditDao,
         _dio = dio,
         _currentUserId = currentUserId;
@@ -44,6 +41,14 @@ class DriftWorkerRepository implements WorkerRepository {
   Stream<User?> watchWorkerById(String id) => _dao.watchUserById(id);
 
   @override
+  Future<void> setActiveWarehouse({
+    required String userId,
+    required String warehouseId,
+  }) {
+    return _dao.setUserWarehouse(id: userId, warehouseId: warehouseId);
+  }
+
+  @override
   Future<int> pullFromServer({required int mcuId}) async {
     final response = await _dio.get('/users/mcu/$mcuId');
     final rows = _asList(response.data)
@@ -56,9 +61,16 @@ class DriftWorkerRepository implements WorkerRepository {
       if (serverId.isEmpty || email.isEmpty) continue;
 
       final existing = await _dao.getUserByEmail(email);
-      final serverWarehouseId = _nullableString(
-        row['warehouseId'] ?? row['warehouse_id'] ?? row['collectionCenter'],
+      final serverWarehouseId = _assignmentId(
+        row['warehouseId'] ??
+            row['warehouse_id'] ??
+            row['collectionCenterId'] ??
+            row['collection_center_id'] ??
+            row['collectionCenter'] ??
+            row['warehouse'],
       );
+      final localActiveWarehouseId =
+          existing?.id == _currentUserId ? existing?.warehouseId : null;
       if (existing != null && existing.id != serverId) {
         await _dao.deleteUserById(existing.id);
       }
@@ -71,8 +83,15 @@ class DriftWorkerRepository implements WorkerRepository {
           phoneNumber: Value(_string(row['phoneNumber'])),
           role: Value(_string(row['role'], fallback: 'USER')),
           mcu: Value(_nullableInt(row['mcu']) ?? mcuId),
-          amcos: Value(_nullableInt(row['amcos'])),
-          warehouseId: Value(serverWarehouseId ?? existing?.warehouseId),
+          amcos: Value(
+            _nullableInt(row['amcos']) ??
+                _nullableInt(_assignmentId(row['amcos'])),
+          ),
+          warehouseId: Value(
+            localActiveWarehouseId ??
+                serverWarehouseId ??
+                existing?.warehouseId,
+          ),
           isActive: Value(
             _string(row['status'], fallback: 'ACTIVE').toUpperCase() ==
                 'ACTIVE',
@@ -84,7 +103,8 @@ class DriftWorkerRepository implements WorkerRepository {
     }
 
     developer.log(
-      '[WorkerSync] pull requestedMcu=$mcuId workers=${rows.length}',
+      '[WorkerSync] pull requestedMcu=$mcuId workers=${rows.length} '
+      'assigned=${rows.where((row) => _assignmentId(row['warehouseId'] ?? row['warehouse_id'] ?? row['collectionCenterId'] ?? row['collection_center_id'] ?? row['collectionCenter'] ?? row['warehouse']) != null).length}',
       name: 'sync.worker',
     );
     return rows.length;
@@ -94,25 +114,23 @@ class DriftWorkerRepository implements WorkerRepository {
   Future<WorkerCreateResult> createWorker(WorkerModel worker) async {
     final id = newUuid();
 
-    await _dao.upsertUser(
-      UsersCompanion.insert(
-        id: id,
-        fullName: worker.fullName,
-        email: worker.email,
-        phoneNumber: Value(worker.phoneNumber),
-        password: Value(worker.password),
-        role: Value(worker.role),
-        mcu: Value(worker.mcu),
-        amcos: Value(worker.amcos),
-        warehouseId: Value(worker.warehouseId),
-        isActive: const Value(true),
-        syncStatus: const Value('pending'),
-        updatedAt: Value(DateTime.now()),
-      ),
+    final user = UsersCompanion.insert(
+      id: id,
+      fullName: worker.fullName,
+      email: worker.email,
+      phoneNumber: Value(worker.phoneNumber),
+      password: Value(worker.password),
+      role: Value(worker.role),
+      mcu: Value(worker.mcu),
+      amcos: Value(worker.amcos),
+      warehouseId: Value(worker.warehouseId),
+      isActive: const Value(true),
+      syncStatus: const Value('pending'),
+      updatedAt: Value(DateTime.now()),
     );
-
-    await _syncDao.enqueue(
-      SyncQueueCompanion.insert(
+    await _dao.insertPendingUser(
+      user: user,
+      queueEntry: SyncQueueCompanion.insert(
         entityType: 'users',
         entityId: id,
         operation: 'create',
@@ -159,23 +177,21 @@ class DriftWorkerRepository implements WorkerRepository {
       'isActive': isActive,
     };
 
-    await _dao.updateUser(
-      UsersCompanion(
-        id: Value(id),
-        fullName: Value(fullName),
-        email: Value(email),
-        phoneNumber: Value(phoneNumber),
-        warehouseId: Value(warehouseId),
-        mcu: Value(mcu),
-        amcos: Value(amcos),
-        isActive: Value(isActive),
-        syncStatus: const Value('pending'),
-        updatedAt: Value(DateTime.now()),
-      ),
+    final user = UsersCompanion(
+      id: Value(id),
+      fullName: Value(fullName),
+      email: Value(email),
+      phoneNumber: Value(phoneNumber),
+      warehouseId: Value(warehouseId),
+      mcu: Value(mcu),
+      amcos: Value(amcos),
+      isActive: Value(isActive),
+      syncStatus: const Value('pending'),
+      updatedAt: Value(DateTime.now()),
     );
-
-    await _syncDao.enqueue(
-      SyncQueueCompanion.insert(
+    await _dao.updatePendingUser(
+      user: user,
+      queueEntry: SyncQueueCompanion.insert(
         entityType: 'users',
         entityId: id,
         operation: 'update',
@@ -199,9 +215,9 @@ class DriftWorkerRepository implements WorkerRepository {
   Future<void> deleteWorker(String id) async {
     final worker = await _dao.getUserById(id);
 
-    await _dao.softDeleteUser(id);
-    await _syncDao.enqueue(
-      SyncQueueCompanion.insert(
+    await _dao.deletePendingUser(
+      id: id,
+      queueEntry: SyncQueueCompanion.insert(
         entityType: 'users',
         entityId: id,
         operation: 'delete',
@@ -228,6 +244,15 @@ class DriftWorkerRepository implements WorkerRepository {
     return normalized == 'worker' ||
         normalized == 'amcos_user' ||
         normalized == 'user';
+  }
+
+  String? _assignmentId(Object? value) {
+    if (value is Map) {
+      return _nullableString(
+        value['id'] ?? value['warehouseId'] ?? value['collectionCenterId'],
+      );
+    }
+    return _nullableString(value);
   }
 
   List<Map<String, dynamic>> _asList(Object? data) {

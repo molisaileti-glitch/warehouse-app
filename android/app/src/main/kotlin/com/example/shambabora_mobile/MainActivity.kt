@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothSocket
 import android.companion.AssociationInfo
 import android.companion.AssociationRequest
 import android.companion.BluetoothDeviceFilter
@@ -18,17 +19,20 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.IOException
 import java.util.Collections
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class MainActivity : FlutterActivity() {
+    private val printerLogTag = "ReceiptPrinter"
     private val channelName = "warehouse_app.bluetooth.print.receipt"
     private val sppUuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private val companionDeviceSetupFeature = "android.software.companion_device_setup"
@@ -78,10 +82,6 @@ class MainActivity : FlutterActivity() {
 
         val bluetoothDevice = bluetoothDeviceFromCompanionResult(data)
         if (bluetoothDevice != null) {
-            try {
-                bluetoothDevice.createBond()
-            } catch (_: Exception) {
-            }
             completePickerSuccess(bluetoothDevice)
             return
         }
@@ -304,19 +304,35 @@ class MainActivity : FlutterActivity() {
             return
         }
 
+        val normalizedAddress = address.trim().uppercase(Locale.US)
+        if (!BluetoothAdapter.checkBluetoothAddress(normalizedAddress)) {
+            result.error(
+                "invalid_printer",
+                "$address is not a valid Bluetooth address.",
+                null,
+            )
+            return
+        }
+
         Thread {
-            var socket: android.bluetooth.BluetoothSocket? = null
+            var socket: BluetoothSocket? = null
             try {
                 adapter.cancelDiscovery()
-                val device = adapter.getRemoteDevice(address)
-                socket = device.createRfcommSocketToServiceRecord(sppUuid)
-                socket.connect()
+                val device = adapter.getRemoteDevice(normalizedAddress)
+                Log.d(
+                    printerLogTag,
+                    "Preparing ${device.name ?: normalizedAddress} at $normalizedAddress",
+                )
+                waitForBond(device)
+                socket = connectPrinterSocket(device)
                 socket.outputStream.use { stream ->
                     stream.write(data)
                     stream.flush()
                 }
+                Log.d(printerLogTag, "Receipt sent successfully to $normalizedAddress")
                 runOnUiThread { result.success(null) }
             } catch (error: IOException) {
+                Log.e(printerLogTag, "Receipt printing failed for $normalizedAddress", error)
                 runOnUiThread {
                     result.error(
                         "print_failed",
@@ -325,10 +341,20 @@ class MainActivity : FlutterActivity() {
                     )
                 }
             } catch (error: IllegalArgumentException) {
+                Log.e(printerLogTag, "Invalid printer address: $normalizedAddress", error)
                 runOnUiThread {
                     result.error(
                         "invalid_printer",
                         error.localizedMessage ?: "Selected printer is invalid.",
+                        null,
+                    )
+                }
+            } catch (error: SecurityException) {
+                Log.e(printerLogTag, "Bluetooth permission was rejected", error)
+                runOnUiThread {
+                    result.error(
+                        "permission_denied",
+                        error.localizedMessage ?: "Bluetooth permission is required.",
                         null,
                     )
                 }
@@ -339,6 +365,74 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }.start()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun waitForBond(device: BluetoothDevice) {
+        if (device.bondState == BluetoothDevice.BOND_BONDED) return
+
+        val latch = CountDownLatch(1)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action != BluetoothDevice.ACTION_BOND_STATE_CHANGED) return
+                val changedDevice = bluetoothDeviceFromDiscovery(intent) ?: return
+                if (changedDevice.address != device.address) return
+
+                val state = intent.getIntExtra(
+                    BluetoothDevice.EXTRA_BOND_STATE,
+                    BluetoothDevice.ERROR,
+                )
+                if (state == BluetoothDevice.BOND_BONDED ||
+                    state == BluetoothDevice.BOND_NONE
+                ) {
+                    latch.countDown()
+                }
+            }
+        }
+
+        registerBluetoothReceiver(
+            receiver,
+            IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED),
+        )
+        try {
+            if (device.bondState == BluetoothDevice.BOND_NONE) {
+                Log.d(printerLogTag, "Pairing with ${device.address}")
+                device.createBond()
+            }
+            latch.await(25, TimeUnit.SECONDS)
+        } finally {
+            unregisterSafely(receiver)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun connectPrinterSocket(device: BluetoothDevice): BluetoothSocket {
+        var lastError: IOException? = null
+        val socketFactories = listOf<() -> BluetoothSocket>(
+            { device.createRfcommSocketToServiceRecord(sppUuid) },
+            { device.createInsecureRfcommSocketToServiceRecord(sppUuid) },
+        )
+
+        for ((index, factory) in socketFactories.withIndex()) {
+            var candidate: BluetoothSocket? = null
+            try {
+                candidate = factory()
+                Log.d(
+                    printerLogTag,
+                    "Connecting with ${if (index == 0) "secure" else "insecure"} SPP",
+                )
+                candidate.connect()
+                return candidate
+            } catch (error: IOException) {
+                lastError = error
+                try {
+                    candidate?.close()
+                } catch (_: IOException) {
+                }
+            }
+        }
+
+        throw lastError ?: IOException("Could not connect to the selected printer.")
     }
 
     private fun launchCompanionChooser(intentSender: IntentSender) {
@@ -377,11 +471,12 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun completePickerSuccess(name: String, address: String) {
+        val normalizedAddress = address.trim().uppercase(Locale.US)
         val result = clearPendingPicker()
         result?.success(
             mapOf(
                 "name" to name,
-                "address" to address,
+                "address" to normalizedAddress,
             ),
         )
     }
@@ -410,7 +505,7 @@ class MainActivity : FlutterActivity() {
     private fun printerMap(device: BluetoothDevice): Map<String, String> {
         return mapOf(
             "name" to (device.name ?: "Bluetooth Printer"),
-            "address" to device.address,
+            "address" to device.address.uppercase(Locale.US),
         )
     }
 

@@ -20,6 +20,7 @@ class WorkerModel {
   });
 
   Map<String, dynamic> toJson() {
+    final collectionCenter = int.tryParse(warehouseId ?? '');
     return {
       'fullName': fullName,
       'email': email,
@@ -29,6 +30,8 @@ class WorkerModel {
       'mcu': mcu,
       'amcos': amcos,
       if (warehouseId != null) 'warehouseId': warehouseId,
+      if (collectionCenter != null) 'collectionCenterId': collectionCenter,
+      if (collectionCenter != null) 'collectionCenter': collectionCenter,
     };
   }
 }

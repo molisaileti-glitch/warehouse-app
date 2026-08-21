@@ -21,19 +21,22 @@ class AppLocalizationsSw extends AppLocalizations {
   String get onboardingTitle1 => 'Fuatilia kila bidhaa';
 
   @override
-  String get onboardingDesc1 => 'Ongeza bidhaa, angalia kiwango cha hisa, na upate arifa za hisa pungufu kiotomatiki.';
+  String get onboardingDesc1 =>
+      'Ongeza bidhaa, angalia kiwango cha hisa, na upate arifa za hisa pungufu kiotomatiki.';
 
   @override
   String get onboardingTitle2 => 'Inafanya kazi bila intaneti';
 
   @override
-  String get onboardingDesc2 => 'Rekodi mizigo, hesabu, na uhamisho bila mtandao. Kila kitu kitasawazishwa kiotomatiki ukirudi mtandaoni.';
+  String get onboardingDesc2 =>
+      'Rekodi mizigo, hesabu, na uhamisho bila mtandao. Kila kitu kitasawazishwa kiotomatiki ukirudi mtandaoni.';
 
   @override
   String get onboardingTitle3 => 'Imejengwa kwa timu yako yote';
 
   @override
-  String get onboardingDesc3 => 'Wamiliki husimamia maghala na wafanyakazi. Wasimamizi hufuatilia bidhaa. Wafanyakazi hurekodi uhamisho wa hisa.';
+  String get onboardingDesc3 =>
+      'Wamiliki husimamia maghala na wafanyakazi. Wasimamizi hufuatilia bidhaa. Wafanyakazi hurekodi uhamisho wa hisa.';
 
   @override
   String get skip => 'Ruka';
@@ -60,7 +63,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get newOwnerPrompt => 'Mmiliki mpya? Fungua akaunti';
 
   @override
-  String get accessLevelHint => 'Kiwango chako cha ufikiaji kimewekwa na msimamizi wako.';
+  String get accessLevelHint =>
+      'Kiwango chako cha ufikiaji kimewekwa na msimamizi wako.';
 
   @override
   String get validationEmailRequired => 'Ingiza barua pepe yako';
@@ -78,7 +82,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get createOwnerAccount => 'Fungua Akaunti ya Mmiliki';
 
   @override
-  String get registerSubtitle => 'Sanidi maelezo ya biashara yako ili kuanza kudhibiti ghala na timu yako.';
+  String get registerSubtitle =>
+      'Sanidi maelezo ya biashara yako ili kuanza kudhibiti ghala na timu yako.';
 
   @override
   String get cancel => 'Ghairi';
@@ -99,19 +104,22 @@ class AppLocalizationsSw extends AppLocalizations {
   String get registrationConfirmTitle => 'Thibitisha usajili';
 
   @override
-  String get registrationConfirmMessage => 'Tafadhali kagua maelezo yako. Unataka kutuma usajili huu sasa?';
+  String get registrationConfirmMessage =>
+      'Tafadhali kagua maelezo yako. Unataka kutuma usajili huu sasa?';
 
   @override
   String get registrationSuccessTitle => 'Usajili umefanikiwa';
 
   @override
-  String get registrationSuccessMessage => 'Akaunti yako imeundwa. Sasa unaweza kuingia kwa vitambulisho vyako vya kuingia.';
+  String get registrationSuccessMessage =>
+      'Akaunti yako imeundwa. Sasa unaweza kuingia kwa vitambulisho vyako vya kuingia.';
 
   @override
   String get registrationErrorTitle => 'Usajili umeshindikana';
 
   @override
-  String get registrationErrorMessage => 'Hatukuweza kuunda akaunti yako. Tafadhali kagua maelezo yako na ujaribu tena.';
+  String get registrationErrorMessage =>
+      'Hatukuweza kuunda akaunti yako. Tafadhali kagua maelezo yako na ujaribu tena.';
 
   @override
   String get businessName => 'Jina la biashara';
@@ -216,7 +224,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get signOutConfirmTitle => 'Ondoka';
 
   @override
-  String get signOutConfirmMessageOwner => 'Mabadiliko yanayosubiri yatasawazishwa utakapounganisha tena.';
+  String get signOutConfirmMessageOwner =>
+      'Mabadiliko yanayosubiri yatasawazishwa utakapounganisha tena.';
 
   @override
   String get signOutConfirmMessageWorker => 'Utatolewa kwenye akaunti.';
@@ -284,7 +293,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get notAssignedWarehouse => 'Hujapangiwa kwenye ghala';
 
   @override
-  String get askAdminAssignment => 'Mwombe msimamizi wako akupangie kwenye ghala.';
+  String get askAdminAssignment =>
+      'Mwombe msimamizi wako akupangie kwenye ghala.';
 
   @override
   String get assignedWarehouse => 'Ghala Uliopangiwa';
@@ -323,25 +333,30 @@ class AppLocalizationsSw extends AppLocalizations {
   String get workerDashboardTitle => 'Dashibodi ya Mfanyakazi';
 
   @override
-  String get workerProfileNoSync => 'Wasifu wako haujasawazishwa bado. Mara tu msimamizi atakapokupangia ghala, kazi zako zitaonekana hapa.';
+  String get workerProfileNoSync =>
+      'Wasifu wako haujasawazishwa bado. Mara tu msimamizi atakapokupangia ghala, kazi zako zitaonekana hapa.';
 
   @override
-  String get errorInvalidDetails => 'Maelezo yasiyo sahihi — angalia taarifa zako';
+  String get errorInvalidDetails =>
+      'Maelezo yasiyo sahihi — angalia taarifa zako';
 
   @override
   String get errorIncorrectCredentials => 'Barua pepe au nenosiri si sahihi';
 
   @override
-  String get errorAccountDisabled => 'Akaunti imelemazwa — wasiliana na msimamizi wako';
+  String get errorAccountDisabled =>
+      'Akaunti imelemazwa — wasiliana na msimamizi wako';
 
   @override
   String get errorEmailExists => 'Akaunti iliyo na barua pepe hii tayari ipo';
 
   @override
-  String get errorTooManyAttempts => 'Majaribio ni mengi mno — jaribu tena baadaye';
+  String get errorTooManyAttempts =>
+      'Majaribio ni mengi mno — jaribu tena baadaye';
 
   @override
-  String get errorNetworkError => 'Hitilafu ya mtandao — angalia muunganisho wako';
+  String get errorNetworkError =>
+      'Hitilafu ya mtandao — angalia muunganisho wako';
 
   @override
   String get receiptTitle => 'Risiti';
@@ -350,7 +365,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noReceiptYet => 'Hakuna risiti bado';
 
   @override
-  String get completeReceivingBeforeReceipt => 'Kamilisha upokeaji kabla ya kuona risiti.';
+  String get completeReceivingBeforeReceipt =>
+      'Kamilisha upokeaji kabla ya kuona risiti.';
 
   @override
   String get startReceiving => 'Anza Kupokea';
@@ -419,25 +435,29 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noPrintersFound => 'Hakuna printa zilizopatikana';
 
   @override
-  String get turnOnPrinterAndRefresh => 'Washa printa, kisha bonyeza kuonyesha upya.';
+  String get turnOnPrinterAndRefresh =>
+      'Washa printa, kisha bonyeza kuonyesha upya.';
 
   @override
   String get noPairedPrinters => 'Hakuna printa iliyounganishwa';
 
   @override
-  String get pairPrinterInSettings => 'Unganisha printa ya risiti kwenye mipangilio ya Bluetooth ya simu kwanza.';
+  String get pairPrinterInSettings =>
+      'Unganisha printa ya risiti kwenye mipangilio ya Bluetooth ya simu kwanza.';
 
   @override
   String get printingReceipt => 'Inachapisha Risiti';
 
   @override
-  String get printingReceiptDescription => 'Inatuma risiti hii kwenye printa uliyochagua.';
+  String get printingReceiptDescription =>
+      'Inatuma risiti hii kwenye printa uliyochagua.';
 
   @override
   String get receiptPrinted => 'Risiti Imechapishwa';
 
   @override
-  String get receiptPrintedDescription => 'Risiti imetumwa kwenye printa kikamilifu.';
+  String get receiptPrintedDescription =>
+      'Risiti imetumwa kwenye printa kikamilifu.';
 
   @override
   String get printerError => 'Hitilafu ya Printa';
@@ -446,7 +466,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get printerLoadError => 'Imeshindwa kupakia printa zilizounganishwa.';
 
   @override
-  String get bluetoothPermissionRequired => 'Ruhusa ya Bluetooth inahitajika ili kuchapisha risiti.';
+  String get bluetoothPermissionRequired =>
+      'Ruhusa ya Bluetooth inahitajika ili kuchapisha risiti.';
 
   @override
   String get printOptions => 'Chaguzi za Kuchapisha';
@@ -661,13 +682,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get checkingEmail => 'Inakagua anwani hii ya barua pepe.';
 
   @override
-  String get sendResetFailed => 'Imeshindwa kutuma barua pepe ya kuweka upya nenosiri.';
+  String get sendResetFailed =>
+      'Imeshindwa kutuma barua pepe ya kuweka upya nenosiri.';
 
   @override
   String get checkYourEmail => 'Angalia Barua Pepe Yako';
 
   @override
-  String get resetInstructionsSent => 'Maelekezo ya kuweka upya nenosiri yametumwa kwenye barua pepe yako.';
+  String get resetInstructionsSent =>
+      'Maelekezo ya kuweka upya nenosiri yametumwa kwenye barua pepe yako.';
 
   @override
   String get sendInstructions => 'Tuma Maelekezo';
@@ -712,7 +735,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get changingPassword => 'Inabadilisha Nenosiri';
 
   @override
-  String get updatingPasswordSecurely => 'Inasasisha nenosiri lako kwa usalama.';
+  String get updatingPasswordSecurely =>
+      'Inasasisha nenosiri lako kwa usalama.';
 
   @override
   String get changePasswordFailed => 'Imeshindwa kubadilisha nenosiri.';
@@ -751,7 +775,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get logout => 'Ondoka';
 
   @override
-  String get logoutConfirmMessage => 'Una uhakika unataka kuondoka kwenye kifaa hiki?';
+  String get logoutConfirmMessage =>
+      'Una uhakika unataka kuondoka kwenye kifaa hiki?';
 
   @override
   String get loggingOut => 'Inaondoka';
@@ -791,10 +816,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noFarmersFound => 'Hakuna wakulima waliopatikana';
 
   @override
-  String get registerFarmerSubtitle => 'Sajili mkulima wakati wa kuwasiliana naye.';
+  String get registerFarmerSubtitle =>
+      'Sajili mkulima wakati wa kuwasiliana naye.';
 
   @override
-  String get workerFarmersSubtitle => 'Wakulima waliosajiliwa na wafanyakazi wataonekana hapa.';
+  String get workerFarmersSubtitle =>
+      'Wakulima waliosajiliwa na wafanyakazi wataonekana hapa.';
 
   @override
   String get farmerNotFound => 'Mkulima hakupatikana';
@@ -887,13 +914,16 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noDependantsAdded => 'Hakuna wategemezi walioongezwa';
 
   @override
-  String get noDependantsForFarmer => 'Hakuna wategemezi walioongezwa kwa mkulima huyu.';
+  String get noDependantsForFarmer =>
+      'Hakuna wategemezi walioongezwa kwa mkulima huyu.';
 
   @override
-  String get dependantsOptional => 'Hatua hii si lazima. Wategemezi wanaweza kuongezwa baadaye.';
+  String get dependantsOptional =>
+      'Hatua hii si lazima. Wategemezi wanaweza kuongezwa baadaye.';
 
   @override
-  String get addDependantConfirm => 'Ongeza mtegemezi huyu kwenye rekodi ya mkulima?';
+  String get addDependantConfirm =>
+      'Ongeza mtegemezi huyu kwenye rekodi ya mkulima?';
 
   @override
   String get addingDependant => 'Inaongeza Mtegemezi';
@@ -902,7 +932,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get addingDependantProgress => 'Inaongeza mtegemezi...';
 
   @override
-  String get savingDependantLocally => 'Inahifadhi mtegemezi huyu kwenye kifaa.';
+  String get savingDependantLocally =>
+      'Inahifadhi mtegemezi huyu kwenye kifaa.';
 
   @override
   String get dependantAdded => 'Mtegemezi Ameongezwa';
@@ -917,16 +948,19 @@ class AppLocalizationsSw extends AppLocalizations {
   String get createFarmer => 'Unda Mkulima';
 
   @override
-  String get captureFarmerDescription => 'Weka rekodi ya mkulima wakati wa kuwasiliana naye.';
+  String get captureFarmerDescription =>
+      'Weka rekodi ya mkulima wakati wa kuwasiliana naye.';
 
   @override
-  String get addDependantsDescription => 'Ongeza wategemezi sasa, au acha hatua hii kwa baadaye.';
+  String get addDependantsDescription =>
+      'Ongeza wategemezi sasa, au acha hatua hii kwa baadaye.';
 
   @override
   String get review => 'Kagua';
 
   @override
-  String get reviewFarmerDescription => 'Thibitisha maelezo kabla ya kuunda mkulima.';
+  String get reviewFarmerDescription =>
+      'Thibitisha maelezo kabla ya kuunda mkulima.';
 
   @override
   String get name => 'Jina';
@@ -946,7 +980,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get connectTheScale => 'Unganisha mizani';
 
   @override
-  String get connectScaleDescription => 'Unganisha mizani ya Bluetooth kabla ya kupima mazao. Tafuta vifaa vilivyo karibu mizani ikiwa tayari.';
+  String get connectScaleDescription =>
+      'Unganisha mizani ya Bluetooth kabla ya kupima mazao. Tafuta vifaa vilivyo karibu mizani ikiwa tayari.';
 
   @override
   String get connected => 'Imeunganishwa';
@@ -955,7 +990,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get notConnected => 'Haijaunganishwa';
 
   @override
-  String get scanNearbyScale => 'Tafuta vifaa vilivyo karibu ili kupata mizani yako.';
+  String get scanNearbyScale =>
+      'Tafuta vifaa vilivyo karibu ili kupata mizani yako.';
 
   @override
   String get scanning => 'Inatafuta...';
@@ -973,13 +1009,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noDevicesFound => 'Hakuna vifaa vilivyopatikana';
 
   @override
-  String get deviceScanHelp => 'Washa mizani, Bluetooth na Mahali, kisha onyesha upya.';
+  String get deviceScanHelp =>
+      'Washa mizani, Bluetooth na Mahali, kisha onyesha upya.';
 
   @override
   String get bluetoothLocationRequired => 'Bluetooth na Mahali Vinahitajika';
 
   @override
-  String get bluetoothLocationMessage => 'Ruhusu Bluetooth na Mahali, na uhakikishe vyote vimewashwa kabla ya kutafuta vifaa.';
+  String get bluetoothLocationMessage =>
+      'Ruhusu Bluetooth na Mahali, na uhakikishe vyote vimewashwa kabla ya kutafuta vifaa.';
 
   @override
   String get connect => 'Unganisha';
@@ -1011,7 +1049,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noFarmersAvailable => 'Hakuna wakulima waliopo';
 
   @override
-  String get syncOrRegisterFarmers => 'Sawazisha au sajili wakulima kabla ya kupokea mazao.';
+  String get syncOrRegisterFarmers =>
+      'Sawazisha au sajili wakulima kabla ya kupokea mazao.';
 
   @override
   String get search => 'Tafuta';
@@ -1079,7 +1118,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get farmerDetailsNeeded => 'Maelezo ya mkulima yanahitajika';
 
   @override
-  String get farmerDetailsNeededMessage => 'Chagua maelezo ya mkulima na zao kabla ya kupima mifuko.';
+  String get farmerDetailsNeededMessage =>
+      'Chagua maelezo ya mkulima na zao kabla ya kupima mifuko.';
 
   @override
   String get goToDetails => 'Nenda kwenye Maelezo';
@@ -1090,7 +1130,8 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get connectScaleBeforeBag => 'Unganisha mizani kabla ya kuongeza mfuko.';
+  String get connectScaleBeforeBag =>
+      'Unganisha mizani kabla ya kuongeza mfuko.';
 
   @override
   String get waitForStableScale => 'Subiri hadi usomaji wa mizani utulie.';
@@ -1099,7 +1140,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get weightGreaterThanZero => 'Uzito lazima uwe zaidi ya sifuri.';
 
   @override
-  String get packagingLessThanGross => 'Uzito wa kifungashio lazima uwe chini ya uzito ghafi.';
+  String get packagingLessThanGross =>
+      'Uzito wa kifungashio lazima uwe chini ya uzito ghafi.';
 
   @override
   String get noBagsAdded => 'Hakuna mifuko iliyoongezwa bado';
@@ -1108,7 +1150,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get completeHarvest => 'Kamilisha Mavuno';
 
   @override
-  String get addBagBeforeComplete => 'Ongeza angalau mfuko mmoja kabla ya kukamilisha mavuno.';
+  String get addBagBeforeComplete =>
+      'Ongeza angalau mfuko mmoja kabla ya kukamilisha mavuno.';
 
   @override
   String completeHarvestConfirm(int count) {
@@ -1128,7 +1171,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get harvestSaved => 'Mavuno Yamehifadhiwa';
 
   @override
-  String get harvestSavedMessage => 'Mavuno yamehifadhiwa kikamilifu. Risiti iko tayari.';
+  String get harvestSavedMessage =>
+      'Mavuno yamehifadhiwa kikamilifu. Risiti iko tayari.';
 
   @override
   String get enterValidWeight => 'Ingiza uzito halali';
@@ -1160,10 +1204,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noHarvestsFound => 'Hakuna mavuno yaliyopatikana';
 
   @override
-  String get newHarvestSubtitle => 'Bonyeza + kuunganisha mizani na kupokea mazao.';
+  String get newHarvestSubtitle =>
+      'Bonyeza + kuunganisha mizani na kupokea mazao.';
 
   @override
-  String get workerHarvestsSubtitle => 'Rekodi za mavuno za wafanyakazi zitaonekana hapa.';
+  String get workerHarvestsSubtitle =>
+      'Rekodi za mavuno za wafanyakazi zitaonekana hapa.';
 
   @override
   String get harvestDetails => 'Maelezo ya Mavuno';
@@ -1172,16 +1218,19 @@ class AppLocalizationsSw extends AppLocalizations {
   String get harvestNotFound => 'Mavuno hayakupatikana';
 
   @override
-  String get harvestRemovedLocally => 'Rekodi hii huenda imeondolewa kwenye kifaa.';
+  String get harvestRemovedLocally =>
+      'Rekodi hii huenda imeondolewa kwenye kifaa.';
 
   @override
   String get chooseWarehouse => 'Chagua Ghala';
 
   @override
-  String get chooseWarehouseMessage => 'Chagua mahali kipindi hiki cha kupokea mazao kitarekodiwa.';
+  String get chooseWarehouseMessage =>
+      'Chagua mahali kipindi hiki cha kupokea mazao kitarekodiwa.';
 
   @override
-  String get createWarehouseBeforeReceiving => 'Unda ghala linalotumika kabla ya kupokea mazao.';
+  String get createWarehouseBeforeReceiving =>
+      'Unda ghala linalotumika kabla ya kupokea mazao.';
 
   @override
   String get addWarehouse => 'Ongeza ghala';
@@ -1237,7 +1286,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get gpsLocationAddress => 'Mahali pa GPS / anwani';
 
   @override
-  String get locationAutoBuilt => 'Imejengwa kiotomatiki kutoka mkoa, wilaya, kata na kijiji';
+  String get locationAutoBuilt =>
+      'Imejengwa kiotomatiki kutoka mkoa, wilaya, kata na kijiji';
 
   @override
   String get warehouseNotFoundMessage => 'Ghala halikupatikana';
@@ -1252,7 +1302,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noInventoryItems => 'Hakuna bidhaa bado.';
 
   @override
-  String get noAssignedWorkers => 'Hakuna wafanyakazi waliopangiwa ghala hili bado.';
+  String get noAssignedWorkers =>
+      'Hakuna wafanyakazi waliopangiwa ghala hili bado.';
 
   @override
   String get deleteWarehouse => 'Futa Ghala';
@@ -1287,7 +1338,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noWorkersYet => 'Hakuna wafanyakazi bado';
 
   @override
-  String get createFirstWorker => 'Tumia + kuunda akaunti yako ya kwanza ya mfanyakazi';
+  String get createFirstWorker =>
+      'Tumia + kuunda akaunti yako ya kwanza ya mfanyakazi';
 
   @override
   String get workerDetails => 'Maelezo ya Mfanyakazi';
@@ -1314,7 +1366,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get fillWorkerDetails => 'Jaza maelezo na pangia ghala';
 
   @override
-  String get amcosDerivedFromWarehouse => 'AMCOS inapatikana kiotomatiki kutoka kwenye chaguo hili';
+  String get amcosDerivedFromWarehouse =>
+      'AMCOS inapatikana kiotomatiki kutoka kwenye chaguo hili';
 
   @override
   String get createWorkerAccount => 'Unda Akaunti ya Mfanyakazi';
@@ -1332,10 +1385,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get assignWarehouseRequired => 'Tafadhali pangia ghala';
 
   @override
-  String get assignWorkerWarehouse => 'Tafadhali mpangie mfanyakazi huyu ghala.';
+  String get assignWorkerWarehouse =>
+      'Tafadhali mpangie mfanyakazi huyu ghala.';
 
   @override
-  String get selectedWarehouseNotFound => 'Ghala lililochaguliwa halikupatikana. Jaribu tena.';
+  String get selectedWarehouseNotFound =>
+      'Ghala lililochaguliwa halikupatikana. Jaribu tena.';
 
   @override
   String warehouseMissingAmcos(String warehouse) {
@@ -1343,7 +1398,8 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get ownerIdUnavailable => 'Imeshindwa kupata namba ya mmiliki. Ondoka kisha uingie tena.';
+  String get ownerIdUnavailable =>
+      'Imeshindwa kupata namba ya mmiliki. Ondoka kisha uingie tena.';
 
   @override
   String get createWorker => 'Unda Mfanyakazi';
@@ -1380,7 +1436,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get deletingWorker => 'Inafuta Mfanyakazi';
 
   @override
-  String get removingWorkerLocally => 'Inamwondoa mfanyakazi huyu kwenye kifaa.';
+  String get removingWorkerLocally =>
+      'Inamwondoa mfanyakazi huyu kwenye kifaa.';
 
   @override
   String get workerDeleted => 'Mfanyakazi Amefutwa';
@@ -1400,7 +1457,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get updatingWorker => 'Inasasisha Mfanyakazi';
 
   @override
-  String get savingWorkerChangesLocally => 'Inahifadhi mabadiliko ya mfanyakazi kwenye kifaa.';
+  String get savingWorkerChangesLocally =>
+      'Inahifadhi mabadiliko ya mfanyakazi kwenye kifaa.';
 
   @override
   String get workerUpdated => 'Mfanyakazi Amesasishwa';
@@ -1415,7 +1473,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noActivityYet => 'Hakuna shughuli bado';
 
   @override
-  String get activityWillAppear => 'Vitendo vinavyofanywa kwenye programu vitaonekana hapa';
+  String get activityWillAppear =>
+      'Vitendo vinavyofanywa kwenye programu vitaonekana hapa';
 
   @override
   String get pendingSyncs => 'Usawazishaji Unaosubiri';
@@ -1424,10 +1483,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get allSynced => 'Vyote vimesawazishwa';
 
   @override
-  String get noPendingOwnerChanges => 'Hakuna mabadiliko ya mmiliki yanayosubiri kupakiwa.';
+  String get noPendingOwnerChanges =>
+      'Hakuna mabadiliko ya mmiliki yanayosubiri kupakiwa.';
 
   @override
-  String get useDashboardSync => 'Tumia kitufe cha kusawazisha kwenye dashibodi kupakia mabadiliko haya.';
+  String get useDashboardSync =>
+      'Tumia kitufe cha kusawazisha kwenye dashibodi kupakia mabadiliko haya.';
 
   @override
   String get warehouseRecord => 'Rekodi ya ghala';
@@ -1443,6 +1504,16 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String operationWorker(String operation) {
     return '$operation mfanyakazi';
+  }
+
+  @override
+  String operationFarmer(String operation) {
+    return '$operation mkulima';
+  }
+
+  @override
+  String operationDependant(String operation) {
+    return '$operation mtegemezi';
   }
 
   @override
@@ -1473,7 +1544,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noOwnerActivity => 'Hakuna shughuli za mmiliki bado';
 
   @override
-  String get createWarehouseWorkerActivity => 'Unda ghala au mfanyakazi ili kuona shughuli hapa.';
+  String get createWarehouseWorkerActivity =>
+      'Unda ghala au mfanyakazi ili kuona shughuli hapa.';
 
   @override
   String get alerts => 'Arifa';
@@ -1482,7 +1554,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noPendingSyncs => 'Hakuna usawazishaji unaosubiri';
 
   @override
-  String get allOwnerChangesUploaded => 'Mabadiliko yote ya mmiliki yamepakiwa.';
+  String get allOwnerChangesUploaded =>
+      'Mabadiliko yote ya mmiliki yamepakiwa.';
 
   @override
   String get ownerOperations => 'Shughuli za mmiliki';
@@ -1507,7 +1580,23 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get manualSyncNeeded => 'Mabadiliko ya ghala au mfanyakazi yanahitaji kusawazishwa mwenyewe.';
+  String get tapToViewPending => 'Gusa kuona rekodi ambazo hazijasawazishwa';
+
+  @override
+  String get noPendingChanges =>
+      'Hakuna mabadiliko ya ndani yanayosubiri kupakiwa.';
+
+  @override
+  String operationHarvest(String operation) {
+    return '$operation mavuno';
+  }
+
+  @override
+  String get harvestRecord => 'Rekodi ya mavuno';
+
+  @override
+  String get manualSyncNeeded =>
+      'Mabadiliko ya ghala au mfanyakazi yanahitaji kusawazishwa mwenyewe.';
 
   @override
   String get warehouseCreatedActivity => 'Ghala limeundwa';
@@ -1547,7 +1636,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get registerFarmerAction => 'Sajili Mkulima';
 
   @override
-  String get createFarmerAtContact => 'Unda rekodi za mkulima wakati wa kuwasiliana naye';
+  String get createFarmerAtContact =>
+      'Unda rekodi za mkulima wakati wa kuwasiliana naye';
 
   @override
   String allItems(int count) {
@@ -1569,7 +1659,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noLowStockItems => 'Hakuna bidhaa zenye stoki ndogo';
 
   @override
-  String get allAboveReorder => 'Bidhaa zote ziko juu ya kiwango cha kuagiza tena';
+  String get allAboveReorder =>
+      'Bidhaa zote ziko juu ya kiwango cha kuagiza tena';
 
   @override
   String get noItemsYet => 'Hakuna bidhaa bado';
@@ -1707,16 +1798,19 @@ class AppLocalizationsSw extends AppLocalizations {
   String get businessInfo => 'Taarifa za Biashara';
 
   @override
-  String get businessInfoDescription => 'Tuambie biashara ni ya nani na inafanya kazi wapi.';
+  String get businessInfoDescription =>
+      'Tuambie biashara ni ya nani na inafanya kazi wapi.';
 
   @override
   String get contactPerson => 'Mwasiliani';
 
   @override
-  String get contactPersonDescription => 'Ongeza mtu wa kuwasiliana naye kwa shughuli za kila siku.';
+  String get contactPersonDescription =>
+      'Ongeza mtu wa kuwasiliana naye kwa shughuli za kila siku.';
 
   @override
-  String get registrationReviewDescription => 'Kagua kila kitu kabla ya kuunda akaunti.';
+  String get registrationReviewDescription =>
+      'Kagua kila kitu kabla ya kuunda akaunti.';
 
   @override
   String get member => 'Mwanachama';
@@ -1737,10 +1831,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get educationLevel => 'Kiwango cha elimu';
 
   @override
-  String get createFarmerConfirm => 'Thibitisha maelezo haya na uunde rekodi ya mkulima?';
+  String get createFarmerConfirm =>
+      'Thibitisha maelezo haya na uunde rekodi ya mkulima?';
 
   @override
-  String get workerMcuUnavailable => 'Imeshindwa kupata MCU ya mfanyakazi huyu. Sawazisha wasifu wako au wasiliana na mmiliki.';
+  String get workerMcuUnavailable =>
+      'Imeshindwa kupata MCU ya mfanyakazi huyu. Sawazisha wasifu wako au wasiliana na mmiliki.';
 
   @override
   String get creatingFarmer => 'Inaunda Mkulima';
@@ -1770,7 +1866,8 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get secondaryCropDifferent => 'Zao la pili lazima liwe tofauti na zao kuu';
+  String get secondaryCropDifferent =>
+      'Zao la pili lazima liwe tofauti na zao kuu';
 
   @override
   String get enterValidNumber => 'Ingiza namba halali';
@@ -1802,23 +1899,87 @@ class AppLocalizationsSw extends AppLocalizations {
   String get movement => 'Uhamishaji';
 
   @override
-  String get scaleBluetoothPermissionError => 'Ruhusa ya Bluetooth inahitajika ili kuunganisha mizani.';
+  String get scaleBluetoothPermissionError =>
+      'Ruhusa ya Bluetooth inahitajika ili kuunganisha mizani.';
 
   @override
-  String get turnOnBluetoothToScan => 'Washa Bluetooth kabla ya kutafuta mizani.';
+  String get turnOnBluetoothToScan =>
+      'Washa Bluetooth kabla ya kutafuta mizani.';
 
   @override
-  String get scaleScanError => 'Imeshindwa kutafuta mizani. Tafadhali jaribu tena.';
+  String get scaleScanError =>
+      'Imeshindwa kutafuta mizani. Tafadhali jaribu tena.';
 
   @override
-  String get scaleConnectionError => 'Imeshindwa kuunganisha mizani. Tafadhali jaribu tena.';
+  String get scaleConnectionError =>
+      'Imeshindwa kuunganisha mizani. Tafadhali jaribu tena.';
 
   @override
   String get noScaleConnected => 'Hakuna mizani iliyounganishwa.';
 
   @override
-  String get scaleStreamError => 'Imeshindwa kupokea vipimo kutoka kwenye mizani.';
+  String get scaleStreamError =>
+      'Imeshindwa kupokea vipimo kutoka kwenye mizani.';
 
   @override
-  String get scaleReadError => 'Imeshindwa kusoma mizani. Tafadhali jaribu tena.';
+  String get scaleReadError =>
+      'Imeshindwa kusoma mizani. Tafadhali jaribu tena.';
+
+  @override
+  String get errorInvalidServerResponse =>
+      'Seva imerudisha majibu yasiyokamilika. Tafadhali jaribu tena.';
+
+  @override
+  String get errorMissingMcuAssignment =>
+      'Akaunti yako haijaunganishwa na MCU. Tafadhali wasiliana na msimamizi.';
+
+  @override
+  String get amcosManagement => 'AMCOS';
+
+  @override
+  String get addAmcos => 'Ongeza AMCOS';
+
+  @override
+  String get noAmcosFound => 'Hakuna AMCOS iliyopatikana';
+
+  @override
+  String get createFirstAmcos => 'Bonyeza + kuunda AMCOS ya kwanza ya MCU hii.';
+
+  @override
+  String get createAmcos => 'Unda AMCOS';
+
+  @override
+  String createAmcosConfirm(String name) {
+    return 'Unda $name chini ya MCU yako?';
+  }
+
+  @override
+  String get creatingAmcos => 'Inaunda AMCOS';
+
+  @override
+  String get savingAmcos => 'Inahifadhi maelezo ya AMCOS.';
+
+  @override
+  String get amcosCreated => 'AMCOS Imeundwa';
+
+  @override
+  String get amcosCreatedSuccess => 'AMCOS imeundwa kikamilifu.';
+
+  @override
+  String get memberCategory => 'Aina ya wanachama';
+
+  @override
+  String get selectMemberCategory => 'Chagua aina ya wanachama';
+
+  @override
+  String get fisherman => 'Wavuvi';
+
+  @override
+  String get livestockTraders => 'Wafanyabiashara wa mifugo';
+
+  @override
+  String get livestockKeepers => 'Wafugaji';
+
+  @override
+  String get suppliers => 'Wasambazaji';
 }

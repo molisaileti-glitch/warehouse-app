@@ -2,6 +2,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database_provider.dart';
+import '../network/api_client.dart' show secureStorageProvider;
 import '../repositories/auth_repository.dart';
 import '../enums/sync_status.dart';
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -73,13 +74,13 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
 
   // ── Register (owner first-time setup) ─────────────────────────────────────
 
-  Future<void> register(Map<String, dynamic> data) async {
+  Future<RegistrationResult> register(Map<String, dynamic> data) async {
     state = const AsyncValue.data(AuthState.loading());
     final result = await _repo.register(data);
-    state = result.success
-        ? AsyncValue.data(
-            AuthState.authenticated(userId: result.userId!, role: result.role!))
-        : AsyncValue.data(AuthState.unauthenticated(error: result.error));
+    state = AsyncValue.data(
+      AuthState.unauthenticated(error: result.success ? null : result.error),
+    );
+    return result;
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────
@@ -108,11 +109,8 @@ final currentRoleProvider = Provider<UserRole?>((ref) {
 final currentUserMcuProvider = FutureProvider<int?>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return null;
-  final role = ref.watch(currentRoleProvider);
+  final storedMcuId = await ref.watch(secureStorageProvider).getMcuId();
+  if (storedMcuId != null) return storedMcuId;
   final user = await ref.watch(workerDaoProvider).getUserById(userId);
-
-  if (role == UserRole.owner || role == UserRole.superAdmin) {
-    return int.tryParse(userId) ?? user?.mcu;
-  }
   return user?.mcu;
 });

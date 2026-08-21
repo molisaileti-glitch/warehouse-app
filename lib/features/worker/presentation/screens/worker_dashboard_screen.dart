@@ -8,8 +8,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/sync/sync_engine.dart';
 import '../../../shared/widgets/common_widgets.dart';
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/database_provider.dart';
 
 // Scoped provider — watches the current worker's User record from local DB.
 final _workerProfileProvider = StreamProvider<User?>((ref) {
@@ -18,13 +20,51 @@ final _workerProfileProvider = StreamProvider<User?>((ref) {
   return ref.watch(workerRepoProvider).watchWorkerById(userId);
 });
 
+final _workerPendingSyncCountProvider = StreamProvider<int>((ref) {
+  return ref.watch(syncQueueDaoProvider).watchPendingEntries().map(
+        (entries) => entries
+            .where((entry) =>
+                entry.entityType == 'farmers' ||
+                entry.entityType == 'farmerDependants' ||
+                entry.entityType == 'farmerHarvests')
+            .length,
+      );
+});
+
+final _workerWarehousesByAmcosProvider =
+    FutureProvider.family<List<Warehouse>, int>((ref, amcosId) async {
+  await ref.read(warehouseRepoProvider).pullFromAmcos(amcosId: amcosId);
+  return ref.read(warehouseDaoProvider).getWarehousesByAmcos(amcosId);
+});
+
 class WorkerDashboardScreen extends ConsumerWidget {
   const WorkerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(_workerProfileProvider);
+    final syncState = ref.watch(syncNotifierProvider);
+    final pendingSyncCount =
+        ref.watch(_workerPendingSyncCountProvider).valueOrNull ?? 0;
     final l10n = AppLocalizations.of(context)!;
+
+    ref.listen<SyncState>(syncNotifierProvider, (previous, next) {
+      if (previous?.isSyncing != true) return;
+      if (next.isDone) {
+        showTopToast(
+          context,
+          l10n.syncedSummary(next.pushed.toString(), next.pulled.toString()),
+          AppColors.success,
+        );
+      } else if (next.hasErrors) {
+        showTopToast(
+          context,
+          next.error!,
+          AppColors.error,
+          icon: Icons.error_outline_rounded,
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -41,6 +81,38 @@ class WorkerDashboardScreen extends ConsumerWidget {
               if (ok) ref.read(authProvider.notifier).logout();
             },
           ),
+        ],
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'worker_dashboard_sync',
+            onPressed: syncState.isSyncing
+                ? null
+                : () => ref.read(syncNotifierProvider.notifier).runSync(),
+            icon: syncState.isSyncing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.sync_rounded),
+            label: Text(syncState.isSyncing ? l10n.syncing : l10n.sync),
+            backgroundColor: AppColors.workerColor,
+            foregroundColor: Colors.white,
+          ),
+          if (pendingSyncCount > 0) ...[
+            const SizedBox(height: 8),
+            PendingSyncFloatingBanner(
+              count: pendingSyncCount,
+              onTap: () => context.go(AppRoutes.workerPendingSyncs),
+            ),
+          ],
         ],
       ),
       body: userAsync.when(
@@ -74,31 +146,16 @@ class _WorkerBody extends ConsumerWidget {
     // ── Real user but no warehouse assigned yet ───────────────────────────────
     final warehouseId = user!.warehouseId;
     if (warehouseId == null) {
-      return Column(
-        children: [
-          Expanded(
-            child: EmptyState(
-              icon: Icons.warehouse_rounded,
-              title: l10n.notAssignedWarehouse,
-              subtitle: l10n.askAdminAssignment,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.logout_rounded),
-              label: Text(l10n.signOut),
-              onPressed: () => ref.read(authProvider.notifier).logout(),
-            ),
-          ),
-        ],
+      return _WorkerWarehouseSelector(
+        user: user!,
+        autoSelectSingleWarehouse: true,
       );
     }
 
     // ── Normal state — warehouse assigned ─────────────────────────────────────
-    final itemsAsync = ref.watch(inventoryItemsProvider(warehouseId));
+    final farmersAsync = ref.watch(allFarmersProvider);
+    final harvestsAsync = ref.watch(harvestsByWarehouseProvider(warehouseId));
     final whAsync = ref.watch(warehouseByIdProvider(warehouseId));
-    final lowAsync = ref.watch(lowStockProvider(warehouseId));
 
     return CustomScrollView(
       slivers: [
@@ -134,6 +191,12 @@ class _WorkerBody extends ConsumerWidget {
                   ],
                 ),
               ),
+              IconButton(
+                tooltip: l10n.selectWarehouse,
+                onPressed: () => _showWarehousePicker(context, user!),
+                icon: const Icon(Icons.swap_horiz_rounded),
+                color: Colors.white,
+              ),
             ]),
           ),
         ),
@@ -148,18 +211,19 @@ class _WorkerBody extends ConsumerWidget {
             childAspectRatio: 1.05,
             children: [
               StatCard(
-                label: l10n.totalItems,
-                value: '${itemsAsync.valueOrNull?.length ?? 0}',
-                icon: Icons.inventory_2_rounded,
+                label: l10n.farmers,
+                value: '${farmersAsync.valueOrNull?.length ?? 0}',
+                icon: Icons.people_alt_rounded,
                 color: AppColors.workerColor,
-                onTap: () =>
-                    context.go(AppRoutes.workerInventoryFor(warehouseId)),
+                onTap: () => context.go(AppRoutes.workerFarmers),
               ),
               StatCard(
-                label: l10n.lowStock,
-                value: '${lowAsync.valueOrNull?.length ?? 0}',
-                icon: Icons.warning_amber_rounded,
-                color: AppColors.warning,
+                label: l10n.harvest,
+                value: '${harvestsAsync.valueOrNull?.length ?? 0}',
+                icon: Icons.grass_rounded,
+                color: AppColors.success,
+                onTap: () =>
+                    context.go(AppRoutes.workerHarvestsFor(warehouseId)),
               ),
             ],
           ),
@@ -203,48 +267,257 @@ class _WorkerBody extends ConsumerWidget {
           ),
         ),
 
-        // Low stock alerts
-        if ((lowAsync.valueOrNull?.length ?? 0) > 0) ...[
-          SliverToBoxAdapter(child: SectionHeader(title: l10n.lowStockAlerts)),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) {
-                  final item = lowAsync.valueOrNull![i];
-                  return AppCard(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    color: AppColors.warning.withValues(alpha: 0.04),
-                    child: Row(children: [
-                      const Icon(Icons.warning_rounded,
-                          color: AppColors.warning, size: 18),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: Text(item.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500))),
-                      Text(
-                          '${item.quantityOnHand % 1 == 0 ? item.quantityOnHand.toInt() : item.quantityOnHand} ${item.unit}',
-                          style: const TextStyle(
-                              color: AppColors.warning,
-                              fontWeight: FontWeight.w700)),
-                    ]),
-                  );
-                },
-                childCount: lowAsync.valueOrNull!.length,
-              ),
-            ),
-          ),
-        ],
-
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        const SliverToBoxAdapter(child: SizedBox(height: 150)),
       ],
     );
   }
 }
 
 // ── No profile view — shown during mock/dev when user isn't in local DB ───────
+
+void _showWarehousePicker(BuildContext context, User user) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _WorkerWarehouseSheet(user: user),
+  );
+}
+
+class _WorkerWarehouseSheet extends StatelessWidget {
+  final User user;
+  const _WorkerWarehouseSheet({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              l10n.selectWarehouse,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.58,
+              ),
+              child: _WorkerWarehouseSelector(
+                user: user,
+                popOnSelect: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkerWarehouseSelector extends ConsumerStatefulWidget {
+  final User user;
+  final bool autoSelectSingleWarehouse;
+  final bool popOnSelect;
+
+  const _WorkerWarehouseSelector({
+    required this.user,
+    this.autoSelectSingleWarehouse = false,
+    this.popOnSelect = false,
+  });
+
+  @override
+  ConsumerState<_WorkerWarehouseSelector> createState() =>
+      _WorkerWarehouseSelectorState();
+}
+
+class _WorkerWarehouseSelectorState
+    extends ConsumerState<_WorkerWarehouseSelector> {
+  bool _autoSelected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final amcosId = widget.user.amcos;
+
+    if (amcosId == null || amcosId <= 0) {
+      return EmptyState(
+        icon: Icons.warehouse_rounded,
+        title: l10n.notAssignedWarehouse,
+        subtitle: l10n.askAdminAssignment,
+      );
+    }
+
+    final warehousesAsync =
+        ref.watch(_workerWarehousesByAmcosProvider(amcosId));
+    return warehousesAsync.when(
+      loading: () => const LoadingView(),
+      error: (e, _) => _WarehousePickerMessage(
+        title: l10n.noWarehousesFound,
+        subtitle: '$e',
+        onRefresh: () =>
+            ref.invalidate(_workerWarehousesByAmcosProvider(amcosId)),
+      ),
+      data: (warehouses) {
+        if (warehouses.length == 1 &&
+            widget.autoSelectSingleWarehouse &&
+            widget.user.warehouseId != warehouses.first.id &&
+            !_autoSelected) {
+          _autoSelected = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _setActiveWarehouse(warehouses.first);
+          });
+          return const LoadingView();
+        }
+
+        if (warehouses.isEmpty) {
+          return _WarehousePickerMessage(
+            title: l10n.noWarehousesFound,
+            subtitle: l10n.createWarehouseBeforeReceiving,
+            onRefresh: () =>
+                ref.invalidate(_workerWarehousesByAmcosProvider(amcosId)),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          padding: EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            widget.popOnSelect ? 8 : 96,
+          ),
+          itemCount: warehouses.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemBuilder: (_, index) {
+            final warehouse = warehouses[index];
+            final selected = widget.user.warehouseId == warehouse.id;
+            return AppCard(
+              onTap: () => _setActiveWarehouse(warehouse),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.workerColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.warehouse_rounded,
+                      color: AppColors.workerColor,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          warehouse.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        if (warehouse.gpsLocation != null)
+                          Text(
+                            warehouse.gpsLocation!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    selected
+                        ? Icons.check_circle_rounded
+                        : Icons.chevron_right_rounded,
+                    color:
+                        selected ? AppColors.workerColor : AppColors.textMuted,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _setActiveWarehouse(Warehouse warehouse) async {
+    await ref.read(workerRepoProvider).setActiveWarehouse(
+          userId: widget.user.id,
+          warehouseId: warehouse.id,
+        );
+    if (!mounted) return;
+    if (widget.popOnSelect) Navigator.of(context).pop();
+  }
+}
+
+class _WarehousePickerMessage extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final VoidCallback onRefresh;
+
+  const _WarehousePickerMessage({
+    required this.title,
+    required this.subtitle,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: EmptyState(
+            icon: Icons.warehouse_rounded,
+            title: title,
+            subtitle: subtitle,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.refresh_rounded),
+            label: Text(l10n.retry),
+            onPressed: onRefresh,
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _NoProfileView extends StatelessWidget {
   final VoidCallback onLogout;

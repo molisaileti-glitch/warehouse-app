@@ -62,7 +62,8 @@ import 'app_localizations_sw.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -2897,6 +2900,18 @@ abstract class AppLocalizations {
   /// **'{operation} worker'**
   String operationWorker(String operation);
 
+  /// No description provided for @operationFarmer.
+  ///
+  /// In en, this message translates to:
+  /// **'{operation} farmer'**
+  String operationFarmer(String operation);
+
+  /// No description provided for @operationDependant.
+  ///
+  /// In en, this message translates to:
+  /// **'{operation} dependant'**
+  String operationDependant(String operation);
+
   /// No description provided for @operationRecord.
   ///
   /// In en, this message translates to:
@@ -2998,6 +3013,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} pending sync(s)'**
   String pendingSyncCount(int count);
+
+  /// No description provided for @tapToViewPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view unsynced records'**
+  String get tapToViewPending;
+
+  /// No description provided for @noPendingChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no local changes waiting to upload.'**
+  String get noPendingChanges;
+
+  /// No description provided for @operationHarvest.
+  ///
+  /// In en, this message translates to:
+  /// **'{operation} harvest'**
+  String operationHarvest(String operation);
+
+  /// No description provided for @harvestRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Harvest record'**
+  String get harvestRecord;
 
   /// No description provided for @manualSyncNeeded.
   ///
@@ -3574,9 +3613,118 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not read the scale. Please try again.'**
   String get scaleReadError;
+
+  /// No description provided for @errorInvalidServerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'The server returned an incomplete response. Please try again.'**
+  String get errorInvalidServerResponse;
+
+  /// No description provided for @errorMissingMcuAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has no MCU assignment. Please contact the administrator.'**
+  String get errorMissingMcuAssignment;
+
+  /// No description provided for @amcosManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'AMCOS'**
+  String get amcosManagement;
+
+  /// No description provided for @addAmcos.
+  ///
+  /// In en, this message translates to:
+  /// **'Add AMCOS'**
+  String get addAmcos;
+
+  /// No description provided for @noAmcosFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No AMCOS found'**
+  String get noAmcosFound;
+
+  /// No description provided for @createFirstAmcos.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to create the first AMCOS for this MCU.'**
+  String get createFirstAmcos;
+
+  /// No description provided for @createAmcos.
+  ///
+  /// In en, this message translates to:
+  /// **'Create AMCOS'**
+  String get createAmcos;
+
+  /// No description provided for @createAmcosConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Create {name} under your MCU?'**
+  String createAmcosConfirm(String name);
+
+  /// No description provided for @creatingAmcos.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating AMCOS'**
+  String get creatingAmcos;
+
+  /// No description provided for @savingAmcos.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving the AMCOS details.'**
+  String get savingAmcos;
+
+  /// No description provided for @amcosCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'AMCOS Created'**
+  String get amcosCreated;
+
+  /// No description provided for @amcosCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'AMCOS successfully created.'**
+  String get amcosCreatedSuccess;
+
+  /// No description provided for @memberCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Member category'**
+  String get memberCategory;
+
+  /// No description provided for @selectMemberCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a member category'**
+  String get selectMemberCategory;
+
+  /// No description provided for @fisherman.
+  ///
+  /// In en, this message translates to:
+  /// **'Fisherman'**
+  String get fisherman;
+
+  /// No description provided for @livestockTraders.
+  ///
+  /// In en, this message translates to:
+  /// **'Livestock traders'**
+  String get livestockTraders;
+
+  /// No description provided for @livestockKeepers.
+  ///
+  /// In en, this message translates to:
+  /// **'Livestock keepers'**
+  String get livestockKeepers;
+
+  /// No description provided for @suppliers.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppliers'**
+  String get suppliers;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3585,25 +3733,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'sw'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'sw'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'sw': return AppLocalizationsSw();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'sw':
+      return AppLocalizationsSw();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

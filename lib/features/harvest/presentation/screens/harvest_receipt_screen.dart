@@ -256,8 +256,7 @@ class _HarvestReceiptScreenState extends ConsumerState<HarvestReceiptScreen> {
       await showAppFeedbackDialog<void>(
         context,
         title: appL10n.printerError,
-        description: error is ReceiptPrinterException &&
-                error.message == appL10n.bluetoothPermissionRequired
+        description: error is ReceiptPrinterException
             ? error.message
             : appL10n.printerLoadError,
         type: AppFeedbackType.error,

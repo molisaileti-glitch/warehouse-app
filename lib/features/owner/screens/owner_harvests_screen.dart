@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
-import 'package:warehouse_app/core/providers/auth_provider.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/warehouse/presentation/providers/warehouse_providers.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 
 final _ownerHarvestsProvider = StreamProvider<List<FarmerHarvest>>((ref) {
   return ref.watch(harvestDaoProvider).watchAllHarvests();
@@ -37,13 +37,11 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final harvestsAsync = ref.watch(_ownerHarvestsProvider);
-    final ownerId = ref.watch(currentUserIdProvider);
-    final warehousesAsync = ownerId == null
-        ? const AsyncValue<List<Warehouse>>.data([])
-        : ref.watch(warehousesByOwnerProvider(ownerId));
+    final warehousesAsync = ref.watch(currentOwnerWarehousesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      drawer: const OwnerDrawer(),
       appBar: AppBar(
         title: Text(l10n.harvests),
         actions: [

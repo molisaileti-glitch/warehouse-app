@@ -6441,6 +6441,12 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _serverIdMeta =
+      const VerificationMeta('serverId');
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+      'server_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _firstNameMeta =
       const VerificationMeta('firstName');
   @override
@@ -6628,6 +6634,7 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        serverId,
         firstName,
         middleName,
         lastName,
@@ -6670,6 +6677,10 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(_serverIdMeta,
+          serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta));
     }
     if (data.containsKey('first_name')) {
       context.handle(_firstNameMeta,
@@ -6846,6 +6857,8 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
     return Farmer(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      serverId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}server_id']),
       firstName: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}first_name'])!,
       middleName: attachedDatabase.typeMapping
@@ -6915,6 +6928,7 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
 
 class Farmer extends DataClass implements Insertable<Farmer> {
   final int id;
+  final int? serverId;
   final String firstName;
   final String? middleName;
   final String lastName;
@@ -6946,6 +6960,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   final DateTime? updatedAt;
   const Farmer(
       {required this.id,
+      this.serverId,
       required this.firstName,
       this.middleName,
       required this.lastName,
@@ -6979,6 +6994,9 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<int>(serverId);
+    }
     map['first_name'] = Variable<String>(firstName);
     if (!nullToAbsent || middleName != null) {
       map['middle_name'] = Variable<String>(middleName);
@@ -7040,6 +7058,9 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   FarmersCompanion toCompanion(bool nullToAbsent) {
     return FarmersCompanion(
       id: Value(id),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
       firstName: Value(firstName),
       middleName: middleName == null && nullToAbsent
           ? const Value.absent()
@@ -7101,6 +7122,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Farmer(
       id: serializer.fromJson<int>(json['id']),
+      serverId: serializer.fromJson<int?>(json['serverId']),
       firstName: serializer.fromJson<String>(json['firstName']),
       middleName: serializer.fromJson<String?>(json['middleName']),
       lastName: serializer.fromJson<String>(json['lastName']),
@@ -7138,6 +7160,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'serverId': serializer.toJson<int?>(serverId),
       'firstName': serializer.toJson<String>(firstName),
       'middleName': serializer.toJson<String?>(middleName),
       'lastName': serializer.toJson<String>(lastName),
@@ -7172,6 +7195,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
 
   Farmer copyWith(
           {int? id,
+          Value<int?> serverId = const Value.absent(),
           String? firstName,
           Value<String?> middleName = const Value.absent(),
           String? lastName,
@@ -7203,6 +7227,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
           Value<DateTime?> updatedAt = const Value.absent()}) =>
       Farmer(
         id: id ?? this.id,
+        serverId: serverId.present ? serverId.value : this.serverId,
         firstName: firstName ?? this.firstName,
         middleName: middleName.present ? middleName.value : this.middleName,
         lastName: lastName ?? this.lastName,
@@ -7238,6 +7263,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   Farmer copyWithCompanion(FarmersCompanion data) {
     return Farmer(
       id: data.id.present ? data.id.value : this.id,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
       firstName: data.firstName.present ? data.firstName.value : this.firstName,
       middleName:
           data.middleName.present ? data.middleName.value : this.middleName,
@@ -7291,6 +7317,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   String toString() {
     return (StringBuffer('Farmer(')
           ..write('id: $id, ')
+          ..write('serverId: $serverId, ')
           ..write('firstName: $firstName, ')
           ..write('middleName: $middleName, ')
           ..write('lastName: $lastName, ')
@@ -7327,6 +7354,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   @override
   int get hashCode => Object.hashAll([
         id,
+        serverId,
         firstName,
         middleName,
         lastName,
@@ -7362,6 +7390,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
       identical(this, other) ||
       (other is Farmer &&
           other.id == this.id &&
+          other.serverId == this.serverId &&
           other.firstName == this.firstName &&
           other.middleName == this.middleName &&
           other.lastName == this.lastName &&
@@ -7395,6 +7424,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
 
 class FarmersCompanion extends UpdateCompanion<Farmer> {
   final Value<int> id;
+  final Value<int?> serverId;
   final Value<String> firstName;
   final Value<String?> middleName;
   final Value<String> lastName;
@@ -7426,6 +7456,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
   final Value<DateTime?> updatedAt;
   const FarmersCompanion({
     this.id = const Value.absent(),
+    this.serverId = const Value.absent(),
     this.firstName = const Value.absent(),
     this.middleName = const Value.absent(),
     this.lastName = const Value.absent(),
@@ -7458,6 +7489,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
   });
   FarmersCompanion.insert({
     this.id = const Value.absent(),
+    this.serverId = const Value.absent(),
     required String firstName,
     this.middleName = const Value.absent(),
     required String lastName,
@@ -7502,6 +7534,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
         maritalStatus = Value(maritalStatus);
   static Insertable<Farmer> custom({
     Expression<int>? id,
+    Expression<int>? serverId,
     Expression<String>? firstName,
     Expression<String>? middleName,
     Expression<String>? lastName,
@@ -7534,6 +7567,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (serverId != null) 'server_id': serverId,
       if (firstName != null) 'first_name': firstName,
       if (middleName != null) 'middle_name': middleName,
       if (lastName != null) 'last_name': lastName,
@@ -7569,6 +7603,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
 
   FarmersCompanion copyWith(
       {Value<int>? id,
+      Value<int?>? serverId,
       Value<String>? firstName,
       Value<String?>? middleName,
       Value<String>? lastName,
@@ -7600,6 +7635,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
       Value<DateTime?>? updatedAt}) {
     return FarmersCompanion(
       id: id ?? this.id,
+      serverId: serverId ?? this.serverId,
       firstName: firstName ?? this.firstName,
       middleName: middleName ?? this.middleName,
       lastName: lastName ?? this.lastName,
@@ -7637,6 +7673,9 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
     }
     if (firstName.present) {
       map['first_name'] = Variable<String>(firstName.value);
@@ -7732,6 +7771,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
   String toString() {
     return (StringBuffer('FarmersCompanion(')
           ..write('id: $id, ')
+          ..write('serverId: $serverId, ')
           ..write('firstName: $firstName, ')
           ..write('middleName: $middleName, ')
           ..write('lastName: $lastName, ')
@@ -17226,6 +17266,7 @@ typedef $$CropTableTableProcessedTableManager = ProcessedTableManager<
         bool farmerHarvestsRefs})>;
 typedef $$FarmersTableCreateCompanionBuilder = FarmersCompanion Function({
   Value<int> id,
+  Value<int?> serverId,
   required String firstName,
   Value<String?> middleName,
   required String lastName,
@@ -17258,6 +17299,7 @@ typedef $$FarmersTableCreateCompanionBuilder = FarmersCompanion Function({
 });
 typedef $$FarmersTableUpdateCompanionBuilder = FarmersCompanion Function({
   Value<int> id,
+  Value<int?> serverId,
   Value<String> firstName,
   Value<String?> middleName,
   Value<String> lastName,
@@ -17395,6 +17437,9 @@ class $$FarmersTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get firstName => $composableBuilder(
       column: $table.firstName, builder: (column) => ColumnFilters(column));
@@ -17613,6 +17658,9 @@ class $$FarmersTableOrderingComposer
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get firstName => $composableBuilder(
       column: $table.firstName, builder: (column) => ColumnOrderings(column));
 
@@ -17768,6 +17816,9 @@ class $$FarmersTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
 
   GeneratedColumn<String> get firstName =>
       $composableBuilder(column: $table.firstName, builder: (column) => column);
@@ -18001,6 +18052,7 @@ class $$FarmersTableTableManager extends RootTableManager<
               $$FarmersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
             Value<String> firstName = const Value.absent(),
             Value<String?> middleName = const Value.absent(),
             Value<String> lastName = const Value.absent(),
@@ -18033,6 +18085,7 @@ class $$FarmersTableTableManager extends RootTableManager<
           }) =>
               FarmersCompanion(
             id: id,
+            serverId: serverId,
             firstName: firstName,
             middleName: middleName,
             lastName: lastName,
@@ -18065,6 +18118,7 @@ class $$FarmersTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
             required String firstName,
             Value<String?> middleName = const Value.absent(),
             required String lastName,
@@ -18097,6 +18151,7 @@ class $$FarmersTableTableManager extends RootTableManager<
           }) =>
               FarmersCompanion.insert(
             id: id,
+            serverId: serverId,
             firstName: firstName,
             middleName: middleName,
             lastName: lastName,

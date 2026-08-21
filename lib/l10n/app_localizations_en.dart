@@ -21,19 +21,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTitle1 => 'Track every item';
 
   @override
-  String get onboardingDesc1 => 'Add inventory, see stock levels at a glance, and get low-stock alerts automatically.';
+  String get onboardingDesc1 =>
+      'Add inventory, see stock levels at a glance, and get low-stock alerts automatically.';
 
   @override
   String get onboardingTitle2 => 'Works without internet';
 
   @override
-  String get onboardingDesc2 => 'Record deliveries, counts, and movements offline. Everything syncs automatically once you\'re back online.';
+  String get onboardingDesc2 =>
+      'Record deliveries, counts, and movements offline. Everything syncs automatically once you\'re back online.';
 
   @override
   String get onboardingTitle3 => 'Built for your whole team';
 
   @override
-  String get onboardingDesc3 => 'Owners manage warehouses and staff. Managers track inventory. Workers record stock movements.';
+  String get onboardingDesc3 =>
+      'Owners manage warehouses and staff. Managers track inventory. Workers record stock movements.';
 
   @override
   String get skip => 'Skip';
@@ -60,7 +63,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newOwnerPrompt => 'New owner? Create an account';
 
   @override
-  String get accessLevelHint => 'Your access level is set by your administrator.';
+  String get accessLevelHint =>
+      'Your access level is set by your administrator.';
 
   @override
   String get validationEmailRequired => 'Enter your email';
@@ -78,7 +82,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createOwnerAccount => 'Create Owner Account';
 
   @override
-  String get registerSubtitle => 'Set up your business details to start managing your warehouse and team.';
+  String get registerSubtitle =>
+      'Set up your business details to start managing your warehouse and team.';
 
   @override
   String get cancel => 'Cancel';
@@ -99,19 +104,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registrationConfirmTitle => 'Confirm Registration';
 
   @override
-  String get registrationConfirmMessage => 'Please review your details. Do you want to submit this registration now?';
+  String get registrationConfirmMessage =>
+      'Please review your details. Do you want to submit this registration now?';
 
   @override
   String get registrationSuccessTitle => 'Registration successful';
 
   @override
-  String get registrationSuccessMessage => 'Your account has been created. You can now sign in with your login credentials.';
+  String get registrationSuccessMessage =>
+      'Your account has been created. You can now sign in with your login credentials.';
 
   @override
   String get registrationErrorTitle => 'Registration failed';
 
   @override
-  String get registrationErrorMessage => 'We could not create your account. Please review your details and try again.';
+  String get registrationErrorMessage =>
+      'We could not create your account. Please review your details and try again.';
 
   @override
   String get businessName => 'Business name';
@@ -216,7 +224,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOutConfirmTitle => 'Sign Out';
 
   @override
-  String get signOutConfirmMessageOwner => 'Pending changes will sync when you next connect.';
+  String get signOutConfirmMessageOwner =>
+      'Pending changes will sync when you next connect.';
 
   @override
   String get signOutConfirmMessageWorker => 'You will be signed out.';
@@ -284,7 +293,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notAssignedWarehouse => 'Not assigned to a warehouse';
 
   @override
-  String get askAdminAssignment => 'Ask your administrator to assign you to a warehouse.';
+  String get askAdminAssignment =>
+      'Ask your administrator to assign you to a warehouse.';
 
   @override
   String get assignedWarehouse => 'Assigned Warehouse';
@@ -323,7 +333,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workerDashboardTitle => 'Worker Dashboard';
 
   @override
-  String get workerProfileNoSync => 'Your profile hasn\'t synced yet. Once the backend assigns you to a warehouse, your tasks will appear here.';
+  String get workerProfileNoSync =>
+      'Your profile hasn\'t synced yet. Once the backend assigns you to a warehouse, your tasks will appear here.';
 
   @override
   String get errorInvalidDetails => 'Invalid details — check your information';
@@ -332,7 +343,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorIncorrectCredentials => 'Incorrect email or password';
 
   @override
-  String get errorAccountDisabled => 'Account disabled — contact your administrator';
+  String get errorAccountDisabled =>
+      'Account disabled — contact your administrator';
 
   @override
   String get errorEmailExists => 'An account with this email already exists';
@@ -350,7 +362,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noReceiptYet => 'No receipt yet';
 
   @override
-  String get completeReceivingBeforeReceipt => 'Complete a receiving session before viewing the receipt.';
+  String get completeReceivingBeforeReceipt =>
+      'Complete a receiving session before viewing the receipt.';
 
   @override
   String get startReceiving => 'Start Receiving';
@@ -425,19 +438,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPairedPrinters => 'No paired printers';
 
   @override
-  String get pairPrinterInSettings => 'Pair your thermal printer in Android Bluetooth settings first.';
+  String get pairPrinterInSettings =>
+      'Pair your thermal printer in Android Bluetooth settings first.';
 
   @override
   String get printingReceipt => 'Printing Receipt';
 
   @override
-  String get printingReceiptDescription => 'Sending this receipt to the selected printer.';
+  String get printingReceiptDescription =>
+      'Sending this receipt to the selected printer.';
 
   @override
   String get receiptPrinted => 'Receipt Printed';
 
   @override
-  String get receiptPrintedDescription => 'The receipt was sent to the printer successfully.';
+  String get receiptPrintedDescription =>
+      'The receipt was sent to the printer successfully.';
 
   @override
   String get printerError => 'Printer Error';
@@ -446,7 +462,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get printerLoadError => 'Could not load paired printers.';
 
   @override
-  String get bluetoothPermissionRequired => 'Bluetooth permission is required to print receipts.';
+  String get bluetoothPermissionRequired =>
+      'Bluetooth permission is required to print receipts.';
 
   @override
   String get printOptions => 'Print Options';
@@ -667,7 +684,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkYourEmail => 'Check Your Email';
 
   @override
-  String get resetInstructionsSent => 'Password reset instructions have been sent to your email.';
+  String get resetInstructionsSent =>
+      'Password reset instructions have been sent to your email.';
 
   @override
   String get sendInstructions => 'Send Instructions';
@@ -733,7 +751,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterBusinessEmail => 'Enter business email';
 
   @override
-  String get preparingRegistrationRegions => 'Preparing registration regions...';
+  String get preparingRegistrationRegions =>
+      'Preparing registration regions...';
 
   @override
   String get profile => 'Profile';
@@ -751,7 +770,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
-  String get logoutConfirmMessage => 'Are you sure you want to logout from this device?';
+  String get logoutConfirmMessage =>
+      'Are you sure you want to logout from this device?';
 
   @override
   String get loggingOut => 'Logging Out';
@@ -794,7 +814,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerFarmerSubtitle => 'Register a farmer at point of contact.';
 
   @override
-  String get workerFarmersSubtitle => 'Worker-registered farmers will appear here.';
+  String get workerFarmersSubtitle =>
+      'Worker-registered farmers will appear here.';
 
   @override
   String get farmerNotFound => 'Farmer not found';
@@ -887,10 +908,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDependantsAdded => 'No dependants added';
 
   @override
-  String get noDependantsForFarmer => 'No dependants have been added for this farmer.';
+  String get noDependantsForFarmer =>
+      'No dependants have been added for this farmer.';
 
   @override
-  String get dependantsOptional => 'This step is optional. Dependants can also be added later.';
+  String get dependantsOptional =>
+      'This step is optional. Dependants can also be added later.';
 
   @override
   String get addDependantConfirm => 'Add this dependant to the farmer record?';
@@ -917,16 +940,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createFarmer => 'Create Farmer';
 
   @override
-  String get captureFarmerDescription => 'Capture the farmer record at point of contact.';
+  String get captureFarmerDescription =>
+      'Capture the farmer record at point of contact.';
 
   @override
-  String get addDependantsDescription => 'Add dependants now, or leave this for later.';
+  String get addDependantsDescription =>
+      'Add dependants now, or leave this for later.';
 
   @override
   String get review => 'Review';
 
   @override
-  String get reviewFarmerDescription => 'Confirm the details before creating the farmer.';
+  String get reviewFarmerDescription =>
+      'Confirm the details before creating the farmer.';
 
   @override
   String get name => 'Name';
@@ -946,7 +972,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectTheScale => 'Connect the scale';
 
   @override
-  String get connectScaleDescription => 'Connect a Bluetooth scale before measuring crops. Scan nearby devices when the scale is ready.';
+  String get connectScaleDescription =>
+      'Connect a Bluetooth scale before measuring crops. Scan nearby devices when the scale is ready.';
 
   @override
   String get connected => 'Connected';
@@ -973,13 +1000,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDevicesFound => 'No devices found';
 
   @override
-  String get deviceScanHelp => 'Turn on the scale, Bluetooth, and Location, then refresh.';
+  String get deviceScanHelp =>
+      'Turn on the scale, Bluetooth, and Location, then refresh.';
 
   @override
   String get bluetoothLocationRequired => 'Bluetooth and Location Required';
 
   @override
-  String get bluetoothLocationMessage => 'Please allow Bluetooth and Location permissions, and keep Bluetooth and Location turned on before scanning devices.';
+  String get bluetoothLocationMessage =>
+      'Please allow Bluetooth and Location permissions, and keep Bluetooth and Location turned on before scanning devices.';
 
   @override
   String get connect => 'Connect';
@@ -1011,7 +1040,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noFarmersAvailable => 'No farmers available';
 
   @override
-  String get syncOrRegisterFarmers => 'Sync or register farmers before receiving crops.';
+  String get syncOrRegisterFarmers =>
+      'Sync or register farmers before receiving crops.';
 
   @override
   String get search => 'Search';
@@ -1079,7 +1109,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get farmerDetailsNeeded => 'Farmer details needed';
 
   @override
-  String get farmerDetailsNeededMessage => 'Select farmer and crop details before weighing bags.';
+  String get farmerDetailsNeededMessage =>
+      'Select farmer and crop details before weighing bags.';
 
   @override
   String get goToDetails => 'Go to Details';
@@ -1093,13 +1124,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectScaleBeforeBag => 'Connect the scale before adding a bag.';
 
   @override
-  String get waitForStableScale => 'Please wait until the scale reading is stable.';
+  String get waitForStableScale =>
+      'Please wait until the scale reading is stable.';
 
   @override
   String get weightGreaterThanZero => 'Weight must be greater than zero.';
 
   @override
-  String get packagingLessThanGross => 'Packaging weight must be less than gross weight.';
+  String get packagingLessThanGross =>
+      'Packaging weight must be less than gross weight.';
 
   @override
   String get noBagsAdded => 'No bags added yet';
@@ -1108,7 +1141,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get completeHarvest => 'Complete Harvest';
 
   @override
-  String get addBagBeforeComplete => 'Add at least one bag before completing harvest.';
+  String get addBagBeforeComplete =>
+      'Add at least one bag before completing harvest.';
 
   @override
   String completeHarvestConfirm(int count) {
@@ -1128,7 +1162,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get harvestSaved => 'Harvest Saved';
 
   @override
-  String get harvestSavedMessage => 'Harvest successfully saved. Receipt is ready.';
+  String get harvestSavedMessage =>
+      'Harvest successfully saved. Receipt is ready.';
 
   @override
   String get enterValidWeight => 'Enter a valid weight';
@@ -1160,10 +1195,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noHarvestsFound => 'No harvests found';
 
   @override
-  String get newHarvestSubtitle => 'Tap + to connect a scale and receive crops.';
+  String get newHarvestSubtitle =>
+      'Tap + to connect a scale and receive crops.';
 
   @override
-  String get workerHarvestsSubtitle => 'Worker harvest records will appear here.';
+  String get workerHarvestsSubtitle =>
+      'Worker harvest records will appear here.';
 
   @override
   String get harvestDetails => 'Harvest Details';
@@ -1172,16 +1209,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get harvestNotFound => 'Harvest not found';
 
   @override
-  String get harvestRemovedLocally => 'This record may have been removed locally.';
+  String get harvestRemovedLocally =>
+      'This record may have been removed locally.';
 
   @override
   String get chooseWarehouse => 'Choose Warehouse';
 
   @override
-  String get chooseWarehouseMessage => 'Select where this crop receiving session will be recorded.';
+  String get chooseWarehouseMessage =>
+      'Select where this crop receiving session will be recorded.';
 
   @override
-  String get createWarehouseBeforeReceiving => 'Create an active warehouse before receiving crops.';
+  String get createWarehouseBeforeReceiving =>
+      'Create an active warehouse before receiving crops.';
 
   @override
   String get addWarehouse => 'Add warehouse';
@@ -1237,7 +1277,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gpsLocationAddress => 'GPS location / address';
 
   @override
-  String get locationAutoBuilt => 'Auto-built from region, district, ward and village';
+  String get locationAutoBuilt =>
+      'Auto-built from region, district, ward and village';
 
   @override
   String get warehouseNotFoundMessage => 'Warehouse not found';
@@ -1314,7 +1355,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fillWorkerDetails => 'Fill in details and assign a warehouse';
 
   @override
-  String get amcosDerivedFromWarehouse => 'AMCOS is derived automatically from this selection';
+  String get amcosDerivedFromWarehouse =>
+      'AMCOS is derived automatically from this selection';
 
   @override
   String get createWorkerAccount => 'Create Worker Account';
@@ -1332,10 +1374,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assignWarehouseRequired => 'Please assign a warehouse';
 
   @override
-  String get assignWorkerWarehouse => 'Please assign this worker to a warehouse.';
+  String get assignWorkerWarehouse =>
+      'Please assign this worker to a warehouse.';
 
   @override
-  String get selectedWarehouseNotFound => 'Selected warehouse not found. Please try again.';
+  String get selectedWarehouseNotFound =>
+      'Selected warehouse not found. Please try again.';
 
   @override
   String warehouseMissingAmcos(String warehouse) {
@@ -1343,7 +1387,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ownerIdUnavailable => 'Could not determine owner ID. Please log out and back in.';
+  String get ownerIdUnavailable =>
+      'Could not determine owner ID. Please log out and back in.';
 
   @override
   String get createWorker => 'Create Worker';
@@ -1415,7 +1460,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noActivityYet => 'No activity yet';
 
   @override
-  String get activityWillAppear => 'Actions performed in the app will appear here';
+  String get activityWillAppear =>
+      'Actions performed in the app will appear here';
 
   @override
   String get pendingSyncs => 'Pending Syncs';
@@ -1424,10 +1470,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allSynced => 'All synced';
 
   @override
-  String get noPendingOwnerChanges => 'There are no local owner changes waiting to upload.';
+  String get noPendingOwnerChanges =>
+      'There are no local owner changes waiting to upload.';
 
   @override
-  String get useDashboardSync => 'Use the sync button on the dashboard to upload these changes.';
+  String get useDashboardSync =>
+      'Use the sync button on the dashboard to upload these changes.';
 
   @override
   String get warehouseRecord => 'Warehouse record';
@@ -1443,6 +1491,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String operationWorker(String operation) {
     return '$operation worker';
+  }
+
+  @override
+  String operationFarmer(String operation) {
+    return '$operation farmer';
+  }
+
+  @override
+  String operationDependant(String operation) {
+    return '$operation dependant';
   }
 
   @override
@@ -1473,7 +1531,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noOwnerActivity => 'No owner activity yet';
 
   @override
-  String get createWarehouseWorkerActivity => 'Create a warehouse or worker to see activity here.';
+  String get createWarehouseWorkerActivity =>
+      'Create a warehouse or worker to see activity here.';
 
   @override
   String get alerts => 'Alerts';
@@ -1507,7 +1566,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get manualSyncNeeded => 'Local warehouse or worker changes need manual sync.';
+  String get tapToViewPending => 'Tap to view unsynced records';
+
+  @override
+  String get noPendingChanges =>
+      'There are no local changes waiting to upload.';
+
+  @override
+  String operationHarvest(String operation) {
+    return '$operation harvest';
+  }
+
+  @override
+  String get harvestRecord => 'Harvest record';
+
+  @override
+  String get manualSyncNeeded =>
+      'Local warehouse or worker changes need manual sync.';
 
   @override
   String get warehouseCreatedActivity => 'Warehouse created';
@@ -1547,7 +1622,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerFarmerAction => 'Register Farmer';
 
   @override
-  String get createFarmerAtContact => 'Create farmer records at point of contact';
+  String get createFarmerAtContact =>
+      'Create farmer records at point of contact';
 
   @override
   String allItems(int count) {
@@ -1701,22 +1777,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get register => 'Register';
 
   @override
-  String get noValidRegions => 'No valid regions were returned from the server.';
+  String get noValidRegions =>
+      'No valid regions were returned from the server.';
 
   @override
   String get businessInfo => 'Business Info';
 
   @override
-  String get businessInfoDescription => 'Tell us who the business is and where it operates.';
+  String get businessInfoDescription =>
+      'Tell us who the business is and where it operates.';
 
   @override
   String get contactPerson => 'Contact Person';
 
   @override
-  String get contactPersonDescription => 'Add the person we should reach for day-to-day communication.';
+  String get contactPersonDescription =>
+      'Add the person we should reach for day-to-day communication.';
 
   @override
-  String get registrationReviewDescription => 'Check everything once before we create the account.';
+  String get registrationReviewDescription =>
+      'Check everything once before we create the account.';
 
   @override
   String get member => 'Member';
@@ -1737,10 +1817,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get educationLevel => 'Education level';
 
   @override
-  String get createFarmerConfirm => 'Confirm these details and create this farmer record?';
+  String get createFarmerConfirm =>
+      'Confirm these details and create this farmer record?';
 
   @override
-  String get workerMcuUnavailable => 'Could not determine MCU for this worker. Please sync your profile or contact the owner.';
+  String get workerMcuUnavailable =>
+      'Could not determine MCU for this worker. Please sync your profile or contact the owner.';
 
   @override
   String get creatingFarmer => 'Creating Farmer';
@@ -1770,7 +1852,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get secondaryCropDifferent => 'Secondary crop must be different from main crop';
+  String get secondaryCropDifferent =>
+      'Secondary crop must be different from main crop';
 
   @override
   String get enterValidNumber => 'Enter a valid number';
@@ -1802,16 +1885,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get movement => 'Movement';
 
   @override
-  String get scaleBluetoothPermissionError => 'Bluetooth permission is required to connect the scale.';
+  String get scaleBluetoothPermissionError =>
+      'Bluetooth permission is required to connect the scale.';
 
   @override
-  String get turnOnBluetoothToScan => 'Turn on Bluetooth before scanning for scales.';
+  String get turnOnBluetoothToScan =>
+      'Turn on Bluetooth before scanning for scales.';
 
   @override
   String get scaleScanError => 'Could not scan for scales. Please try again.';
 
   @override
-  String get scaleConnectionError => 'Could not connect to the scale. Please try again.';
+  String get scaleConnectionError =>
+      'Could not connect to the scale. Please try again.';
 
   @override
   String get noScaleConnected => 'No scale is connected.';
@@ -1821,4 +1907,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scaleReadError => 'Could not read the scale. Please try again.';
+
+  @override
+  String get errorInvalidServerResponse =>
+      'The server returned an incomplete response. Please try again.';
+
+  @override
+  String get errorMissingMcuAssignment =>
+      'Your account has no MCU assignment. Please contact the administrator.';
+
+  @override
+  String get amcosManagement => 'AMCOS';
+
+  @override
+  String get addAmcos => 'Add AMCOS';
+
+  @override
+  String get noAmcosFound => 'No AMCOS found';
+
+  @override
+  String get createFirstAmcos =>
+      'Tap + to create the first AMCOS for this MCU.';
+
+  @override
+  String get createAmcos => 'Create AMCOS';
+
+  @override
+  String createAmcosConfirm(String name) {
+    return 'Create $name under your MCU?';
+  }
+
+  @override
+  String get creatingAmcos => 'Creating AMCOS';
+
+  @override
+  String get savingAmcos => 'Saving the AMCOS details.';
+
+  @override
+  String get amcosCreated => 'AMCOS Created';
+
+  @override
+  String get amcosCreatedSuccess => 'AMCOS successfully created.';
+
+  @override
+  String get memberCategory => 'Member category';
+
+  @override
+  String get selectMemberCategory => 'Select a member category';
+
+  @override
+  String get fisherman => 'Fisherman';
+
+  @override
+  String get livestockTraders => 'Livestock traders';
+
+  @override
+  String get livestockKeepers => 'Livestock keepers';
+
+  @override
+  String get suppliers => 'Suppliers';
 }

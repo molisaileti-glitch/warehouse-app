@@ -1,9 +1,20 @@
 import 'package:drift/drift.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
+import 'package:warehouse_app/features/additional.data/location/data/tables/locations_tables.dart';
 
 part 'warehouse_dao.g.dart';
 
-@DriftAccessor(tables: [Warehouses])
+@DriftAccessor(
+  tables: [
+    Warehouses,
+    SyncQueue,
+    RegionsTable,
+    DistrictsTable,
+    WardsTable,
+    VillagesTable,
+    AmcosTable,
+  ],
+)
 class WarehouseDao extends DatabaseAccessor<AppDatabase>
     with _$WarehouseDaoMixin {
   WarehouseDao(super.db);
@@ -20,6 +31,18 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
           ..where(
             (w) =>
                 w.ownerId.equals(ownerId) &
+                w.deletedAt.isNull() &
+                w.isActive.isValue(true),
+          )
+          ..orderBy([(w) => OrderingTerm.asc(w.name)]))
+        .watch();
+  }
+
+  Stream<List<Warehouse>> watchWarehousesByAmcos(int amcosId) {
+    return (select(warehouses)
+          ..where(
+            (w) =>
+                w.amcos.equals(amcosId) &
                 w.deletedAt.isNull() &
                 w.isActive.isValue(true),
           )
@@ -44,6 +67,18 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
+  Future<List<Warehouse>> getWarehousesByAmcos(int amcosId) {
+    return (select(warehouses)
+          ..where(
+            (w) =>
+                w.amcos.equals(amcosId) &
+                w.deletedAt.isNull() &
+                w.isActive.isValue(true),
+          )
+          ..orderBy([(w) => OrderingTerm.asc(w.name)]))
+        .get();
+  }
+
   Future<Warehouse?> getWarehouseById(String id) {
     return (select(warehouses)..where((w) => w.id.equals(id)))
         .getSingleOrNull();
@@ -57,14 +92,118 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
   Future<void> insertWarehouse(WarehousesCompanion entry) =>
       into(warehouses).insert(entry);
 
+  Future<void> insertPendingWarehouse({
+    required WarehousesCompanion warehouse,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await into(warehouses).insert(warehouse);
+      await into(syncQueue).insert(queueEntry);
+    });
+  }
+
   Future<void> upsertWarehouse(WarehousesCompanion entry) {
     return into(warehouses).insertOnConflictUpdate(entry);
+  }
+
+  Future<void> ensureWarehouseReferences({
+    int? amcosId,
+    String? amcosName,
+    int? mcu,
+    String? mcuName,
+    int? villageId,
+    String? villageName,
+  }) {
+    return transaction(() async {
+      final locationId = villageId ?? 0;
+      final locationName = _nonEmpty(villageName) ?? 'Unknown';
+
+      await into(regionsTable).insert(
+        RegionsTableCompanion(
+          id: Value(locationId),
+          name: Value(locationName),
+          postCode: const Value(''),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await into(districtsTable).insert(
+        DistrictsTableCompanion(
+          id: Value(locationId),
+          name: Value(locationName),
+          region: Value(locationId),
+          regionName: Value(locationName),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await into(wardsTable).insert(
+        WardsTableCompanion(
+          id: Value(locationId),
+          name: Value(locationName),
+          district: Value(locationId),
+          districtName: Value(locationName),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await into(villagesTable).insert(
+        VillagesTableCompanion(
+          id: Value(locationId),
+          name: Value(locationName),
+          ward: Value(locationId),
+          wardName: Value(locationName),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+
+      if (amcosId == null || amcosId <= 0) return;
+      await into(amcosTable).insert(
+        AmcosTableCompanion(
+          id: Value(amcosId),
+          name: Value(_nonEmpty(amcosName) ?? 'AMCOS $amcosId'),
+          memberCategory: const Value('FARMERS'),
+          registrationNumber: Value(amcosId.toString()),
+          tinNumber: const Value(''),
+          mcu: Value(mcu ?? 0),
+          mcuName: Value(_nonEmpty(mcuName) ?? ''),
+          region: Value(locationId),
+          regionName: Value(locationName),
+          district: Value(locationId),
+          districtName: Value(locationName),
+          ward: Value(locationId),
+          wardName: Value(locationName),
+          village: Value(locationId),
+          villageName: Value(locationName),
+          phoneNumber: const Value(''),
+          email: const Value(''),
+          contactPersonName: const Value(''),
+          contactPersonPhoneNumber: const Value(''),
+          contactPersonEmail: const Value(''),
+          contactPersonTitle: const Value(''),
+          website: const Value(''),
+          status: const Value('ACTIVE'),
+          crops: const Value(''),
+          idCounter: const Value(0),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+    });
   }
 
   Future<bool> updateWarehouse(WarehousesCompanion entry) {
     return (update(warehouses)..where((w) => w.id.equals(entry.id.value)))
         .write(entry)
         .then((rows) => rows > 0);
+  }
+
+  Future<void> updatePendingWarehouse({
+    required WarehousesCompanion warehouse,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await (update(warehouses)
+            ..where((item) => item.id.equals(warehouse.id.value)))
+          .write(warehouse);
+      await into(syncQueue).insert(queueEntry);
+    });
   }
 
   Future<void> softDeleteWarehouse(String id) {
@@ -75,6 +214,22 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  Future<void> deletePendingWarehouse({
+    required String id,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await (update(warehouses)..where((item) => item.id.equals(id))).write(
+        WarehousesCompanion(
+          deletedAt: Value(DateTime.now()),
+          syncStatus: const Value('pending'),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await into(syncQueue).insert(queueEntry);
+    });
   }
 
   Future<void> markWarehouseSynced(String id) {
@@ -95,5 +250,10 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  String? _nonEmpty(String? value) {
+    final text = value?.trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

@@ -13,4 +13,5 @@ mixin _$FarmerDaoMixin on DatabaseAccessor<AppDatabase> {
   $FarmersTable get farmers => attachedDatabase.farmers;
   $FarmerDependantsTable get farmerDependants =>
       attachedDatabase.farmerDependants;
+  $SyncQueueTable get syncQueue => attachedDatabase.syncQueue;
 }

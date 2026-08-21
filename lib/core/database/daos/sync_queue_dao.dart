@@ -7,7 +7,6 @@
 
 import 'package:drift/drift.dart';
 import '../app_database.dart';
-import '../tables/app_tables.dart';
 
 part 'sync_queue_dao.g.dart';
 
@@ -31,25 +30,39 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   Stream<List<SyncQueueData>> watchPendingEntries() {
     return (select(syncQueue)
           ..where((q) => q.syncStatus.equals('pending'))
-          ..orderBy([(q) => OrderingTerm.asc(q.createdAt)]))
+          ..orderBy([
+            (q) => OrderingTerm.asc(q.createdAt),
+            (q) => OrderingTerm.asc(q.id),
+          ]))
         .watch();
   }
 
   // ── Futures ─────────────────────────────────────────────────────────────
 
   /// Returns up to [limit] pending entries for the next sync batch.
-  Future<List<SyncQueueData>> getNextBatch({int limit = 50}) {
+  Future<List<SyncQueueData>> getNextBatch({
+    int limit = 50,
+    Set<String>? entityTypes,
+  }) {
     return (select(syncQueue)
-          ..where((q) => q.syncStatus.equals('pending'))
-          ..orderBy([(q) => OrderingTerm.asc(q.createdAt)])
+          ..where(
+            (q) =>
+                q.syncStatus.equals('pending') &
+                (entityTypes == null
+                    ? const Constant(true)
+                    : q.entityType.isIn(entityTypes)),
+          )
+          ..orderBy([
+            (q) => OrderingTerm.asc(q.createdAt),
+            (q) => OrderingTerm.asc(q.id),
+          ])
           ..limit(limit))
         .get();
   }
 
   /// Returns all conflict entries that need user resolution.
   Future<List<SyncQueueData>> getConflicts() {
-    return (select(syncQueue)
-          ..where((q) => q.syncStatus.equals('conflict')))
+    return (select(syncQueue)..where((q) => q.syncStatus.equals('conflict')))
         .get();
   }
 

@@ -178,9 +178,14 @@ class FarmerModel {
     );
   }
 
-  FarmersCompanion toCompanion() {
+  FarmersCompanion toCompanion({
+    int? localId,
+    int? serverId,
+    String? uuidOverride,
+  }) {
     return FarmersCompanion.insert(
-      id: Value(id),
+      id: Value(localId ?? id),
+      serverId: Value(serverId),
       firstName: firstName,
       middleName: Value(middleName),
       lastName: lastName,
@@ -205,7 +210,7 @@ class FarmerModel {
       voterId: Value(voterId),
       driversLicense: Value(driversLicense),
       fingerprintCaptured: Value(fingerprintCaptured),
-      uuid: Value(uuid),
+      uuid: Value(uuidOverride ?? uuid),
       maritalStatus: maritalStatus,
       noOfShares: Value(noOfShares),
       createdAt: Value(createdAt),

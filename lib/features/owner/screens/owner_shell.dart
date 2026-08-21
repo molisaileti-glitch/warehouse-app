@@ -33,6 +33,10 @@ class OwnerShell extends StatelessWidget {
   ];
 
   int _selectedIndex(String location) {
+    if (location.startsWith('/owner/amcos') ||
+        location.startsWith('/owner/settings')) {
+      return -1;
+    }
     if (location.startsWith('/owner/warehouses')) return 1;
     if (location.startsWith('/owner/users')) return 2;
     if (location.startsWith('/owner/harvests')) return 3;
@@ -73,7 +77,7 @@ class OwnerShell extends StatelessWidget {
                       3 => l10n.harvests,
                       _ => l10n.farmers,
                     },
-                    selected: i == index,
+                    selected: index >= 0 && i == index,
                     onTap: () => context.go(_tabs[i].route),
                   ),
                 ),

@@ -10,4 +10,5 @@ mixin _$WarehouseDaoMixin on DatabaseAccessor<AppDatabase> {
   $VillagesTableTable get villagesTable => attachedDatabase.villagesTable;
   $AmcosTableTable get amcosTable => attachedDatabase.amcosTable;
   $WarehousesTable get warehouses => attachedDatabase.warehouses;
+  $SyncQueueTable get syncQueue => attachedDatabase.syncQueue;
 }

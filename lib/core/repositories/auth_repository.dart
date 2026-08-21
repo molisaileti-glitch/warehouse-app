@@ -23,33 +23,24 @@ class AuthRepository {
 
   // ── Register (owner only) ─────────────────────────────────────────────────
 
-  Future<AuthResult> register(Map<String, dynamic> data) async {
+  Future<RegistrationResult> register(Map<String, dynamic> data) async {
     try {
       final res = await _dio.post('/mcus', data: data);
+      final responseData = res.data;
+      if (responseData is! Map<String, dynamic>) {
+        return RegistrationResult.failure('errorInvalidServerResponse');
+      }
 
-      final responseData = res.data as Map<String, dynamic>;
-      final accessToken =
-          responseData['token'] as String? ?? 'mock-register-token';
-      final refreshToken = responseData['refreshToken'] as String? ??
-          'mock-register-refresh-token';
-      final userId = (responseData['id'] ?? '4').toString();
-      const userRole = 'owner';
+      final mcuId = _int(responseData['id']);
+      if (mcuId == null || mcuId <= 0) {
+        return RegistrationResult.failure('errorInvalidServerResponse');
+      }
 
-      await _storage.saveTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      );
-      await _storage.saveUserInfo(
-        userId: userId,
-        role: userRole,
-      );
-
-      return AuthResult.success(
-        userId: userId,
-        role: UserRole.fromString(userRole),
-      );
+      return RegistrationResult.success(mcuId: mcuId);
     } on DioException catch (e) {
-      return AuthResult.failure(_dioMessage(e));
+      return RegistrationResult.failure(_dioMessage(e));
+    } catch (_) {
+      return RegistrationResult.failure('errorInvalidServerResponse');
     }
   }
 
@@ -112,13 +103,45 @@ class AuthRepository {
         'appVersion': '1',
       });
 
-      final data = res.data as Map<String, dynamic>;
+      final data = res.data;
+      if (data is! Map<String, dynamic>) {
+        return AuthResult.failure('errorInvalidServerResponse');
+      }
 
-      final accessToken = data['token'] as String;
-      final refreshToken = data['refreshToken'] as String;
-      final user = data['user'] as Map<String, dynamic>;
-      final userId = (user['id'] ?? '').toString();
-      final roleStr = user['role'] as String;
+      final accessToken = _nullableString(data['token']);
+      final refreshToken = _nullableString(data['refreshToken']);
+      final userValue = data['user'];
+      if (accessToken == null ||
+          refreshToken == null ||
+          userValue is! Map<String, dynamic>) {
+        return AuthResult.failure('errorInvalidServerResponse');
+      }
+
+      final user = userValue;
+      final userId = _nullableString(user['id']);
+      final roleStr = _nullableString(user['role']);
+      if (userId == null || roleStr == null) {
+        return AuthResult.failure('errorInvalidServerResponse');
+      }
+
+      final mcuData = data['mcu'];
+      final mcu = mcuData is Map<String, dynamic> ? mcuData : null;
+      final mcuId = _int(mcu?['id'] ?? user['mcu']);
+      final mcuName = _nullableString(
+        mcu?['mcuName'] ?? mcu?['name'] ?? user['mcuName'],
+      );
+      final mcuAmcosId = _int(
+        user['amcos'] ??
+            user['amcosId'] ??
+            user['amcos_id'] ??
+            _assignmentId(mcu?['amcos']),
+      );
+      final parsedRole = UserRole.fromString(roleStr);
+      if ((parsedRole == UserRole.owner || parsedRole == UserRole.superAdmin) &&
+          mcuId == null) {
+        return AuthResult.failure('errorMissingMcuAssignment');
+      }
+
       final emailValue = _string(user['email'] ?? email);
 
       await _storage.saveTokens(
@@ -126,20 +149,28 @@ class AuthRepository {
       await _storage.saveUserInfo(
         userId: userId,
         role: roleStr,
+        mcuId: mcuId,
+        mcuName: mcuName,
       );
       await _upsertLoggedInUser(
         user: user,
         userId: userId,
         email: emailValue,
         role: roleStr,
+        mcuId: mcuId,
+        amcosId: mcuAmcosId,
       );
 
       return AuthResult.success(
         userId: userId,
-        role: UserRole.fromString(roleStr),
+        role: parsedRole,
+        mcuId: mcuId,
+        mcuName: mcuName,
       );
     } on DioException catch (e) {
       return AuthResult.failure(_dioMessage(e));
+    } catch (_) {
+      return AuthResult.failure('errorInvalidServerResponse');
     }
   }
 
@@ -283,6 +314,8 @@ class AuthRepository {
     required String userId,
     required String email,
     required String role,
+    int? mcuId,
+    int? amcosId,
   }) async {
     if (userId.isEmpty || email.isEmpty) return;
 
@@ -303,14 +336,23 @@ class AuthRepository {
           assignmentSource?.phoneNumber,
     );
     final warehouseId = _nullableString(
-          user['warehouseId'] ??
-              user['warehouse_id'] ??
-              user['warehouse'] ??
+          _assignmentId(
+                user['warehouseId'] ??
+                    user['warehouse_id'] ??
+                    user['collectionCenterId'] ??
+                    user['collection_center_id'] ??
+                    user['collectionCenter'] ??
+                    user['warehouse'],
+              ) ??
               assignmentSource?.warehouseId,
         ) ??
         assignmentSource?.warehouseId;
-    final mcu = _int(user['mcu']) ?? assignmentSource?.mcu;
-    final amcos = _int(user['amcos']) ?? assignmentSource?.amcos;
+    final mcu = mcuId ?? _int(user['mcu']) ?? assignmentSource?.mcu;
+    final userAmcosValue = user['amcos'] ?? user['amcosId'] ?? user['amcos_id'];
+    final amcos = _int(userAmcosValue) ??
+        _int(_assignmentId(userAmcosValue)) ??
+        amcosId ??
+        assignmentSource?.amcos;
 
     if (existingByEmail != null && existingByEmail.id != userId) {
       await _workerDao.deleteUserById(existingByEmail.id);
@@ -353,6 +395,15 @@ class AuthRepository {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;
   }
+
+  String? _assignmentId(Object? value) {
+    if (value is Map) {
+      return _nullableString(
+        value['id'] ?? value['warehouseId'] ?? value['collectionCenterId'],
+      );
+    }
+    return _nullableString(value);
+  }
 }
 
 // ── Value objects ─────────────────────────────────────────────────────────────
@@ -362,20 +413,52 @@ class AuthResult {
   final String? error;
   final String? userId;
   final UserRole? role;
+  final int? mcuId;
+  final String? mcuName;
 
   const AuthResult._({
     required this.success,
     this.error,
     this.userId,
     this.role,
+    this.mcuId,
+    this.mcuName,
   });
 
-  factory AuthResult.success(
-          {required String userId, required UserRole role}) =>
-      AuthResult._(success: true, userId: userId, role: role);
+  factory AuthResult.success({
+    required String userId,
+    required UserRole role,
+    int? mcuId,
+    String? mcuName,
+  }) =>
+      AuthResult._(
+        success: true,
+        userId: userId,
+        role: role,
+        mcuId: mcuId,
+        mcuName: mcuName,
+      );
 
   factory AuthResult.failure(String error) =>
       AuthResult._(success: false, error: error);
+}
+
+class RegistrationResult {
+  final bool success;
+  final String? error;
+  final int? mcuId;
+
+  const RegistrationResult._({
+    required this.success,
+    this.error,
+    this.mcuId,
+  });
+
+  factory RegistrationResult.success({required int mcuId}) =>
+      RegistrationResult._(success: true, mcuId: mcuId);
+
+  factory RegistrationResult.failure(String error) =>
+      RegistrationResult._(success: false, error: error);
 }
 
 class CreateUserResult {

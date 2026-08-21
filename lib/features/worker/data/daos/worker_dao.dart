@@ -8,7 +8,7 @@ import 'package:warehouse_app/core/database/app_database.dart';
 
 part 'worker_dao.g.dart';
 
-@DriftAccessor(tables: [Users])
+@DriftAccessor(tables: [Users, SyncQueue])
 class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
   WorkerDao(super.db);
 
@@ -34,8 +34,7 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
 
   /// Watches a single user by UUID.
   Stream<User?> watchUserById(String id) {
-    return (select(users)..where((u) => u.id.equals(id)))
-        .watchSingleOrNull();
+    return (select(users)..where((u) => u.id.equals(id))).watchSingleOrNull();
   }
 
   // ── Futures (one-shot queries) ──────────────────────────────────────────
@@ -78,11 +77,44 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
     return into(users).insertOnConflictUpdate(entry);
   }
 
+  Future<void> insertPendingUser({
+    required UsersCompanion user,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await into(users).insertOnConflictUpdate(user);
+      await into(syncQueue).insert(queueEntry);
+    });
+  }
+
   /// Update an existing user by UUID.
   Future<bool> updateUser(UsersCompanion entry) {
     return (update(users)..where((u) => u.id.equals(entry.id.value)))
         .write(entry)
         .then((rows) => rows > 0);
+  }
+
+  Future<void> setUserWarehouse({
+    required String id,
+    required String warehouseId,
+  }) {
+    return (update(users)..where((u) => u.id.equals(id))).write(
+      UsersCompanion(
+        warehouseId: Value(warehouseId),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> updatePendingUser({
+    required UsersCompanion user,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await (update(users)..where((item) => item.id.equals(user.id.value)))
+          .write(user);
+      await into(syncQueue).insert(queueEntry);
+    });
   }
 
   /// Soft-delete: sets deleted_at and marks sync_status = 'pending'.
@@ -94,6 +126,22 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  Future<void> deletePendingUser({
+    required String id,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await (update(users)..where((item) => item.id.equals(id))).write(
+        UsersCompanion(
+          deletedAt: Value(DateTime.now()),
+          syncStatus: const Value('pending'),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await into(syncQueue).insert(queueEntry);
+    });
   }
 
   /// Mark a user as synced after the server confirms.

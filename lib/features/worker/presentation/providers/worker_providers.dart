@@ -12,7 +12,6 @@ final workerRepoProvider = Provider<WorkerRepository>((ref) {
 
   return DriftWorkerRepository(
     dao: ref.watch(workerDaoProvider),
-    syncDao: ref.watch(syncQueueDaoProvider),
     auditDao: ref.watch(auditLogDaoProvider),
     dio: ref.watch(apiClientProvider).dio,
     currentUserId: userId,

@@ -21,14 +21,12 @@ import '../../../core/components/app_stepper.dart';
 import '../../../core/repositories/auth_repository.dart' as auth_repo;
 import '../../../features/shared/widgets/common_widgets.dart';
 
-/// TODO: replace with the real list once the backend dev confirms it.
-/// Placeholder values only.
 const List<String> kBusinessTypes = [
   'AGRICULTURAL',
-  'RETAIL',
-  'MANUFACTURING',
-  'LOGISTICS',
-  'WHOLESALE',
+  'LIVESTOCK',
+  'FISHING',
+  'FINANCIAL',
+  'HOUSING',
   'OTHER',
 ];
 
@@ -307,12 +305,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         if (mounted) {
           setState(() => _submitError = result.error);
         }
-      } else {
-        try {
-          await ref.read(auth_repo.authRepositoryProvider).logout();
-        } catch (_) {
-          // Best-effort cleanup; the registration itself already succeeded.
-        }
       }
     } catch (e) {
       failureMessage = e.toString();
@@ -380,6 +372,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'errorEmailExists' => l10n.errorEmailExists,
       'errorTooManyAttempts' => l10n.errorTooManyAttempts,
       'errorNetworkError' => l10n.errorNetworkError,
+      'errorInvalidServerResponse' => l10n.errorInvalidServerResponse,
       _ => errorKey,
     };
   }

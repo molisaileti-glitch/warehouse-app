@@ -9,6 +9,7 @@ import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 
 String buildWarehouseGpsLocation({
   String? regionName,
@@ -47,14 +48,12 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final userId = ref.watch(currentUserIdProvider);
-    final warehousesAsync = userId != null
-        ? ref.watch(warehousesByOwnerProvider(userId))
-        : const AsyncValue.data(<Warehouse>[]);
+    final warehousesAsync = ref.watch(currentOwnerWarehousesProvider);
     final workersAsync = ref.watch(allWorkersProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      drawer: const OwnerDrawer(),
       appBar: AppBar(
         title: Text(l10n.warehouses),
         actions: [
@@ -479,6 +478,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final mcuId = ref.watch(currentUserMcuProvider).valueOrNull;
     return Container(
       margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: const BoxDecoration(
@@ -639,7 +639,9 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
               _buildLocationDropdown<Amcos>(
                 label: l10n.amcos,
                 value: _selectedAmcos,
-                streamBuilder: () => ref.read(amcosDaoProvider).watchAllAmcos(),
+                streamBuilder: () => mcuId == null
+                    ? Stream.value(const <Amcos>[])
+                    : ref.read(amcosDaoProvider).watchAmcosByMcu(mcuId),
                 itemBuilder: (amcosList) => amcosList
                     .map(
                       (amcos) => DropdownMenuItem<Amcos>(

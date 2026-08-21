@@ -121,7 +121,7 @@ class AppDatabase extends _$AppDatabase {
   // ── Schema version ───────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 11;
 
   // ── Migrations ───────────────────────────────────────────────────────────
 
@@ -192,6 +192,35 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(cropGrades);
           await m.createTable(farmerHarvests);
           await m.createTable(farmerHarvestBags);
+        }
+
+        // v8 -> v9: retry harvest creates that were incorrectly classified as
+        // conflicts when the client used a mismatched collection URL.
+        if (from < 9) {
+          await customStatement(
+            "UPDATE sync_queue SET sync_status = 'pending', retry_count = 0, "
+            "last_attempt_at = NULL WHERE entity_type = 'farmerHarvests' "
+            "AND operation = 'create' AND sync_status = 'conflict'",
+          );
+        }
+
+        // v9 -> v10: retry harvest creates after aligning the bag tag field
+        // with the API's tagNumber property.
+        if (from < 10) {
+          await customStatement(
+            "UPDATE sync_queue SET sync_status = 'pending', retry_count = 0, "
+            "last_attempt_at = NULL WHERE entity_type = 'farmerHarvests' "
+            "AND operation = 'create' AND sync_status = 'conflict'",
+          );
+        }
+
+        // v10 -> v11: retain the API ID separately so UUID-keyed farmers can
+        // be referenced locally before they are manually synced.
+        if (from < 11) {
+          await m.addColumn(farmers, farmers.serverId);
+          await customStatement(
+            'UPDATE farmers SET server_id = id WHERE id > 0',
+          );
         }
       },
       beforeOpen: (details) async {

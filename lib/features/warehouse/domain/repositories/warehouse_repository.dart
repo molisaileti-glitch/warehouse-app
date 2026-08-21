@@ -3,6 +3,7 @@ import 'package:warehouse_app/core/database/app_database.dart';
 abstract class WarehouseRepository {
   Stream<List<Warehouse>> watchAll();
   Stream<List<Warehouse>> watchByOwner(String ownerId);
+  Stream<List<Warehouse>> watchByAmcos(int amcosId);
   Stream<Warehouse?> watchById(String id);
 
   Future<Warehouse> createWarehouse({
@@ -26,5 +27,6 @@ abstract class WarehouseRepository {
 
   Future<void> deleteWarehouse(String id);
   Future<int> pullFromServer({required int mcuId});
+  Future<int> pullFromAmcos({required int amcosId});
   Future<void> upsertDownstream(Map<String, dynamic> json);
 }

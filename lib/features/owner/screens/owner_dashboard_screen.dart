@@ -13,6 +13,7 @@ import 'package:warehouse_app/core/sync/sync_engine.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 
 final _recentOwnerActivitiesProvider =
     StreamProvider.family<List<AuditLog>, String>((ref, userId) {
@@ -26,7 +27,11 @@ final _ownerPendingSyncCountProvider = StreamProvider<int>((ref) {
   return ref.watch(syncQueueDaoProvider).watchPendingEntries().map(
         (entries) => entries
             .where((entry) =>
-                entry.entityType == 'warehouses' || entry.entityType == 'users')
+                entry.entityType == 'warehouses' ||
+                entry.entityType == 'users' ||
+                entry.entityType == 'farmers' ||
+                entry.entityType == 'farmerDependants' ||
+                entry.entityType == 'farmerHarvests')
             .length,
       );
 });
@@ -45,9 +50,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
-    final warehousesAsync = userId != null
-        ? ref.watch(warehousesByOwnerProvider(userId))
-        : const AsyncValue<List<Warehouse>>.data([]);
+    final warehousesAsync = ref.watch(currentOwnerWarehousesProvider);
     final workersAsync = ref.watch(allWorkersProvider);
     final farmersAsync = ref.watch(allFarmersProvider);
     final activitiesAsync = userId != null
@@ -65,7 +68,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
 
     ref.listen<SyncState>(syncNotifierProvider, (previous, next) {
       if (previous?.isSyncing == true && next.isDone) {
-        _showTopToast(
+        showTopToast(
           context,
           l10n.syncedSummary(next.pushed.toString(), next.pulled.toString()),
           AppColors.success,
@@ -75,6 +78,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      drawer: const OwnerDrawer(),
       appBar: AppBar(
         title: const SizedBox.shrink(),
         actions: [
@@ -92,23 +96,37 @@ class OwnerDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: syncState.isSyncing
-            ? null
-            : () => ref.read(syncNotifierProvider.notifier).runSync(),
-        icon: syncState.isSyncing
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : const Icon(Icons.sync_rounded),
-        label: Text(syncState.isSyncing ? l10n.syncing : l10n.sync),
-        backgroundColor: AppColors.ownerColor,
-        foregroundColor: Colors.white,
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'owner_dashboard_sync',
+            onPressed: syncState.isSyncing
+                ? null
+                : () => ref.read(syncNotifierProvider.notifier).runSync(),
+            icon: syncState.isSyncing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.sync_rounded),
+            label: Text(syncState.isSyncing ? l10n.syncing : l10n.sync),
+            backgroundColor: AppColors.ownerColor,
+            foregroundColor: Colors.white,
+          ),
+          if (pendingSyncCount > 0) ...[
+            const SizedBox(height: 8),
+            PendingSyncFloatingBanner(
+              count: pendingSyncCount,
+              onTap: () => context.go(AppRoutes.ownerPendingSyncs),
+            ),
+          ],
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refreshDashboard,
@@ -222,21 +240,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
               error: (error, _) =>
                   SliverToBoxAdapter(child: ErrorView(message: '$error')),
             ),
-            SliverToBoxAdapter(
-              child: SectionHeader(title: l10n.alerts),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
-              sliver: SliverToBoxAdapter(
-                child: pendingSyncCount == 0
-                    ? _EmptyDashboardCard(
-                        icon: Icons.cloud_done_rounded,
-                        title: l10n.noPendingSyncs,
-                        subtitle: l10n.allOwnerChangesUploaded,
-                      )
-                    : _PendingSyncAlert(count: pendingSyncCount),
-              ),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 150)),
           ],
         ),
       ),
@@ -320,60 +324,6 @@ String _greetingFor(DateTime time, AppLocalizations l10n) {
   if (hour < 12) return l10n.goodMorning;
   if (hour < 17) return l10n.goodAfternoon;
   return l10n.goodEvening;
-}
-
-void _showTopToast(BuildContext context, String message, Color color) {
-  final overlay = Overlay.of(context);
-  final entry = OverlayEntry(
-    builder: (context) => Positioned(
-      top: MediaQuery.of(context).padding.top + 14,
-      left: 36,
-      right: 36,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.14),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_circle_outline_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  message,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-
-  overlay.insert(entry);
-  Future.delayed(const Duration(seconds: 3), entry.remove);
 }
 
 class _DashboardStatCard extends StatelessWidget {
@@ -527,64 +477,6 @@ class _ActivityTile extends StatelessWidget {
             ),
           ),
           const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
-        ],
-      ),
-    );
-  }
-}
-
-class _PendingSyncAlert extends StatelessWidget {
-  final int count;
-
-  const _PendingSyncAlert({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return AppCard(
-      onTap: () => context.go(AppRoutes.ownerPendingSyncs),
-      color: AppColors.warning.withValues(alpha: 0.08),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.warning_amber_rounded,
-              color: AppColors.warning,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.pendingSyncCount(count),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  l10n.manualSyncNeeded,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.warning),
         ],
       ),
     );

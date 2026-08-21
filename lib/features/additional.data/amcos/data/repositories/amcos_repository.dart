@@ -13,6 +13,61 @@ class AmcosRepository {
   })  : _dio = dio,
         _dao = dao;
 
+  Future<AmcosCreateResult> create({
+    required String name,
+    required String memberCategory,
+    required String registrationNumber,
+    required String tinNumber,
+    required int mcuId,
+    required int regionId,
+    required int districtId,
+    required int wardId,
+    required int villageId,
+    required String phoneNumber,
+    required String email,
+    required String contactPersonName,
+    required String contactPersonPhoneNumber,
+    required String contactPersonEmail,
+    required String contactPersonTitle,
+    required String website,
+    required int cropId,
+  }) async {
+    try {
+      final response = await _dio.post('/amcos', data: {
+        'name': name,
+        'memberCategory': memberCategory,
+        'registrationNumber': registrationNumber,
+        'tinNumber': tinNumber,
+        'mcu': mcuId,
+        'region': regionId,
+        'district': districtId,
+        'ward': wardId,
+        'village': villageId,
+        'phoneNumber': phoneNumber,
+        'email': email,
+        'contactPersonName': contactPersonName,
+        'contactPersonPhoneNumber': contactPersonPhoneNumber,
+        'contactPersonEmail': contactPersonEmail,
+        'contactPersonTitle': contactPersonTitle,
+        'website': website,
+        'crops': [cropId],
+        'idCounter': 0,
+      });
+
+      final data = response.data;
+      if (data is! Map<String, dynamic> || _int(data['id']) <= 0) {
+        return AmcosCreateResult.failure('Invalid AMCOS response');
+      }
+
+      await _dao.upsertAmcos(_fromJson(data));
+      return AmcosCreateResult.success(amcosId: _int(data['id']));
+    } on DioException catch (error) {
+      return AmcosCreateResult.failure(_dioMessage(error));
+    } catch (error) {
+      return AmcosCreateResult.failure(error.toString());
+    }
+  }
+
   Future<int> pullDownstream({DateTime? since, int? mcuId}) async {
     try {
       final res = await _dio.get(
@@ -57,7 +112,8 @@ class AmcosRepository {
     return AmcosTableCompanion.insert(
       id: Value((json['id'])),
       name: _string(json['name']),
-      memberCategory: _string(json['memberCategory'] ?? json['member_category']),
+      memberCategory:
+          _string(json['memberCategory'] ?? json['member_category']),
       registrationNumber:
           _string(json['registrationNumber'] ?? json['registration_number']),
       tinNumber: _string(json['tinNumber'] ?? json['tin_number']),
@@ -118,4 +174,33 @@ class AmcosRepository {
   }
 
   String _string(Object? value) => value?.toString() ?? '';
+
+  String _dioMessage(DioException error) {
+    final data = error.response?.data;
+    if (data is Map) {
+      for (final key in const ['detail', 'message', 'error', 'errors']) {
+        final value = data[key];
+        if (value != null) return value.toString();
+      }
+    }
+    return error.message ?? 'Unable to create AMCOS';
+  }
+}
+
+class AmcosCreateResult {
+  final bool success;
+  final int? amcosId;
+  final String? error;
+
+  const AmcosCreateResult._({
+    required this.success,
+    this.amcosId,
+    this.error,
+  });
+
+  factory AmcosCreateResult.success({required int amcosId}) =>
+      AmcosCreateResult._(success: true, amcosId: amcosId);
+
+  factory AmcosCreateResult.failure(String error) =>
+      AmcosCreateResult._(success: false, error: error);
 }

@@ -5,6 +5,7 @@ import 'package:warehouse_app/features/additional.data/crop/data/tables/crop_tab
 @DataClassName('Farmer')
 class Farmers extends Table {
   IntColumn get id => integer()();
+  IntColumn get serverId => integer().nullable()();
   TextColumn get firstName => text()();
   TextColumn get middleName => text().nullable()();
   TextColumn get lastName => text()();

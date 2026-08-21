@@ -6,6 +6,10 @@ abstract class WorkerRepository {
   Stream<List<User>> watchWorkersByWarehouse(String warehouseId);
   Stream<User?> watchWorkerById(String id);
   Future<int> pullFromServer({required int mcuId});
+  Future<void> setActiveWarehouse({
+    required String userId,
+    required String warehouseId,
+  });
 
   Future<WorkerCreateResult> createWorker(WorkerModel worker);
   Future<void> updateWorker({

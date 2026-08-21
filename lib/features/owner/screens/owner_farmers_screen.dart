@@ -7,6 +7,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
+import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 
 class OwnerFarmersScreen extends ConsumerStatefulWidget {
   const OwnerFarmersScreen({super.key});
@@ -32,6 +33,7 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
+      drawer: const OwnerDrawer(),
       appBar: AppBar(
         title: Text(l10n.farmers),
         actions: [

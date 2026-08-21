@@ -9,6 +9,8 @@ class SecureTokenStorage {
   static const _refreshKey = 'refresh_token';
   static const _userIdKey = 'user_id';
   static const _userRoleKey = 'user_role';
+  static const _mcuIdKey = 'mcu_id';
+  static const _mcuNameKey = 'mcu_name';
 
   final FlutterSecureStorage _storage;
 
@@ -26,6 +28,12 @@ class SecureTokenStorage {
   Future<String?> getRefreshToken() => _storage.read(key: _refreshKey);
   Future<String?> getUserId() => _storage.read(key: _userIdKey);
   Future<String?> getUserRole() => _storage.read(key: _userRoleKey);
+  Future<int?> getMcuId() async {
+    final value = await _storage.read(key: _mcuIdKey);
+    return value == null ? null : int.tryParse(value);
+  }
+
+  Future<String?> getMcuName() => _storage.read(key: _mcuNameKey);
 
   // ── Writers ──────────────────────────────────────────────────────────────
 
@@ -42,10 +50,20 @@ class SecureTokenStorage {
   Future<void> saveUserInfo({
     required String userId,
     required String role,
+    int? mcuId,
+    String? mcuName,
   }) async {
     await Future.wait([
       _storage.write(key: _userIdKey, value: userId),
       _storage.write(key: _userRoleKey, value: role),
+      if (mcuId == null)
+        _storage.delete(key: _mcuIdKey)
+      else
+        _storage.write(key: _mcuIdKey, value: mcuId.toString()),
+      if (mcuName == null || mcuName.isEmpty)
+        _storage.delete(key: _mcuNameKey)
+      else
+        _storage.write(key: _mcuNameKey, value: mcuName),
     ]);
   }
 

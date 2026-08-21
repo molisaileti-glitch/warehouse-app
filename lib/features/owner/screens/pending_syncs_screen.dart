@@ -12,19 +12,26 @@ import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class PendingSyncsScreen extends ConsumerWidget {
-  const PendingSyncsScreen({super.key});
+  final bool workerFlow;
+
+  const PendingSyncsScreen({
+    super.key,
+    this.workerFlow = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final pendingAsync = ref.watch(_pendingSyncsProvider);
+    final pendingAsync = ref.watch(_pendingSyncsProvider(workerFlow));
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go(AppRoutes.ownerDashboard),
+          onPressed: () => context.go(
+            workerFlow ? AppRoutes.workerDashboard : AppRoutes.ownerDashboard,
+          ),
           tooltip: l10n.back,
         ),
         title: Text(l10n.pendingSyncs),
@@ -35,7 +42,7 @@ class PendingSyncsScreen extends ConsumerWidget {
             return EmptyState(
               icon: Icons.cloud_done_rounded,
               title: l10n.allSynced,
-              subtitle: l10n.noPendingOwnerChanges,
+              subtitle: l10n.noPendingChanges,
             );
           }
 
@@ -85,12 +92,21 @@ class PendingSyncsScreen extends ConsumerWidget {
   }
 }
 
-final _pendingSyncsProvider = StreamProvider<List<SyncQueueData>>((ref) {
+final _pendingSyncsProvider =
+    StreamProvider.family<List<SyncQueueData>, bool>((ref, workerFlow) {
   return ref.watch(syncQueueDaoProvider).watchPendingEntries().map(
-        (entries) => entries
-            .where((entry) =>
-                entry.entityType == 'warehouses' || entry.entityType == 'users')
-            .toList(),
+        (entries) => entries.where((entry) {
+          if (workerFlow) {
+            return entry.entityType == 'farmers' ||
+                entry.entityType == 'farmerDependants' ||
+                entry.entityType == 'farmerHarvests';
+          }
+          return entry.entityType == 'warehouses' ||
+              entry.entityType == 'users' ||
+              entry.entityType == 'farmers' ||
+              entry.entityType == 'farmerDependants' ||
+              entry.entityType == 'farmerHarvests';
+        }).toList(),
       );
 });
 
@@ -168,6 +184,34 @@ _SyncDetails _syncDetails(SyncQueueData entry, AppLocalizations l10n) {
         subtitle: _stringValue(payload, 'fullName') ?? l10n.workerAccount,
         icon: Icons.person_add_alt_1_rounded,
         color: AppColors.workerColor,
+      ),
+    'farmers' => _SyncDetails(
+        title: l10n.operationFarmer(operation),
+        subtitle: [
+          _stringValue(payload, 'firstName'),
+          _stringValue(payload, 'middleName'),
+          _stringValue(payload, 'lastName'),
+        ].whereType<String>().join(' '),
+        icon: Icons.person_outline_rounded,
+        color: AppColors.success,
+      ),
+    'farmerDependants' => _SyncDetails(
+        title: l10n.operationDependant(operation),
+        subtitle: [
+          _stringValue(payload, 'firstName'),
+          _stringValue(payload, 'middleName'),
+          _stringValue(payload, 'lastName'),
+        ].whereType<String>().join(' '),
+        icon: Icons.family_restroom_rounded,
+        color: AppColors.info,
+      ),
+    'farmerHarvests' => _SyncDetails(
+        title: l10n.operationHarvest(operation),
+        subtitle: _stringValue(payload, 'farmerName') ??
+            _stringValue(payload, 'receiptNumber') ??
+            l10n.harvestRecord,
+        icon: Icons.grass_rounded,
+        color: AppColors.success,
       ),
     _ => _SyncDetails(
         title: l10n.operationRecord(operation, entry.entityType),

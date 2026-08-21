@@ -28,18 +28,18 @@ void main() {
   group('UserDao', () {
     test('insert and retrieve a user', () async {
       final id = newUuid();
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: id,
-          name: 'Amina Hassan',
+          fullName: 'Amina Hassan',
           email: 'amina@example.com',
           role: const Value('manager'),
         ),
       );
 
-      final user = await db.userDao.getUserById(id);
+      final user = await db.workerDao.getUserById(id);
       expect(user, isNotNull);
-      expect(user!.name, equals('Amina Hassan'));
+      expect(user!.fullName, equals('Amina Hassan'));
       expect(user.email, equals('amina@example.com'));
       expect(user.role, equals('manager'));
       expect(user.syncStatus, equals('pending'));
@@ -47,38 +47,38 @@ void main() {
 
     test('soft delete sets deletedAt', () async {
       final id = newUuid();
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: id,
-          name: 'Test User',
+          fullName: 'Test User',
           email: 'test@example.com',
         ),
       );
 
-      await db.userDao.softDeleteUser(id);
+      await db.workerDao.softDeleteUser(id);
 
       // watchAllUsers excludes soft-deleted — should be empty.
-      final all = await db.userDao.getAllUsers();
+      final all = await db.workerDao.getAllUsers();
       expect(all.where((u) => u.id == id), isEmpty);
 
       // Direct fetch still finds the row.
-      final deleted = await db.userDao.getUserById(id);
+      final deleted = await db.workerDao.getUserById(id);
       expect(deleted?.deletedAt, isNotNull);
       expect(deleted?.syncStatus, equals('pending'));
     });
 
     test('markUserSynced updates syncStatus', () async {
       final id = newUuid();
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: id,
-          name: 'Sync User',
+          fullName: 'Sync User',
           email: 'sync@example.com',
         ),
       );
-      await db.userDao.markUserSynced(id);
+      await db.workerDao.markUserSynced(id);
 
-      final user = await db.userDao.getUserById(id);
+      final user = await db.workerDao.getUserById(id);
       expect(user?.syncStatus, equals('synced'));
     });
 
@@ -87,14 +87,14 @@ void main() {
 
       // Collect first two emissions.
       final emissions = <List<User>>[];
-      final sub = db.userDao.watchAllUsers().listen(emissions.add);
+      final sub = db.workerDao.watchAllUsers().listen(emissions.add);
 
       await Future.delayed(Duration.zero); // let stream emit initial []
 
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: id,
-          name: 'Stream User',
+          fullName: 'Stream User',
           email: 'stream@example.com',
         ),
       );
@@ -106,6 +106,28 @@ void main() {
 
       await sub.cancel();
     });
+
+    test('pending user and sync entry are stored together', () async {
+      final id = newUuid();
+      await db.workerDao.insertPendingUser(
+        user: UsersCompanion.insert(
+          id: id,
+          fullName: 'Offline Worker',
+          email: 'offline-worker@example.com',
+        ),
+        queueEntry: SyncQueueCompanion.insert(
+          entityType: 'users',
+          entityId: id,
+          operation: 'create',
+          payload: '{}',
+        ),
+      );
+
+      expect(await db.workerDao.getUserById(id), isNotNull);
+      final queue = await db.syncQueueDao.getNextBatch();
+      expect(queue.single.entityId, id);
+      expect(queue.single.entityType, 'users');
+    });
   });
 
   // ── WarehouseDao ─────────────────────────────────────────────────────────
@@ -116,10 +138,10 @@ void main() {
     setUp(() async {
       // Warehouses.ownerId has a FK to Users — insert a user first.
       ownerId = newUuid();
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: ownerId,
-          name: 'Owner',
+          fullName: 'Owner',
           email: 'owner@example.com',
           role: const Value('owner'),
         ),
@@ -132,7 +154,7 @@ void main() {
         WarehousesCompanion.insert(
           id: id,
           name: 'Kariakoo Warehouse',
-          ownerId: ownerId,
+          ownerId: Value(ownerId),
         ),
       );
 
@@ -148,13 +170,70 @@ void main() {
         WarehousesCompanion.insert(
           id: id,
           name: 'To Delete',
-          ownerId: ownerId,
+          ownerId: Value(ownerId),
         ),
       );
 
       await db.warehouseDao.softDeleteWarehouse(id);
       final all = await db.warehouseDao.getAllWarehouses();
       expect(all.where((w) => w.id == id), isEmpty);
+    });
+
+    test('pending warehouse and sync entry are stored together', () async {
+      final id = newUuid();
+      await db.warehouseDao.insertPendingWarehouse(
+        warehouse: WarehousesCompanion.insert(
+          id: id,
+          name: 'Offline Warehouse',
+          ownerId: Value(ownerId),
+        ),
+        queueEntry: SyncQueueCompanion.insert(
+          entityType: 'warehouses',
+          entityId: id,
+          operation: 'create',
+          payload: '{}',
+        ),
+      );
+
+      expect(await db.warehouseDao.getWarehouseById(id), isNotNull);
+      final queue = await db.syncQueueDao.getNextBatch();
+      expect(queue.single.entityId, id);
+      expect(queue.single.entityType, 'warehouses');
+    });
+
+    test('downloaded warehouse can insert before reference sync', () async {
+      await db.warehouseDao.ensureWarehouseReferences(
+        amcosId: 5,
+        amcosName: 'Jkkh',
+        mcu: 2,
+        mcuName: 'ghgjy',
+        villageId: 6004,
+        villageName: 'NGULU',
+      );
+
+      await db.warehouseDao.upsertWarehouse(
+        WarehousesCompanion.insert(
+          uuid: const Value('57342846-ad93-4acd-9cf5-6d0f36b4fdc9'),
+          id: '13',
+          name: 'going home',
+          ownerId: const Value('2'),
+          gpsLocation: const Value('KILIMANJARO, MWANGA, KWAKOA, NGULU'),
+          amcos: const Value(5),
+          amcosName: const Value('Jkkh'),
+          village: const Value(6004),
+          villageName: const Value('NGULU'),
+          syncStatus: const Value('synced'),
+          synced: const Value(true),
+        ),
+      );
+
+      final warehouse = await db.warehouseDao.getWarehouseById('13');
+      final amcos = await db.amcosDao.getAmcosById(5);
+      final village = await db.villageDao.getVillageById(6004);
+
+      expect(warehouse?.name, 'going home');
+      expect(amcos?.name, 'Jkkh');
+      expect(village?.name, 'NGULU');
     });
   });
 
@@ -170,10 +249,10 @@ void main() {
       warehouseId = newUuid();
       workerId = newUuid();
 
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: ownerId,
-          name: 'Owner',
+          fullName: 'Owner',
           email: 'owner2@example.com',
           role: const Value('owner'),
         ),
@@ -182,13 +261,13 @@ void main() {
         WarehousesCompanion.insert(
           id: warehouseId,
           name: 'Test WH',
-          ownerId: ownerId,
+          ownerId: Value(ownerId),
         ),
       );
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: workerId,
-          name: 'Worker',
+          fullName: 'Worker',
           email: 'worker@example.com',
           role: const Value('worker'),
           warehouseId: Value(warehouseId),
@@ -335,10 +414,10 @@ void main() {
       userId = newUuid();
       warehouseId = newUuid();
 
-      await db.userDao.insertUser(
+      await db.workerDao.insertUser(
         UsersCompanion.insert(
           id: userId,
-          name: 'Auditor',
+          fullName: 'Auditor',
           email: 'audit@example.com',
           role: const Value('owner'),
         ),
@@ -347,7 +426,7 @@ void main() {
         WarehousesCompanion.insert(
           id: warehouseId,
           name: 'Audit WH',
-          ownerId: userId,
+          ownerId: Value(userId),
         ),
       );
     });
