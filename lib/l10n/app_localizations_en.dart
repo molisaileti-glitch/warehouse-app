@@ -790,6 +790,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get featureWillBeImplementedSoon =>
+      'This feature will be implemented soon.';
+
+  @override
   String get notifications => 'Notifications';
 
   @override

@@ -215,12 +215,28 @@ class ReceiptPrinterService {
   }
 
   void _row(void Function(String) line, String label, String value) {
-    final left = label.length > 14 ? label.substring(0, 14) : label;
-    final rightWidth = _paperWidth - left.length - 1;
-    final right =
-        value.length > rightWidth ? value.substring(0, rightWidth) : value;
-    final spaces = _paperWidth - left.length - right.length;
-    line('$left${' ' * spaces}$right');
+    final left = _sanitize(label).trim();
+    final right = _sanitize(value).trim();
+    if (left.isEmpty) {
+      line(
+          right.length > _paperWidth ? right.substring(0, _paperWidth) : right);
+      return;
+    }
+    if (right.isEmpty) {
+      line(left.length > _paperWidth ? left.substring(0, _paperWidth) : left);
+      return;
+    }
+
+    if (left.length + right.length + 1 <= _paperWidth) {
+      final spaces = _paperWidth - left.length - right.length;
+      line('$left${' ' * spaces}$right');
+      return;
+    }
+
+    line(left.length > _paperWidth ? left.substring(0, _paperWidth) : left);
+    final wrappedRight =
+        right.length > _paperWidth ? right.substring(0, _paperWidth) : right;
+    line('${' ' * (_paperWidth - wrappedRight.length)}$wrappedRight');
   }
 
   String _center(String value) {

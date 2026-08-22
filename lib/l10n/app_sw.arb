@@ -261,6 +261,7 @@
   "@appVersion": {"placeholders": {"version": {"type": "String"}}},
   "comingSoon": "{feature} inakuja hivi karibuni",
   "@comingSoon": {"placeholders": {"feature": {"type": "String"}}},
+  "featureWillBeImplementedSoon": "Kipengele hiki kitaongezwa hivi karibuni.",
   "notifications": "Arifa",
   "farmerDetails": "Maelezo ya Mkulima",
   "registerFarmer": "Sajili Mkulima",

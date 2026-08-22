@@ -37,6 +37,16 @@ final _workerWarehousesByAmcosProvider =
   return ref.read(warehouseDaoProvider).getWarehousesByAmcos(amcosId);
 });
 
+void _showFeatureComingSoon(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  showTopToast(
+    context,
+    l10n.featureWillBeImplementedSoon,
+    AppColors.info,
+    icon: Icons.info_outline_rounded,
+  );
+}
+
 class WorkerDashboardScreen extends ConsumerWidget {
   const WorkerDashboardScreen({super.key});
 
@@ -247,21 +257,21 @@ class _WorkerBody extends ConsumerWidget {
                 label: l10n.recordDelivery,
                 subtitle: l10n.incomingGoodsSubtitle,
                 color: AppColors.success,
-                onTap: () => context.go(AppRoutes.workerRecordFor(warehouseId)),
+                onTap: () => _showFeatureComingSoon(context),
               ),
               _ActionButton(
                 icon: Icons.checklist_rounded,
                 label: l10n.stockCount,
                 subtitle: l10n.countItemsSubtitle,
                 color: AppColors.info,
-                onTap: () => context.go(AppRoutes.workerRecordFor(warehouseId)),
+                onTap: () => _showFeatureComingSoon(context),
               ),
               _ActionButton(
                 icon: Icons.tune_rounded,
                 label: l10n.adjustment,
                 subtitle: l10n.correctDiscrepanciesSubtitle,
                 color: AppColors.workerColor,
-                onTap: () => context.go(AppRoutes.workerRecordFor(warehouseId)),
+                onTap: () => _showFeatureComingSoon(context),
               ),
             ]),
           ),

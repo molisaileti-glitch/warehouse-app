@@ -1604,6 +1604,12 @@ abstract class AppLocalizations {
   /// **'{feature} coming soon'**
   String comingSoon(String feature);
 
+  /// No description provided for @featureWillBeImplementedSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature will be implemented soon.'**
+  String get featureWillBeImplementedSoon;
+
   /// No description provided for @notifications.
   ///
   /// In en, this message translates to:

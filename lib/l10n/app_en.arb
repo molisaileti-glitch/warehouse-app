@@ -265,6 +265,7 @@
   "@appVersion": {"placeholders": {"version": {"type": "String"}}},
   "comingSoon": "{feature} coming soon",
   "@comingSoon": {"placeholders": {"feature": {"type": "String"}}},
+  "featureWillBeImplementedSoon": "This feature will be implemented soon.",
   "notifications": "Notifications",
   "farmerDetails": "Farmer Details",
   "registerFarmer": "Register Farmer",

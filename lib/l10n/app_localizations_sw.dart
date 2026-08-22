@@ -795,6 +795,10 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
+  String get featureWillBeImplementedSoon =>
+      'Kipengele hiki kitaongezwa hivi karibuni.';
+
+  @override
   String get notifications => 'Arifa';
 
   @override

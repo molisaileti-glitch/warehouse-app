@@ -89,11 +89,6 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 ? null
                 : () => context.go(AppRoutes.ownerPendingSyncs),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            tooltip: l10n.settings,
-            onPressed: () => context.go(AppRoutes.ownerSettings),
-          ),
         ],
       ),
       floatingActionButton: Column(
