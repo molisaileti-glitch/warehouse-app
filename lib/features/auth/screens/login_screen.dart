@@ -155,7 +155,7 @@ class _LoginHeader extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   const Text(
-                    'MavunoHub',
+                    'SB Warehouse',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 25,
