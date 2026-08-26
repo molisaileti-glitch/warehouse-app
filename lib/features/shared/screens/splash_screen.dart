@@ -18,7 +18,7 @@ class SplashScreen extends StatelessWidget {
           children: [
             const Icon(Icons.warehouse_rounded, size: 72, color: Colors.white),
             const SizedBox(height: 16),
-            const Text('MavunoHub',
+            const Text('SB Warehouse',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,

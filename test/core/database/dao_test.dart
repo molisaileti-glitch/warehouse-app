@@ -235,6 +235,55 @@ void main() {
       expect(amcos?.name, 'Jkkh');
       expect(village?.name, 'NGULU');
     });
+
+    test('downloaded AMCOS can insert before full location sync', () async {
+      await db.amcosDao.ensureAmcosReferences(
+        regionId: 2,
+        regionName: 'DAR-ES-SALAAM',
+        districtId: 10,
+        districtName: 'KINONDONI',
+        wardId: 215,
+        wardName: 'KAWE',
+        villageId: 793,
+        villageName: 'UKWAMANI',
+      );
+
+      await db.amcosDao.upsertAmcos(
+        AmcosTableCompanion.insert(
+          id: const Value(7),
+          name: 'Ukwamani',
+          memberCategory: 'FARMERS',
+          registrationNumber: 'kawr/2447',
+          tinNumber: '33558542222',
+          mcu: 5,
+          mcuName: 'RICE SHOP',
+          region: 2,
+          regionName: 'DAR-ES-SALAAM',
+          district: 10,
+          districtName: 'KINONDONI',
+          ward: 215,
+          wardName: 'KAWE',
+          village: 793,
+          villageName: 'UKWAMANI',
+          phoneNumber: '0672020998',
+          email: 'fadhili68@gmail.com',
+          contactPersonName: 'Fadhili',
+          contactPersonPhoneNumber: '0672020998',
+          contactPersonEmail: 'fadhili68@gmail.com',
+          contactPersonTitle: 'busness',
+          website: 'Michele.tz',
+          status: 'ACTIVE',
+          crops: '4',
+          idCounter: 1,
+        ),
+      );
+
+      final amcos = await db.amcosDao.getAmcosById(7);
+      final village = await db.villageDao.getVillageById(793);
+
+      expect(amcos?.name, 'Ukwamani');
+      expect(village?.name, 'UKWAMANI');
+    });
   });
 
   // ── InventoryDao ─────────────────────────────────────────────────────────

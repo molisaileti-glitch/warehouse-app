@@ -59,6 +59,7 @@ class AmcosRepository {
         return AmcosCreateResult.failure('Invalid AMCOS response');
       }
 
+      await _ensureReferences(data);
       await _dao.upsertAmcos(_fromJson(data));
       return AmcosCreateResult.success(amcosId: _int(data['id']));
     } on DioException catch (error) {
@@ -82,7 +83,7 @@ class AmcosRepository {
         'rows=${rows.length}',
         name: 'sync.amcos',
       );
-      await _dao.upsertAmcosList(rows.map(_fromJson).toList());
+      await _upsertRows(rows);
       return rows.length;
     } on DioException {
       return 0;
@@ -100,12 +101,33 @@ class AmcosRepository {
     final rows = _asList(res.data)
         .where((row) => ids.contains(_int(row['id'])))
         .toList();
-    await _dao.upsertAmcosList(rows.map(_fromJson).toList());
+    await _upsertRows(rows);
     developer.log(
       '[AmcosSync] requestedIds=$ids matched=${rows.length}',
       name: 'sync.amcos',
     );
     return rows.length;
+  }
+
+  Future<void> _upsertRows(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) return;
+    for (final row in rows) {
+      await _ensureReferences(row);
+    }
+    await _dao.upsertAmcosList(rows.map(_fromJson).toList());
+  }
+
+  Future<void> _ensureReferences(Map<String, dynamic> json) {
+    return _dao.ensureAmcosReferences(
+      regionId: _int(json['region']),
+      regionName: _string(json['regionName'] ?? json['region_name']),
+      districtId: _int(json['district']),
+      districtName: _string(json['districtName'] ?? json['district_name']),
+      wardId: _int(json['ward']),
+      wardName: _string(json['wardName'] ?? json['ward_name']),
+      villageId: _int(json['village']),
+      villageName: _string(json['villageName'] ?? json['village_name']),
+    );
   }
 
   AmcosTableCompanion _fromJson(Map<String, dynamic> json) {

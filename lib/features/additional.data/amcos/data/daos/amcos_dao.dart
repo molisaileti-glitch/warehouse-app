@@ -1,10 +1,19 @@
 import 'package:drift/drift.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/features/additional.data/amcos/domain/model/amcos_model.dart';
+import 'package:warehouse_app/features/additional.data/location/data/tables/locations_tables.dart';
 
 part 'amcos_dao.g.dart';
 
-@DriftAccessor(tables: [AmcosTable])
+@DriftAccessor(
+  tables: [
+    AmcosTable,
+    RegionsTable,
+    DistrictsTable,
+    WardsTable,
+    VillagesTable,
+  ],
+)
 class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
   AmcosDao(super.db);
 
@@ -66,6 +75,60 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
 
   Future<int> upsertAmcos(Insertable<Amcos> entry) =>
       into(amcosTable).insertOnConflictUpdate(entry);
+
+  Future<void> ensureAmcosReferences({
+    required int regionId,
+    required String regionName,
+    required int districtId,
+    required String districtName,
+    required int wardId,
+    required String wardName,
+    required int villageId,
+    required String villageName,
+  }) {
+    return transaction(() async {
+      final safeRegionName = _nonEmpty(regionName) ?? 'Unknown';
+      final safeDistrictName = _nonEmpty(districtName) ?? safeRegionName;
+      final safeWardName = _nonEmpty(wardName) ?? safeDistrictName;
+      final safeVillageName = _nonEmpty(villageName) ?? safeWardName;
+
+      await into(regionsTable).insert(
+        RegionsTableCompanion(
+          id: Value(regionId),
+          name: Value(safeRegionName),
+          postCode: const Value(''),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await into(districtsTable).insert(
+        DistrictsTableCompanion(
+          id: Value(districtId),
+          name: Value(safeDistrictName),
+          region: Value(regionId),
+          regionName: Value(safeRegionName),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await into(wardsTable).insert(
+        WardsTableCompanion(
+          id: Value(wardId),
+          name: Value(safeWardName),
+          district: Value(districtId),
+          districtName: Value(safeDistrictName),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await into(villagesTable).insert(
+        VillagesTableCompanion(
+          id: Value(villageId),
+          name: Value(safeVillageName),
+          ward: Value(wardId),
+          wardName: Value(safeWardName),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+    });
+  }
 
   Future<void> upsertAmcosList(List<Insertable<Amcos>> entries) async {
     if (entries.isEmpty) return;
@@ -129,5 +192,10 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
               idCounter: amcos.idCounter,
             ))
         .toList();
+  }
+
+  String? _nonEmpty(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 }
