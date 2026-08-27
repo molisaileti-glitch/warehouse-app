@@ -14,6 +14,7 @@ import 'package:warehouse_app/features/additional.data/location/presentation/pro
 import 'package:warehouse_app/features/farmer/presentation/providers/farmer_providers.dart';
 import 'package:warehouse_app/features/farmer/domain/models/farmer_model.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_providers.dart';
+import 'package:warehouse_app/features/warehouse/domain/models/warehouse_model.dart';
 import 'package:warehouse_app/features/warehouse/presentation/providers/warehouse_providers.dart';
 import 'package:warehouse_app/features/worker/presentation/providers/worker_providers.dart';
 
@@ -141,7 +142,11 @@ class SyncManager {
     if (entry.entityType == 'warehouses' && entry.operation != 'delete') {
       payload['mcu'] = await _currentMcuId();
     }
+    if (entry.entityType == 'users' && entry.operation != 'delete') {
+      await _resolveUserWarehouse(payload);
+    }
     if (entry.entityType == 'farmerHarvests' && entry.operation != 'delete') {
+      await _resolveHarvestWarehouse(payload, entry.entityId);
       await _resolveHarvestFarmer(payload);
       _normalizeHarvestBagTags(payload);
     }
@@ -167,6 +172,10 @@ class SyncManager {
           rethrow;
         }
         if (entry.entityType == 'warehouses') {
+          await _applyWarehouseCreateResponse(
+            localId: entry.entityId,
+            responseData: response.data,
+          );
           developer.log(
             '[WarehouseSync] create mcu=${payload['mcu']} '
             'response=${response.data}',
@@ -263,6 +272,48 @@ class SyncManager {
     );
   }
 
+  Future<void> _applyWarehouseCreateResponse({
+    required String localId,
+    required Object? responseData,
+  }) async {
+    final data = _asMap(responseData);
+    data['uuid'] ??= localId;
+    final model = WarehouseModel.fromJson(data);
+    if (int.tryParse(model.id) == null) {
+      throw StateError('Warehouse create response has no server ID.');
+    }
+
+    await _warehouseDao.ensureWarehouseReferences(
+      amcosId: model.amcos,
+      amcosName: model.amcosName,
+      mcu: _int(data['mcu'] ?? model.ownerId),
+      mcuName: data['mcuName']?.toString() ?? data['mcu_name']?.toString(),
+      villageId: model.village,
+      villageName: model.villageName,
+    );
+
+    final companion = model.toCompanion(
+      syncStatus: 'synced',
+      updatedAt: model.updatedAt ?? DateTime.now(),
+      syncedValue: true,
+    );
+    final existing = await _warehouseDao.getWarehouseByUuid(model.uuid);
+    if (existing != null && existing.id != model.id) {
+      await _warehouseDao.reconcileWarehouseId(
+        localId: existing.id,
+        serverWarehouse: companion,
+      );
+    } else {
+      await _warehouseDao.upsertWarehouse(companion);
+    }
+
+    developer.log(
+      '[WarehouseSync] reconciled local=$localId server=${model.id} '
+      'uuid=${model.uuid}',
+      name: 'sync.warehouse',
+    );
+  }
+
   Future<void> _pushFarmerDependant(Map<String, dynamic> payload) async {
     final farmerUuid = payload.remove('farmerUuid')?.toString();
     if (farmerUuid == null || farmerUuid.isEmpty) {
@@ -279,6 +330,91 @@ class SyncManager {
     final serverId = await _farmerServerId(farmerUuid);
     payload['farmer'] = serverId;
     payload['guarantor'] = serverId;
+  }
+
+  Future<void> _resolveUserWarehouse(Map<String, dynamic> payload) async {
+    final rawId = _referenceId(
+      payload['warehouseId'] ??
+          payload['warehouse_id'] ??
+          payload['collectionCenterId'] ??
+          payload['collection_center_id'] ??
+          payload['collectionCenter'] ??
+          payload['warehouse'],
+    );
+    if (rawId == null) return;
+
+    final directServerId = int.tryParse(rawId);
+    if (directServerId != null) {
+      payload['warehouseId'] = rawId;
+      payload['collectionCenterId'] = directServerId;
+      payload['collectionCenter'] = directServerId;
+      return;
+    }
+
+    final warehouse = await _warehouseFromReference(rawId);
+    final serverId = warehouse == null ? null : int.tryParse(warehouse.id);
+    if (warehouse == null || serverId == null) {
+      throw StateError('Worker warehouse $rawId has not synced yet.');
+    }
+
+    payload['warehouseId'] = warehouse.id;
+    payload['collectionCenterId'] = serverId;
+    payload['collectionCenter'] = serverId;
+  }
+
+  Future<void> _resolveHarvestWarehouse(
+    Map<String, dynamic> payload,
+    String harvestUuid,
+  ) async {
+    final currentCollectionCenter = _int(payload['collectionCenter']);
+    if (currentCollectionCenter != null) {
+      payload['collectionCenter'] = currentCollectionCenter;
+      return;
+    }
+
+    final payloadReference = _referenceId(
+      payload['warehouseId'] ??
+          payload['warehouseUuid'] ??
+          payload['collectionCenterId'] ??
+          payload['collection_center_id'] ??
+          payload['warehouse'],
+    );
+    var warehouse = await _warehouseFromReference(payloadReference);
+
+    final harvest = await _harvestDao.getHarvestByUuid(harvestUuid);
+    warehouse ??= await _warehouseFromReference(harvest?.warehouseId);
+    final collectionCenterId = warehouse == null
+        ? harvest?.collectionCenter
+        : int.tryParse(warehouse.id);
+    if (collectionCenterId == null) {
+      throw StateError('Harvest warehouse has not synced yet.');
+    }
+
+    payload['collectionCenter'] = collectionCenterId;
+    payload['collectionCenterId'] = collectionCenterId;
+    if (warehouse != null) {
+      payload['warehouseId'] = warehouse.id;
+      payload['collectionCenterName'] = warehouse.name;
+    }
+  }
+
+  Future<Warehouse?> _warehouseFromReference(String? reference) async {
+    if (reference == null || reference.isEmpty) return null;
+    return await _warehouseDao.getWarehouseById(reference) ??
+        await _warehouseDao.getWarehouseByUuid(reference);
+  }
+
+  String? _referenceId(Object? value) {
+    if (value is Map) {
+      return _referenceId(
+        value['id'] ??
+            value['warehouseId'] ??
+            value['collectionCenterId'] ??
+            value['collectionCenter'],
+      );
+    }
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   Future<int> _farmerServerId(String uuid) async {

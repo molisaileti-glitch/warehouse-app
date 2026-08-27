@@ -755,6 +755,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'Preparing registration regions...';
 
   @override
+  String get preparingDataTitle => 'Preparing Data';
+
+  @override
+  String get preparingDataDescription =>
+      'Downloading crops and location data needed before using the app.';
+
+  @override
+  String get dataReadyTitle => 'Data Ready';
+
+  @override
+  String get dataReadyDescription =>
+      'Required data has been prepared. You can continue to the dashboard.';
+
+  @override
+  String get dataPreparationFailedTitle => 'Preparation Failed';
+
+  @override
+  String get dataPreparationFailedDescription =>
+      'Some required data could not be downloaded. Check your internet connection and try again.';
+
+  @override
+  String dataPreparationMissingDescription(String items) {
+    return 'Still missing: $items. Check your internet connection and tap Retry.';
+  }
+
+  @override
+  String get crops => 'Crops';
+
+  @override
+  String get regions => 'Regions';
+
+  @override
+  String get districts => 'Districts';
+
+  @override
+  String get wards => 'Wards';
+
+  @override
+  String get villages => 'Villages';
+
+  @override
   String get profile => 'Profile';
 
   @override

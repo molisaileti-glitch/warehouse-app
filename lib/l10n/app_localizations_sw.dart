@@ -760,6 +760,47 @@ class AppLocalizationsSw extends AppLocalizations {
   String get preparingRegistrationRegions => 'Inatayarisha mikoa ya usajili...';
 
   @override
+  String get preparingDataTitle => 'Inatayarisha Taarifa';
+
+  @override
+  String get preparingDataDescription =>
+      'Inapakua mazao na taarifa za maeneo zinazohitajika kabla ya kutumia programu.';
+
+  @override
+  String get dataReadyTitle => 'Taarifa Ziko Tayari';
+
+  @override
+  String get dataReadyDescription =>
+      'Taarifa muhimu zimetayarishwa. Unaweza kuendelea kwenye dashibodi.';
+
+  @override
+  String get dataPreparationFailedTitle => 'Utayarishaji Umeshindikana';
+
+  @override
+  String get dataPreparationFailedDescription =>
+      'Baadhi ya taarifa muhimu hazikuweza kupakuliwa. Angalia intaneti yako na ujaribu tena.';
+
+  @override
+  String dataPreparationMissingDescription(String items) {
+    return 'Bado hazipo: $items. Angalia intaneti yako kisha bonyeza Jaribu tena.';
+  }
+
+  @override
+  String get crops => 'Mazao';
+
+  @override
+  String get regions => 'Mikoa';
+
+  @override
+  String get districts => 'Wilaya';
+
+  @override
+  String get wards => 'Kata';
+
+  @override
+  String get villages => 'Vijiji';
+
+  @override
   String get profile => 'Wasifu';
 
   @override

@@ -7,6 +7,11 @@ part 'warehouse_dao.g.dart';
 @DriftAccessor(
   tables: [
     Warehouses,
+    Users,
+    InventoryItems,
+    StockMovements,
+    AuditLogs,
+    FarmerHarvests,
     SyncQueue,
     RegionsTable,
     DistrictsTable,
@@ -55,9 +60,13 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
         .watchSingleOrNull();
   }
 
-  Future<Warehouse?> getWarehouseByUuid(String uuid) {
-    return (select(warehouses)..where((w) => w.uuid.equals(uuid)))
-        .getSingleOrNull();
+  Future<Warehouse?> getWarehouseByUuid(String uuid) async {
+    final matches =
+        await (select(warehouses)..where((w) => w.uuid.equals(uuid))).get();
+    if (matches.isEmpty) return null;
+    matches.sort((a, b) =>
+        _reconciliationPriority(a).compareTo(_reconciliationPriority(b)));
+    return matches.first;
   }
 
   Future<List<Warehouse>> getAllWarehouses() {
@@ -104,6 +113,72 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> upsertWarehouse(WarehousesCompanion entry) {
     return into(warehouses).insertOnConflictUpdate(entry);
+  }
+
+  Future<void> reconcileWarehouseId({
+    required String localId,
+    required WarehousesCompanion serverWarehouse,
+  }) {
+    final serverId = serverWarehouse.id.value;
+    final collectionCenterId = int.tryParse(serverId);
+    final now = DateTime.now();
+
+    if (localId == serverId) {
+      return upsertWarehouse(serverWarehouse);
+    }
+
+    return transaction(() async {
+      await into(warehouses).insertOnConflictUpdate(serverWarehouse);
+
+      await (update(users)..where((u) => u.warehouseId.equals(localId))).write(
+        UsersCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(inventoryItems)
+            ..where((i) => i.warehouseId.equals(localId)))
+          .write(
+        InventoryItemsCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(stockMovements)
+            ..where((m) => m.warehouseId.equals(localId)))
+          .write(
+        StockMovementsCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(stockMovements)
+            ..where((m) => m.relatedWarehouseId.equals(localId)))
+          .write(
+        StockMovementsCompanion(
+          relatedWarehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(auditLogs)..where((l) => l.warehouseId.equals(localId)))
+          .write(
+        AuditLogsCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(farmerHarvests)
+            ..where((h) => h.warehouseId.equals(localId)))
+          .write(
+        FarmerHarvestsCompanion(
+          warehouseId: Value(serverId),
+          collectionCenter: Value(collectionCenterId),
+          updatedAt: Value(now),
+        ),
+      );
+
+      await (delete(warehouses)..where((w) => w.id.equals(localId))).go();
+    });
   }
 
   Future<void> ensureWarehouseReferences({
@@ -255,5 +330,14 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
   String? _nonEmpty(String? value) {
     final text = value?.trim();
     return text == null || text.isEmpty ? null : text;
+  }
+
+  int _reconciliationPriority(Warehouse warehouse) {
+    if (int.tryParse(warehouse.id) == null) return 0;
+    if (warehouse.syncStatus == 'pending' ||
+        warehouse.syncStatus == 'conflict') {
+      return 1;
+    }
+    return 2;
   }
 }

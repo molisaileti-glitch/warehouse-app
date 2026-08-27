@@ -1544,6 +1544,78 @@ abstract class AppLocalizations {
   /// **'Preparing registration regions...'**
   String get preparingRegistrationRegions;
 
+  /// No description provided for @preparingDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing Data'**
+  String get preparingDataTitle;
+
+  /// No description provided for @preparingDataDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading crops and location data needed before using the app.'**
+  String get preparingDataDescription;
+
+  /// No description provided for @dataReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Ready'**
+  String get dataReadyTitle;
+
+  /// No description provided for @dataReadyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Required data has been prepared. You can continue to the dashboard.'**
+  String get dataReadyDescription;
+
+  /// No description provided for @dataPreparationFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation Failed'**
+  String get dataPreparationFailedTitle;
+
+  /// No description provided for @dataPreparationFailedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Some required data could not be downloaded. Check your internet connection and try again.'**
+  String get dataPreparationFailedDescription;
+
+  /// No description provided for @dataPreparationMissingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Still missing: {items}. Check your internet connection and tap Retry.'**
+  String dataPreparationMissingDescription(String items);
+
+  /// No description provided for @crops.
+  ///
+  /// In en, this message translates to:
+  /// **'Crops'**
+  String get crops;
+
+  /// No description provided for @regions.
+  ///
+  /// In en, this message translates to:
+  /// **'Regions'**
+  String get regions;
+
+  /// No description provided for @districts.
+  ///
+  /// In en, this message translates to:
+  /// **'Districts'**
+  String get districts;
+
+  /// No description provided for @wards.
+  ///
+  /// In en, this message translates to:
+  /// **'Wards'**
+  String get wards;
+
+  /// No description provided for @villages.
+  ///
+  /// In en, this message translates to:
+  /// **'Villages'**
+  String get villages;
+
   /// No description provided for @profile.
   ///
   /// In en, this message translates to:

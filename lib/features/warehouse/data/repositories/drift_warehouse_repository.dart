@@ -213,13 +213,19 @@ class DriftWarehouseRepository implements WarehouseRepository {
       if (_shouldKeepLocal(existing, model)) {
         return;
       }
-      await _dao.upsertWarehouse(
-        model.toCompanion(
-          syncStatus: 'synced',
-          updatedAt: model.updatedAt ?? DateTime.now(),
-          syncedValue: true,
-        ),
+      final companion = model.toCompanion(
+        syncStatus: 'synced',
+        updatedAt: model.updatedAt ?? DateTime.now(),
+        syncedValue: true,
       );
+      if (existing != null && existing.id != model.id) {
+        await _dao.reconcileWarehouseId(
+          localId: existing.id,
+          serverWarehouse: companion,
+        );
+      } else {
+        await _dao.upsertWarehouse(companion);
+      }
     } catch (e, stackTrace) {
       developer.log(
         '[WarehouseSync] upsert failed id=${model.id} uuid=${model.uuid} '

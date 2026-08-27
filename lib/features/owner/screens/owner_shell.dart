@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/features/shared/widgets/reference_data_preparation_gate.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 
 class OwnerShell extends StatelessWidget {
@@ -50,38 +51,40 @@ class OwnerShell extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     final index = _selectedIndex(location);
 
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          height: 74,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(
-                color: AppColors.divider.withValues(alpha: 0.7),
+    return ReferenceDataPreparationGate(
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            height: 74,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.divider.withValues(alpha: 0.7),
+                ),
               ),
             ),
-          ),
-          child: Row(
-            children: [
-              for (var i = 0; i < _tabs.length; i++)
-                Expanded(
-                  child: _OwnerNavItem(
-                    icon: _tabs[i].icon,
-                    label: switch (i) {
-                      0 => l10n.dashboard,
-                      1 => l10n.warehouse,
-                      2 => l10n.workers,
-                      3 => l10n.harvests,
-                      _ => l10n.farmers,
-                    },
-                    selected: index >= 0 && i == index,
-                    onTap: () => context.go(_tabs[i].route),
+            child: Row(
+              children: [
+                for (var i = 0; i < _tabs.length; i++)
+                  Expanded(
+                    child: _OwnerNavItem(
+                      icon: _tabs[i].icon,
+                      label: switch (i) {
+                        0 => l10n.dashboard,
+                        1 => l10n.warehouse,
+                        2 => l10n.workers,
+                        3 => l10n.harvests,
+                        _ => l10n.farmers,
+                      },
+                      selected: index >= 0 && i == index,
+                      onTap: () => context.go(_tabs[i].route),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

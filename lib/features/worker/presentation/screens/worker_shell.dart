@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../shared/widgets/reference_data_preparation_gate.dart';
 import '../../../shared/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -29,37 +30,40 @@ class WorkerShell extends ConsumerWidget {
     if (location.contains('/harvests')) currentIndex = 2;
     if (location.contains('/farmers')) currentIndex = 3;
 
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (i) {
-          if (i == 0) context.go(AppRoutes.workerDashboard);
-          if (i == 1) {
-            showTopToast(
-              context,
-              l10n.featureWillBeImplementedSoon,
-              AppColors.info,
-              icon: Icons.info_outline_rounded,
-            );
-            return;
-          }
-          if (i == 2 && warehouseId != null) {
-            context.go(AppRoutes.workerHarvestsFor(warehouseId));
-          }
-          if (i == 3) context.go(AppRoutes.workerFarmers);
-        },
-        items: [
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.home_rounded), label: l10n.home),
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.inventory_2_rounded),
-              label: l10n.inventory),
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.grass_rounded), label: l10n.harvest),
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.people_alt_rounded), label: l10n.farmers),
-        ],
+    return ReferenceDataPreparationGate(
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: (i) {
+            if (i == 0) context.go(AppRoutes.workerDashboard);
+            if (i == 1) {
+              showTopToast(
+                context,
+                l10n.featureWillBeImplementedSoon,
+                AppColors.info,
+                icon: Icons.info_outline_rounded,
+              );
+              return;
+            }
+            if (i == 2 && warehouseId != null) {
+              context.go(AppRoutes.workerHarvestsFor(warehouseId));
+            }
+            if (i == 3) context.go(AppRoutes.workerFarmers);
+          },
+          items: [
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.home_rounded), label: l10n.home),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.inventory_2_rounded),
+                label: l10n.inventory),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.grass_rounded), label: l10n.harvest),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.people_alt_rounded),
+                label: l10n.farmers),
+          ],
+        ),
       ),
     );
   }

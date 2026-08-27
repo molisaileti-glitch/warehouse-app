@@ -10,5 +10,15 @@ mixin _$WarehouseDaoMixin on DatabaseAccessor<AppDatabase> {
   $VillagesTableTable get villagesTable => attachedDatabase.villagesTable;
   $AmcosTableTable get amcosTable => attachedDatabase.amcosTable;
   $WarehousesTable get warehouses => attachedDatabase.warehouses;
+  $UsersTable get users => attachedDatabase.users;
+  $InventoryItemsTable get inventoryItems => attachedDatabase.inventoryItems;
+  $StockMovementsTable get stockMovements => attachedDatabase.stockMovements;
+  $AuditLogsTable get auditLogs => attachedDatabase.auditLogs;
+  $CropTableTable get cropTable => attachedDatabase.cropTable;
+  $FarmersTable get farmers => attachedDatabase.farmers;
+  $MeasurementUnitsTable get measurementUnits =>
+      attachedDatabase.measurementUnits;
+  $CropGradesTable get cropGrades => attachedDatabase.cropGrades;
+  $FarmerHarvestsTable get farmerHarvests => attachedDatabase.farmerHarvests;
   $SyncQueueTable get syncQueue => attachedDatabase.syncQueue;
 }

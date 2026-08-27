@@ -453,6 +453,8 @@ class DriftHarvestRepository implements HarvestRepository {
       'cropName': cropName,
       'cropGrade': input.cropGrade?.id,
       'cropGradeName': input.cropGrade?.gradeName,
+      'warehouseId': input.warehouse.id,
+      'warehouseUuid': input.warehouse.uuid,
       'collectionCenter': collectionCenter,
       'collectionCenterName': input.warehouse.name,
       'farmerBags': bags.map((item) {

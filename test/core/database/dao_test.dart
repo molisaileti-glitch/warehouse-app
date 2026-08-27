@@ -236,6 +236,160 @@ void main() {
       expect(village?.name, 'NGULU');
     });
 
+    test('server warehouse id replaces local uuid and keeps references',
+        () async {
+      final localId = newUuid();
+      const serverId = '13';
+
+      await db.warehouseDao.ensureWarehouseReferences(
+        amcosId: 5,
+        amcosName: 'Jkkh',
+        mcu: 2,
+        mcuName: 'ghgjy',
+        villageId: 6004,
+        villageName: 'NGULU',
+      );
+      await db.cropDao.upsertCrops([
+        CropTableCompanion.insert(
+          id: const Value(4),
+          name: 'MAIZE',
+        ),
+      ]);
+      await db.farmerDao.upsertFarmer(
+        FarmersCompanion.insert(
+          id: const Value(100),
+          serverId: const Value(100),
+          firstName: 'John',
+          lastName: 'Msuya',
+          sex: 'MALE',
+          idType: 'NIN',
+          idNumber: '123',
+          dob: '1990-01-01',
+          phoneNumber: '0754000000',
+          mainCrop: 4,
+          secondaryCrop: 4,
+          amcos: 5,
+          mcu: 2,
+          memberType: '',
+          maritalStatus: '',
+          uuid: const Value('farmer-uuid-100'),
+        ),
+      );
+      await db.warehouseDao.insertWarehouse(
+        WarehousesCompanion.insert(
+          uuid: Value(localId),
+          id: localId,
+          name: 'Offline Warehouse',
+          ownerId: Value(ownerId),
+          amcos: const Value(5),
+          village: const Value(6004),
+          synced: const Value(false),
+          syncStatus: const Value('pending'),
+        ),
+      );
+      await db.workerDao.insertUser(
+        UsersCompanion.insert(
+          id: 'worker-1',
+          fullName: 'Worker One',
+          email: 'worker1@example.com',
+          role: const Value('AMCOS_USER'),
+          warehouseId: Value(localId),
+        ),
+      );
+      await db.inventoryDao.insertItem(
+        InventoryItemsCompanion.insert(
+          id: 'item-1',
+          warehouseId: localId,
+          name: 'Maize stock',
+        ),
+      );
+      await db.inventoryDao.recordMovement(
+        movement: StockMovementsCompanion.insert(
+          id: 'movement-1',
+          inventoryItemId: 'item-1',
+          warehouseId: localId,
+          movementType: 'receive',
+          quantity: 10,
+          quantityBefore: 0,
+          recordedById: 'worker-1',
+          relatedWarehouseId: Value(localId),
+        ),
+        newQuantity: 10,
+      );
+      await db.auditLogDao.insertLog(
+        AuditLogsCompanion.insert(
+          id: 'audit-1',
+          userId: ownerId,
+          action: 'warehouse.create',
+          warehouseId: Value(localId),
+        ),
+      );
+      await db.harvestDao.insertHarvestWithBags(
+        harvest: FarmerHarvestsCompanion.insert(
+          uuid: 'harvest-1',
+          farmer: 100,
+          farmerUuid: const Value('farmer-uuid-100'),
+          farmerName: 'John Msuya',
+          farmerPhoneNumber: '0754000000',
+          grossWeight: 82,
+          netWeight: 81,
+          packagingWeight: 1,
+          moistureContent: 1,
+          receiptNumber: 'RCPT-1',
+          crop: 4,
+          cropName: 'MAIZE',
+          warehouseId: localId,
+          collectionCenter: const Value(null),
+          collectionCenterName: 'Offline Warehouse',
+        ),
+        bags: const [],
+      );
+      await db.warehouseDao.insertWarehouse(
+        WarehousesCompanion.insert(
+          uuid: Value(localId),
+          id: serverId,
+          name: 'Duplicate Server Warehouse',
+          ownerId: const Value('2'),
+          amcos: const Value(5),
+          village: const Value(6004),
+          synced: const Value(true),
+          syncStatus: const Value('synced'),
+        ),
+      );
+
+      expect((await db.warehouseDao.getAllWarehouses()).length, 2);
+      expect((await db.warehouseDao.getWarehouseByUuid(localId))?.id, localId);
+
+      await db.warehouseDao.reconcileWarehouseId(
+        localId: localId,
+        serverWarehouse: WarehousesCompanion.insert(
+          uuid: Value(localId),
+          id: serverId,
+          name: 'Offline Warehouse',
+          ownerId: const Value('2'),
+          amcos: const Value(5),
+          village: const Value(6004),
+          synced: const Value(true),
+          syncStatus: const Value('synced'),
+        ),
+      );
+
+      expect(await db.warehouseDao.getWarehouseById(localId), isNull);
+      expect(await db.warehouseDao.getWarehouseById(serverId), isNotNull);
+      expect((await db.warehouseDao.getAllWarehouses()).length, 1);
+      expect(
+          (await db.workerDao.getUserById('worker-1'))?.warehouseId, serverId);
+      expect(
+          (await db.inventoryDao.getItemById('item-1'))?.warehouseId, serverId);
+      final harvest = await db.harvestDao.getHarvestByUuid('harvest-1');
+      expect(harvest?.warehouseId, serverId);
+      expect(harvest?.collectionCenter, int.parse(serverId));
+      final auditLogs = await db.auditLogDao.getLogsPage(
+        warehouseId: serverId,
+      );
+      expect(auditLogs.single.id, 'audit-1');
+    });
+
     test('downloaded AMCOS can insert before full location sync', () async {
       await db.amcosDao.ensureAmcosReferences(
         regionId: 2,
