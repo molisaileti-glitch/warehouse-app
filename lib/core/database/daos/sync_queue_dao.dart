@@ -40,6 +40,11 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   // ── Futures ─────────────────────────────────────────────────────────────
 
   /// Returns up to [limit] pending entries for the next sync batch.
+  ///
+  /// Entries are ordered by entity-type dependency priority so that upstream
+  /// records (e.g. AMCOS, warehouses, farmers) are always pushed before the
+  /// downstream records that reference them (e.g. dependants, harvests).
+  /// Within the same entity type, creation order (createdAt, id) is preserved.
   Future<List<SyncQueueData>> getNextBatch({
     int limit = 50,
     Set<String>? entityTypes,
@@ -53,6 +58,19 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
                     : q.entityType.isIn(entityTypes)),
           )
           ..orderBy([
+            // Priority order: lower number = pushed first.
+            (q) => OrderingTerm.asc(
+              const CustomExpression<int>('''
+                CASE entity_type
+                  WHEN 'amcos'            THEN 1
+                  WHEN 'warehouses'       THEN 2
+                  WHEN 'users'            THEN 3
+                  WHEN 'farmers'          THEN 4
+                  WHEN 'farmerDependants' THEN 5
+                  WHEN 'farmerHarvests'   THEN 6
+                  ELSE                        99
+                END'''),
+            ),
             (q) => OrderingTerm.asc(q.createdAt),
             (q) => OrderingTerm.asc(q.id),
           ])
@@ -122,6 +140,20 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   Future<void> purgeSync() {
     return (delete(syncQueue)..where((q) => q.syncStatus.equals('synced')))
         .go();
+  }
+
+  /// Reset 'conflict' entries back to 'pending' so they are retried on the
+  /// next sync. Called at app startup to recover entries that were wrongly
+  /// moved to conflict by a previous version of the sync logic (which treated
+  /// 400/422 HTTP errors as permanent conflicts instead of retryable failures).
+  Future<void> resetConflictsToPending() {
+    return (update(syncQueue)..where((q) => q.syncStatus.equals('conflict')))
+        .write(
+      const SyncQueueCompanion(
+        syncStatus: Value('pending'),
+        retryCount: Value(0),
+      ),
+    );
   }
 
   /// Clear the entire queue — called on logout.

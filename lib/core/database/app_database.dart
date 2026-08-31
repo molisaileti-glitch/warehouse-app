@@ -121,7 +121,7 @@ class AppDatabase extends _$AppDatabase {
   // ── Schema version ───────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   // ── Migrations ───────────────────────────────────────────────────────────
 
@@ -220,6 +220,25 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(farmers, farmers.serverId);
           await customStatement(
             'UPDATE farmers SET server_id = id WHERE id > 0',
+          );
+        }
+
+        // v11 -> v12: add UUID + serverId + syncStatus to AmcosTable for
+        // offline-first AMCOS creation; add syncStatus to Farmers so the sync
+        // engine can mark them synced after push; add uuid + syncStatus to
+        // FarmerDependants so we can track each dependant's push state.
+        if (from < 12) {
+          await m.addColumn(amcosTable, amcosTable.uuid);
+          await m.addColumn(amcosTable, amcosTable.serverId);
+          await m.addColumn(amcosTable, amcosTable.syncStatus);
+          await m.addColumn(farmers, farmers.syncStatus);
+          await m.addColumn(farmerDependants, farmerDependants.uuid);
+          await m.addColumn(farmerDependants, farmerDependants.syncStatus);
+          // Farmers created offline have a local uuid but no serverId yet —
+          // mark them pending so the sync engine knows to push them.
+          await customStatement(
+            "UPDATE farmers SET sync_status = 'pending' "
+            'WHERE uuid IS NOT NULL AND server_id IS NULL',
           );
         }
       },

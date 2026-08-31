@@ -9,4 +9,5 @@ mixin _$AmcosDaoMixin on DatabaseAccessor<AppDatabase> {
   $WardsTableTable get wardsTable => attachedDatabase.wardsTable;
   $VillagesTableTable get villagesTable => attachedDatabase.villagesTable;
   $AmcosTableTable get amcosTable => attachedDatabase.amcosTable;
+  $SyncQueueTable get syncQueue => attachedDatabase.syncQueue;
 }

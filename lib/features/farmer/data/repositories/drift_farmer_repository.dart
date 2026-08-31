@@ -89,14 +89,19 @@ class DriftFarmerRepository implements FarmerRepository {
         final dependant = dependants[index];
         final dependantUuid = const Uuid().v4();
         final dependantId = _localRowId(dependantUuid);
+        // Stamp the uuid and syncStatus so the sync engine can track this row.
         dependantRows.add(
-          FarmerDependantModel.fromJson({
-            ...dependant.toJson(),
-            'id': dependantId,
-            'farmerId': localId,
-            'createdAt': now.toIso8601String(),
-            'updatedAt': now.toIso8601String(),
-          }).toCompanion(),
+          FarmerDependantModel.fromJson(
+            {
+              ...dependant.toJson(),
+              'id': dependantId,
+              'farmerId': localId,
+              'uuid': dependantUuid,
+              'createdAt': now.toIso8601String(),
+              'updatedAt': now.toIso8601String(),
+            },
+            farmerUuid: uuid,
+          ).toCompanion(),
         );
         queueEntries.add(
           SyncQueueCompanion.insert(
@@ -154,13 +159,18 @@ class DriftFarmerRepository implements FarmerRepository {
 
       final uuid = const Uuid().v4();
       final now = DateTime.now();
-      final model = FarmerDependantModel.fromJson({
-        ...dependant.toJson(),
-        'id': _localRowId(uuid),
-        'farmerId': farmerId,
-        'createdAt': now.toIso8601String(),
-        'updatedAt': now.toIso8601String(),
-      });
+      // Stamp the uuid and syncStatus='pending' on the local row.
+      final model = FarmerDependantModel.fromJson(
+        {
+          ...dependant.toJson(),
+          'id': _localRowId(uuid),
+          'farmerId': farmerId,
+          'uuid': uuid,
+          'createdAt': now.toIso8601String(),
+          'updatedAt': now.toIso8601String(),
+        },
+        farmerUuid: farmerUuid,
+      );
       await _dao.insertPendingDependant(
         dependant: model.toCompanion(),
         queueEntry: SyncQueueCompanion.insert(
@@ -199,6 +209,61 @@ class DriftFarmerRepository implements FarmerRepository {
         uuidOverride: uuid,
       ),
     );
+  }
+
+  /// Pulls all dependants for the given [farmers] from the server and saves
+  /// them locally. Called after a farmer pull to ensure dependants are
+  /// restored after a storage clear or fresh install.
+  ///
+  /// Skips farmers with no [Farmer.serverId] — they haven't been pushed yet
+  /// and their dependants are still sitting in the local sync queue.
+  @override
+  Future<int> pullDependantsForFarmers(List<Farmer> farmers) async {
+    var count = 0;
+    for (final farmer in farmers) {
+      final serverId = farmer.serverId;
+      if (serverId == null || serverId <= 0) continue; // not synced yet
+      try {
+        final response = await _dio.get('/farmer-dependants/$serverId');
+        final rows = _asList(response.data);
+        for (final row in rows) {
+          final model = FarmerDependantModel.fromJson(
+            row,
+            fallbackFarmerId: farmer.id,
+            farmerUuid: farmer.uuid,
+          );
+          // Dependants pulled from server are already synced — upsert preserves
+          // any locally-created rows that may already exist.
+          await _dao.upsertDependant(
+            FarmerDependantsCompanion(
+              id: Value(model.id),
+              farmerId: Value(farmer.id), // use local FK, not server FK
+              uuid: Value(model.uuid),
+              syncStatus: const Value('synced'),
+              firstName: Value(model.firstName),
+              middleName: Value(model.middleName),
+              lastName: Value(model.lastName),
+              relationship: Value(model.relationship),
+              dob: Value(model.dob),
+              gender: Value(model.gender),
+              phoneNumber: Value(model.phoneNumber),
+              address: Value(model.address),
+              email: Value(model.email),
+              createdAt: Value(model.createdAt),
+              updatedAt: Value(model.updatedAt),
+            ),
+          );
+          count++;
+        }
+      } on DioException {
+        // Offline or endpoint not found — dependants are already in local DB.
+      }
+    }
+    developer.log(
+      '[FarmerSync] pulled dependants=$count for farmers=${farmers.length}',
+      name: 'sync.farmer',
+    );
+    return count;
   }
 
   int _localRowId(String uuid) {

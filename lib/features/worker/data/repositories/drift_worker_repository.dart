@@ -55,12 +55,16 @@ class DriftWorkerRepository implements WorkerRepository {
         .where((row) => _isWorkerRole(_string(row['role'])))
         .toList();
 
+    var assignedCount = 0;
+
     for (final row in rows) {
       final serverId = _string(row['id']);
       final email = _string(row['email']);
       if (serverId.isEmpty || email.isEmpty) continue;
 
       final existing = await _dao.getUserByEmail(email);
+      final amcosId = _nullableInt(row['amcos']) ??
+          _nullableInt(_assignmentId(row['amcos']));
       final serverWarehouseId = _assignmentId(
         row['warehouseId'] ??
             row['warehouse_id'] ??
@@ -71,6 +75,12 @@ class DriftWorkerRepository implements WorkerRepository {
       );
       final localActiveWarehouseId =
           existing?.id == _currentUserId ? existing?.warehouseId : null;
+      final resolvedWarehouseId = localActiveWarehouseId ??
+          serverWarehouseId ??
+          existing?.warehouseId;
+      if (serverWarehouseId != null && serverWarehouseId.isNotEmpty) {
+        assignedCount++;
+      }
       if (existing != null && existing.id != serverId) {
         await _dao.deleteUserById(existing.id);
       }
@@ -83,15 +93,8 @@ class DriftWorkerRepository implements WorkerRepository {
           phoneNumber: Value(_string(row['phoneNumber'])),
           role: Value(_string(row['role'], fallback: 'USER')),
           mcu: Value(_nullableInt(row['mcu']) ?? mcuId),
-          amcos: Value(
-            _nullableInt(row['amcos']) ??
-                _nullableInt(_assignmentId(row['amcos'])),
-          ),
-          warehouseId: Value(
-            localActiveWarehouseId ??
-                serverWarehouseId ??
-                existing?.warehouseId,
-          ),
+          amcos: Value(amcosId),
+          warehouseId: Value(resolvedWarehouseId),
           isActive: Value(
             _string(row['status'], fallback: 'ACTIVE').toUpperCase() ==
                 'ACTIVE',
@@ -104,7 +107,7 @@ class DriftWorkerRepository implements WorkerRepository {
 
     developer.log(
       '[WorkerSync] pull requestedMcu=$mcuId workers=${rows.length} '
-      'assigned=${rows.where((row) => _assignmentId(row['warehouseId'] ?? row['warehouse_id'] ?? row['collectionCenterId'] ?? row['collection_center_id'] ?? row['collectionCenter'] ?? row['warehouse']) != null).length}',
+      'assigned=$assignedCount',
       name: 'sync.worker',
     );
     return rows.length;
@@ -113,6 +116,7 @@ class DriftWorkerRepository implements WorkerRepository {
   @override
   Future<WorkerCreateResult> createWorker(WorkerModel worker) async {
     final id = newUuid();
+    final payload = worker.toJson()..['uuid'] = id;
 
     final user = UsersCompanion.insert(
       id: id,
@@ -134,7 +138,7 @@ class DriftWorkerRepository implements WorkerRepository {
         entityType: 'users',
         entityId: id,
         operation: 'create',
-        payload: jsonEncode(worker.toJson()),
+        payload: jsonEncode(payload),
       ),
     );
 

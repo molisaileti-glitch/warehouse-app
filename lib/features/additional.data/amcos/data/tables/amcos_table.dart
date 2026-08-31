@@ -30,6 +30,19 @@ import 'package:warehouse_app/features/additional.data/location/data/tables/loca
 @DataClassName('Amcos')
 class AmcosTable extends Table {
   IntColumn get id => integer()();
+  // UUID generated locally at creation time; populated from server on pull.
+  // Null for AMCOS that were pulled before the backend added the uuid field.
+  TextColumn get uuid => text().nullable()();
+  // The real server-assigned integer ID. Null until the AMCOS is successfully
+  // pushed (i.e. when id is a local negative placeholder). For AMCOS that were
+  // pulled from the server, id == serverId, so serverId is left null and the
+  // resolution logic checks id > 0 first.
+  IntColumn get serverId => integer().nullable()();
+  // 'pending'  — created locally, not yet pushed
+  // 'synced'   — confirmed on the server
+  // 'conflict' — push was rejected by the server
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('synced'))();
   TextColumn get name => text()();
   TextColumn get memberCategory => text()();
   TextColumn get registrationNumber => text()();

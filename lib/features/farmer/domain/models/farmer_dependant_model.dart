@@ -43,6 +43,10 @@ class FarmerDependantInput {
 class FarmerDependantModel {
   final int id;
   final int farmerId;
+  final String? farmerUuid;
+  /// UUID generated at creation time — mirrors the sync_queue entityId.
+  /// Null for dependants pulled from the server before a uuid was assigned.
+  final String? uuid;
   final String firstName;
   final String? middleName;
   final String lastName;
@@ -54,10 +58,14 @@ class FarmerDependantModel {
   final String? email;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  /// 'pending' | 'synced' — matches the schema column added in v12.
+  final String syncStatus;
 
   const FarmerDependantModel({
     required this.id,
     required this.farmerId,
+    this.farmerUuid,
+    this.uuid,
     required this.firstName,
     this.middleName,
     required this.lastName,
@@ -69,15 +77,19 @@ class FarmerDependantModel {
     this.email,
     this.createdAt,
     this.updatedAt,
+    this.syncStatus = 'synced',
   });
 
   factory FarmerDependantModel.fromJson(
     Map<String, dynamic> json, {
     int? fallbackFarmerId,
+    String? farmerUuid,
   }) {
     return FarmerDependantModel(
       id: _int(json['id']),
       farmerId: _int(json['farmerId'] ?? fallbackFarmerId),
+      farmerUuid: farmerUuid ?? _nullableString(json['farmerUuid']),
+      uuid: _nullableString(json['uuid']),
       firstName: _string(json['firstName']),
       middleName: _nullableString(json['middleName']),
       lastName: _string(json['lastName']),
@@ -89,6 +101,7 @@ class FarmerDependantModel {
       email: _nullableString(json['email']),
       createdAt: _date(json['createdAt']),
       updatedAt: _date(json['updatedAt']),
+      syncStatus: 'synced', // pulled from server
     );
   }
 
@@ -96,6 +109,8 @@ class FarmerDependantModel {
     return FarmerDependantsCompanion.insert(
       id: Value(id),
       farmerId: farmerId,
+      uuid: Value(uuid),
+      syncStatus: Value(syncStatus),
       firstName: firstName,
       middleName: Value(middleName),
       lastName: lastName,

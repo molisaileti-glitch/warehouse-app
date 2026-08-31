@@ -40,6 +40,11 @@ class Farmers extends Table {
   RealColumn get noOfShares => real().nullable()();
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
+  // 'pending'  — created locally, not yet pushed to server
+  // 'synced'   — confirmed on the server
+  // 'conflict' — push was rejected by the server
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('synced'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -60,6 +65,13 @@ class FarmerDependants extends Table {
   TextColumn get email => text().nullable()();
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
+  // UUID generated at creation time, mirrors the sync_queue entityId so we
+  // can mark this row as synced after a successful push.
+  TextColumn get uuid => text().nullable()();
+  // 'pending'  — created locally, not yet pushed
+  // 'synced'   — confirmed on the server
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('synced'))();
 
   @override
   Set<Column> get primaryKey => {id};

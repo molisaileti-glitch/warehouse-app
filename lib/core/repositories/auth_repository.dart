@@ -46,7 +46,7 @@ class AuthRepository {
 
   // ── Create worker (owner adds workers from inside the app) ────────────────
   //
-  // POST /auth/signup
+  // POST /users
   // Called from the Add Worker screen inside the owner shell.
   //
   // Field mapping:
@@ -65,9 +65,11 @@ class AuthRepository {
     required String password,
     required int mcu,
     required int amcos,
+    int? collectionCenterId,
+    String? uuid,
   }) async {
     try {
-      final res = await _dio.post('/auth/signup', data: {
+      final res = await _dio.post('/users', data: {
         'fullName': fullName,
         'email': email,
         'phoneNumber': phoneNumber,
@@ -75,6 +77,9 @@ class AuthRepository {
         'role': 'AMCOS_USER',
         'mcu': mcu,
         'amcos': amcos,
+        if (collectionCenterId != null)
+          'collectionCenterId': collectionCenterId,
+        if (uuid != null) 'uuid': uuid,
       });
 
       final data = res.data as Map<String, dynamic>;

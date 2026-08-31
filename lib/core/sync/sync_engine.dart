@@ -22,6 +22,7 @@ const _maxRetries = 5;
 const _batchSize = 30;
 const _lastSyncKey = 'last_sync_timestamp';
 const _syncableEntityTypes = <String>{
+  'amcos',
   'warehouses',
   'users',
   'farmers',
@@ -37,6 +38,7 @@ class SyncManager {
   final AuditLogDao _auditDao;
   final HarvestDao _harvestDao;
   final FarmerDao _farmerDao;
+  final AmcosDao _amcosDao;
   final SyncRoleStrategy _roleStrategy;
   final Future<int> Function() _currentMcuId;
 
@@ -48,6 +50,7 @@ class SyncManager {
     required AuditLogDao auditDao,
     required HarvestDao harvestDao,
     required FarmerDao farmerDao,
+    required AmcosDao amcosDao,
     required SyncRoleStrategy roleStrategy,
     required Future<int> Function() currentMcuId,
   })  : _dio = dio,
@@ -57,13 +60,19 @@ class SyncManager {
         _auditDao = auditDao,
         _harvestDao = harvestDao,
         _farmerDao = farmerDao,
+        _amcosDao = amcosDao,
         _roleStrategy = roleStrategy,
         _currentMcuId = currentMcuId;
+        
 
   Future<SyncResult> sync() async {
     var pushed = 0;
     var pulled = 0;
     final errors = <String>[];
+
+    // Recover any entries that were wrongly stuck in 'conflict' by a prior
+    // version of the sync logic that treated 400/422 as permanent conflicts.
+    await _syncDao.resetConflictsToPending();
 
     try {
       pushed = await _push();
@@ -114,9 +123,10 @@ class SyncManager {
         if (status == 409) {
           await _syncDao.markConflict(entry.id);
           await _markEntityConflict(entry.entityType, entry.entityId);
-        } else if (status == 400 || status == 422) {
-          await _syncDao.markConflict(entry.id);
         } else {
+          // 400/422 are validation errors — the payload may be fixable on the
+          // next sync (e.g. a parent reference that wasn't synced yet).
+          // Treat them as retryable failures, not permanent conflicts.
           await _syncDao.recordFailureWithCount(entry.id, entry.retryCount + 1);
         }
       } catch (e, stackTrace) {
@@ -135,17 +145,34 @@ class SyncManager {
 
   Future<void> _pushEntry(SyncQueueData entry) async {
     final payload = jsonDecode(entry.payload) as Map<String, dynamic>;
+    if (entry.entityType == 'amcos' && entry.operation == 'create') {
+      final response = await _dio.post('/amcos', data: payload);
+      await _applyAmcosCreateResponse(
+        uuid: entry.entityId,
+        responseData: response.data,
+      );
+      return;
+    }
     if (entry.entityType == 'farmerDependants' && entry.operation == 'create') {
       await _pushFarmerDependant(payload);
       return;
     }
     if (entry.entityType == 'warehouses' && entry.operation != 'delete') {
       payload['mcu'] = await _currentMcuId();
+      await _resolveAmcosReference(payload);
+    }
+    if (entry.entityType == 'farmers' && entry.operation != 'delete') {
+      await _resolveAmcosReference(payload);
     }
     if (entry.entityType == 'users' && entry.operation != 'delete') {
+      payload['uuid'] ??= entry.entityId;
+      await _resolveAmcosReference(payload);
       await _resolveUserWarehouse(payload);
+      payload.remove('amcosId');
+      payload.remove('amcos_id');
     }
     if (entry.entityType == 'farmerHarvests' && entry.operation != 'delete') {
+      await _resolveAmcosReference(payload);
       await _resolveHarvestWarehouse(payload, entry.entityId);
       await _resolveHarvestFarmer(payload);
       _normalizeHarvestBagTags(payload);
@@ -192,11 +219,27 @@ class SyncManager {
             uuid: entry.entityId,
             responseData: response.data,
           );
+        } else if (entry.entityType == 'users') {
+          _logUserSyncResponse(
+            operation: 'create',
+            payload: payload,
+            responseData: response.data,
+          );
         }
+        break;
       case 'update':
-        await _dio.patch(path, data: payload);
+        final response = await _dio.patch(path, data: payload);
+        if (entry.entityType == 'users') {
+          _logUserSyncResponse(
+            operation: 'update',
+            payload: payload,
+            responseData: response.data,
+          );
+        }
+        break;
       case 'delete':
         await _dio.delete(path);
+        break;
     }
   }
 
@@ -207,9 +250,51 @@ class SyncManager {
   }) async {
     final status = error.response?.statusCode;
     final message = error.response?.data?.toString().toLowerCase() ?? '';
+
+    // Case 1: UUID duplicate — server says "Farmer with uuid X already exist".
+    // Fetch the existing farmer by UUID and mark it synced locally.
+    if (status == 400 && message.contains('uuid') && message.contains('already exist')) {
+      try {
+        final amcosId = _int(payload['amcos']);
+        if (amcosId == null || amcosId <= 0) return false;
+        final response = await _dio.get('/farmers/amcos/$amcosId');
+        final rows = _asList(response.data);
+        final matched = rows
+            .cast<Map<String, dynamic>?>()
+            .firstWhere((r) => r?['uuid']?.toString() == uuid, orElse: () => null);
+        if (matched == null) return false;
+        matched['uuid'] ??= uuid;
+        final model = FarmerModel.fromJson(matched);
+        if (model.id <= 0) return false;
+        final local = await _farmerDao.getFarmerByUuid(uuid);
+        // Resolve server AMCOS ID to local ID before upsert.
+        final serverAmcosId = _int(matched['amcos']);
+        if (serverAmcosId != null && serverAmcosId > 0) {
+          final localAmcos = await _amcosDao.getAmcosByServerId(serverAmcosId);
+          if (localAmcos != null && localAmcos.id != serverAmcosId) {
+            matched['amcos'] = localAmcos.id;
+          }
+        }
+        await _farmerDao.upsertFarmer(
+          model.toCompanion(
+            localId: local?.id ?? model.id,
+            serverId: model.id,
+            uuidOverride: uuid,
+          ),
+        );
+        developer.log(
+          '[FarmerSync] UUID duplicate resolved uuid=$uuid serverId=${model.id}',
+          name: 'sync.farmer',
+        );
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    // Case 2: AMCOS member ID duplicate — server says "amcos member id exists".
     final amcosId = _int(payload['amcos']);
     final amcosMemberId = payload['amcosMemberID']?.toString().trim();
-
     if (status != 400 ||
         amcosId == null ||
         amcosMemberId == null ||
@@ -248,12 +333,40 @@ class SyncManager {
     return true;
   }
 
+  Future<void> _applyAmcosCreateResponse({
+    required String uuid,
+    required Object? responseData,
+  }) async {
+    final data = _asMap(responseData);
+    final serverId = _int(data['id']);
+    if (serverId == null || serverId <= 0) {
+      throw StateError('AMCOS create response has no server ID.');
+    }
+    await _amcosDao.markAmcosSynced(uuid, serverId: serverId);
+    developer.log(
+      '[AmcosSync] create uuid=$uuid serverId=$serverId',
+      name: 'sync.amcos',
+    );
+  }
+
   Future<void> _applyFarmerCreateResponse({
     required String uuid,
     required Object? responseData,
   }) async {
     final data = _asMap(responseData);
     data['uuid'] ??= uuid;
+
+    // The server returns the AMCOS by its server ID (e.g. amcos=9).
+    // Locally, an offline-created AMCOS lives under a negative id.
+    // Replace the server AMCOS id with the local id to satisfy FK constraints.
+    final serverAmcosId = _int(data['amcos']);
+    if (serverAmcosId != null && serverAmcosId > 0) {
+      final localAmcos = await _amcosDao.getAmcosByServerId(serverAmcosId);
+      if (localAmcos != null && localAmcos.id != serverAmcosId) {
+        data['amcos'] = localAmcos.id; // use negative local id
+      }
+    }
+
     final model = FarmerModel.fromJson(data);
     if (model.id <= 0) {
       throw StateError('Farmer create response has no server ID.');
@@ -314,14 +427,45 @@ class SyncManager {
     );
   }
 
+  /// Resolves the AMCOS reference in a push payload.
+  ///
+  /// Warehouses and farmers store the local AMCOS integer ID in their payload.
+  /// If that ID is negative, the AMCOS was created offline and we must replace
+  /// it with the real server ID before pushing.
+  Future<int?> _resolveAmcosReference(Map<String, dynamic> payload) async {
+    final rawAmcos =
+        payload['amcos'] ?? payload['amcosId'] ?? payload['amcos_id'];
+    final amcosId = _int(rawAmcos);
+    if (amcosId == null || amcosId == 0) return null;
+
+    // Negative ID → locally-created AMCOS. Look it up by local integer ID.
+    final amcos = await _amcosDao.getAmcosById(amcosId);
+    final serverId =
+        amcosId < 0 ? amcos?.serverId : amcos?.serverId ?? amcosId;
+    if (serverId == null || serverId <= 0) {
+      throw StateError('AMCOS (id=$amcosId) has not been synced yet.');
+    }
+    payload['amcos'] = serverId;
+    if (payload.containsKey('amcosId')) payload['amcosId'] = serverId;
+    if (payload.containsKey('amcos_id')) payload['amcos_id'] = serverId;
+    final amcosName = amcos?.name;
+    if (amcosName != null) payload['amcosName'] = amcosName;
+    // Some endpoints (e.g. collection-centers) also require the AMCOS UUID.
+    final amcosUuid = amcos?.uuid;
+    if (amcosUuid != null) payload['amcosUuid'] = amcosUuid;
+    return serverId;
+  }
+
   Future<void> _pushFarmerDependant(Map<String, dynamic> payload) async {
     final farmerUuid = payload.remove('farmerUuid')?.toString();
     if (farmerUuid == null || farmerUuid.isEmpty) {
       throw StateError('Dependant has no farmer UUID.');
     }
-    final serverId = await _farmerServerId(farmerUuid);
+    // The endpoint path param is the farmer UUID (not the integer server ID).
+    // Ensure the farmer is synced so the server can resolve the UUID.
+    await _farmerServerId(farmerUuid); // throws if farmer not synced yet
     payload.remove('uuid');
-    await _dio.post('/farmer-dependants/$serverId', data: [payload]);
+    await _dio.post('/farmer-dependants/$farmerUuid', data: [payload]);
   }
 
   Future<void> _resolveHarvestFarmer(Map<String, dynamic> payload) async {
@@ -344,10 +488,9 @@ class SyncManager {
     if (rawId == null) return;
 
     final directServerId = int.tryParse(rawId);
-    if (directServerId != null) {
-      payload['warehouseId'] = rawId;
+    if (directServerId != null && directServerId > 0) {
       payload['collectionCenterId'] = directServerId;
-      payload['collectionCenter'] = directServerId;
+      _removeUserWarehouseAliases(payload);
       return;
     }
 
@@ -357,9 +500,17 @@ class SyncManager {
       throw StateError('Worker warehouse $rawId has not synced yet.');
     }
 
-    payload['warehouseId'] = warehouse.id;
     payload['collectionCenterId'] = serverId;
-    payload['collectionCenter'] = serverId;
+    _removeUserWarehouseAliases(payload);
+    payload['collectionCenterName'] = warehouse.name;
+  }
+
+  void _removeUserWarehouseAliases(Map<String, dynamic> payload) {
+    payload.remove('warehouseId');
+    payload.remove('warehouse_id');
+    payload.remove('warehouse');
+    payload.remove('collectionCenter');
+    payload.remove('collection_center_id');
   }
 
   Future<void> _resolveHarvestWarehouse(
@@ -367,8 +518,9 @@ class SyncManager {
     String harvestUuid,
   ) async {
     final currentCollectionCenter = _int(payload['collectionCenter']);
-    if (currentCollectionCenter != null) {
+    if (currentCollectionCenter != null && currentCollectionCenter > 0) {
       payload['collectionCenter'] = currentCollectionCenter;
+      payload['collectionCenterId'] = currentCollectionCenter;
       return;
     }
 
@@ -435,6 +587,37 @@ class SyncManager {
     return <String, dynamic>{};
   }
 
+  void _logUserSyncResponse({
+    required String operation,
+    required Map<String, dynamic> payload,
+    required Object? responseData,
+  }) {
+    developer.log(
+      '[WorkerSync] $operation payload=${_redactForLog(payload)} '
+      'response=${_redactForLog(responseData)}',
+      name: 'sync.worker',
+    );
+  }
+
+  Object? _redactForLog(Object? value) {
+    if (value is Map) {
+      return value.map((key, item) {
+        final textKey = key.toString();
+        final normalized = textKey.toLowerCase();
+        final shouldRedact = normalized.contains('password') ||
+            normalized.contains('token');
+        return MapEntry(
+          textKey,
+          shouldRedact ? '<redacted>' : _redactForLog(item),
+        );
+      });
+    }
+    if (value is List) {
+      return value.map(_redactForLog).toList();
+    }
+    return value;
+  }
+
   List<Map<String, dynamic>> _asList(Object? value) {
     final raw = value is Map<String, dynamic>
         ? value['content'] ??
@@ -456,18 +639,34 @@ class SyncManager {
 
   Future<void> _markEntitySynced(String entityType, String entityId) async {
     switch (entityType) {
+      case 'amcos':
+        // serverId is already written by _applyAmcosCreateResponse.
+        // No extra action needed here.
+        break;
       case 'warehouses':
         await _warehouseDao.markWarehouseSynced(entityId);
+        break;
+      case 'farmers':
+        await _farmerDao.markFarmerSynced(entityId);
+        break;
+      case 'farmerDependants':
+        await _farmerDao.markDependantSynced(entityId);
+        break;
       case 'inventoryItems':
         await _inventoryDao.markItemSynced(entityId);
+        break;
       case 'stockMovements':
         await _inventoryDao.markMovementSynced(entityId);
+        break;
       case 'auditLogs':
         await _auditDao.markLogSynced(entityId);
+        break;
       case 'farmerHarvests':
         await _harvestDao.markHarvestSynced(entityId);
+        break;
       case 'users':
         await _roleStrategy.markUserSynced(entityId);
+        break;
     }
   }
 
@@ -475,12 +674,16 @@ class SyncManager {
     switch (entityType) {
       case 'warehouses':
         await _warehouseDao.markWarehouseConflict(entityId);
+        break;
       case 'inventoryItems':
         await _inventoryDao.markItemConflict(entityId);
+        break;
       case 'farmerHarvests':
         await _harvestDao.markHarvestConflict(entityId);
+        break;
       case 'users':
         await _roleStrategy.markUserConflict(entityId);
+        break;
     }
   }
 
@@ -510,14 +713,16 @@ class SyncManager {
   }
 
   String _entityCollectionPath(String type) {
-    if (type == 'users') return '/auth/signup';
+    if (type == 'users') return '/users';
     if (type == 'warehouses') return '/collection-centers';
+    if (type == 'amcos') return '/amcos';
     if (type == 'farmers') return '/farmers';
     if (type == 'farmerHarvests') return '/farmer-harvests';
     return '/${_typeToPath(type)}/';
   }
 
   String _typeToPath(String type) => switch (type) {
+        'amcos' => 'amcos',
         'warehouses' => 'collection-centers',
         'users' => 'users',
         'inventoryItems' => 'inventory',
@@ -562,6 +767,10 @@ class OwnerSyncStrategy implements SyncRoleStrategy {
         .pullByIds(amcosIds, since: since);
     count +=
         await _ref.read(farmerRepoProvider).pullFromServer(amcosIds: amcosIds);
+    // Fix G: pull dependants for every synced farmer.
+    final allFarmers = await _ref.read(farmerDaoProvider).getAllFarmers();
+    count +=
+        await _ref.read(farmerRepoProvider).pullDependantsForFarmers(allFarmers);
     count += await _ref
         .read(harvestRepositoryProvider)
         .pullFromServer(amcosIds: amcosIds);
@@ -648,6 +857,10 @@ class WorkerSyncStrategy implements SyncRoleStrategy {
 
     count +=
         await _ref.read(farmerRepoProvider).pullFromServer(amcosIds: amcosIds);
+    // Fix G: pull dependants for every synced farmer.
+    final allFarmers = await _ref.read(farmerDaoProvider).getAllFarmers();
+    count +=
+        await _ref.read(farmerRepoProvider).pullDependantsForFarmers(allFarmers);
     count += await _ref
         .read(harvestRepositoryProvider)
         .pullFromCollectionCenter(collectionCenterId: collectionCenterId);
@@ -712,6 +925,7 @@ final syncManagerProvider = Provider<SyncManager>((ref) {
     auditDao: ref.watch(auditLogDaoProvider),
     harvestDao: ref.watch(harvestDaoProvider),
     farmerDao: ref.watch(farmerDaoProvider),
+    amcosDao: ref.watch(amcosDaoProvider),
     roleStrategy: strategy,
     currentMcuId: () => _requireCurrentUserMcu(ref),
   );

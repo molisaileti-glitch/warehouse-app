@@ -31,7 +31,6 @@ class WorkerModel {
       'amcos': amcos,
       if (warehouseId != null) 'warehouseId': warehouseId,
       if (collectionCenter != null) 'collectionCenterId': collectionCenter,
-      if (collectionCenter != null) 'collectionCenter': collectionCenter,
     };
   }
 }

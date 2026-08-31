@@ -34,8 +34,31 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
         .getSingleOrNull();
   }
 
+  Future<List<Farmer>> getAllFarmers() {
+    return (select(farmers)
+          ..orderBy([
+            (f) => OrderingTerm.asc(f.lastName),
+            (f) => OrderingTerm.asc(f.firstName),
+          ]))
+        .get();
+  }
+
   Future<void> upsertFarmer(Insertable<Farmer> entry) {
     return into(farmers).insertOnConflictUpdate(entry);
+  }
+
+  /// Marks a locally-created farmer as synced after a successful push.
+  Future<void> markFarmerSynced(String uuid) {
+    return (update(farmers)..where((f) => f.uuid.equals(uuid))).write(
+      const FarmersCompanion(syncStatus: Value('synced')),
+    );
+  }
+
+  /// Marks a dependant as synced by matching its uuid column.
+  Future<void> markDependantSynced(String uuid) {
+    return (update(farmerDependants)
+          ..where((d) => d.uuid.equals(uuid)))
+        .write(const FarmerDependantsCompanion(syncStatus: Value('synced')));
   }
 
   Future<void> insertPendingFarmer({

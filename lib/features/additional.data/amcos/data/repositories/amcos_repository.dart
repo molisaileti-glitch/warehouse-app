@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
+import 'package:warehouse_app/core/utils/uuid_helper.dart';
 
 class AmcosRepository {
   final Dio _dio;
@@ -13,16 +15,26 @@ class AmcosRepository {
   })  : _dio = dio,
         _dao = dao;
 
+  /// Creates an AMCOS locally and enqueues it for server sync.
+  ///
+  /// A UUID and a temporary negative local ID are assigned immediately so the
+  /// record is usable offline. The real server integer ID is written back into
+  /// [Amcos.serverId] once the sync engine successfully pushes the record.
   Future<AmcosCreateResult> create({
     required String name,
     required String memberCategory,
     required String registrationNumber,
     required String tinNumber,
     required int mcuId,
+    required String mcuName,
     required int regionId,
+    required String regionName,
     required int districtId,
+    required String districtName,
     required int wardId,
+    required String wardName,
     required int villageId,
+    required String villageName,
     required String phoneNumber,
     required String email,
     required String contactPersonName,
@@ -33,7 +45,10 @@ class AmcosRepository {
     required int cropId,
   }) async {
     try {
-      final response = await _dio.post('/amcos', data: {
+      final uuid = newUuid();
+      final localId = _localRowId(uuid);
+      final payload = {
+        'uuid': uuid,
         'name': name,
         'memberCategory': memberCategory,
         'registrationNumber': registrationNumber,
@@ -52,18 +67,51 @@ class AmcosRepository {
         'website': website,
         'crops': [cropId],
         'idCounter': 0,
-      });
+      };
 
-      final data = response.data;
-      if (data is! Map<String, dynamic> || _int(data['id']) <= 0) {
-        return AmcosCreateResult.failure('Invalid AMCOS response');
-      }
+      final companion = AmcosTableCompanion.insert(
+        id: Value(localId),
+        uuid: Value(uuid),
+        syncStatus: const Value('pending'),
+        name: name,
+        memberCategory: memberCategory,
+        registrationNumber: registrationNumber,
+        tinNumber: tinNumber,
+        mcu: mcuId,
+        mcuName: mcuName,
+        region: regionId,
+        regionName: regionName,
+        district: districtId,
+        districtName: districtName,
+        ward: wardId,
+        wardName: wardName,
+        village: villageId,
+        villageName: villageName,
+        phoneNumber: phoneNumber,
+        email: email,
+        contactPersonName: contactPersonName,
+        contactPersonPhoneNumber: contactPersonPhoneNumber,
+        contactPersonEmail: contactPersonEmail,
+        contactPersonTitle: contactPersonTitle,
+        website: website,
+        status: 'ACTIVE',
+        crops: cropId.toString(),
+        idCounter: 0,
+      );
 
-      await _ensureReferences(data);
-      await _dao.upsertAmcos(_fromJson(data));
-      return AmcosCreateResult.success(amcosId: _int(data['id']));
-    } on DioException catch (error) {
-      return AmcosCreateResult.failure(_dioMessage(error));
+      final queueEntry = SyncQueueCompanion.insert(
+        entityType: 'amcos',
+        entityId: uuid,
+        operation: 'create',
+        payload: jsonEncode(payload),
+      );
+
+      await _dao.insertPendingAmcos(amcos: companion, queueEntry: queueEntry);
+      developer.log(
+        '[AmcosSync] queued locally uuid=$uuid localId=$localId',
+        name: 'sync.amcos',
+      );
+      return AmcosCreateResult.success(amcosId: localId);
     } catch (error) {
       return AmcosCreateResult.failure(error.toString());
     }
@@ -132,7 +180,9 @@ class AmcosRepository {
 
   AmcosTableCompanion _fromJson(Map<String, dynamic> json) {
     return AmcosTableCompanion.insert(
-      id: Value((json['id'])),
+      id: Value(_int(json['id'])),
+      uuid: Value(_nullableString(json['uuid'])),
+      syncStatus: const Value('synced'), // server-pulled rows are already synced
       name: _string(json['name']),
       memberCategory:
           _string(json['memberCategory'] ?? json['member_category']),
@@ -196,6 +246,19 @@ class AmcosRepository {
   }
 
   String _string(Object? value) => value?.toString() ?? '';
+
+  String? _nullableString(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  /// Derives a stable negative integer local ID from a UUID.
+  /// Same approach as [DriftFarmerRepository._localRowId].
+  int _localRowId(String uuid) {
+    final compact = uuid.replaceAll('-', '');
+    final value = int.parse(compact.substring(0, 15), radix: 16);
+    return value == 0 ? -1 : -value;
+  }
 
   String _dioMessage(DioException error) {
     final data = error.response?.data;

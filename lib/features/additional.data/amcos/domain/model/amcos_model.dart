@@ -190,6 +190,12 @@
 
 class AmcosModel {
   final int id;
+  /// UUID generated locally at creation time (or received from server on pull).
+  /// Null for AMCOS that were pulled before the backend added the uuid field.
+  final String? uuid;
+  /// Real server-assigned integer ID. Null for server-pulled rows (where id ==
+  /// server id already) and null until an offline-created row is pushed.
+  final int? serverId;
   final String name;
   final String memberCategory;
   final String registrationNumber;
@@ -217,6 +223,8 @@ class AmcosModel {
 
   AmcosModel({
     required this.id,
+    this.uuid,
+    this.serverId,
     required this.name,
     required this.memberCategory,
     required this.registrationNumber,
@@ -240,13 +248,13 @@ class AmcosModel {
     required this.website,
     required this.status,
     required this.crops,
-    required this.idCounter
+    required this.idCounter,
   });
 
-
-factory AmcosModel.fromJsonToModelObject(Map<String, dynamic> json) {
+  factory AmcosModel.fromJsonToModelObject(Map<String, dynamic> json) {
     return AmcosModel(
       id: json['id'] as int,
+      uuid: _nullableString(json['uuid']),
       name: json['name'] as String,
       memberCategory: json['memberCategory'] as String,
       registrationNumber: json['registrationNumber'] as String,
@@ -270,7 +278,12 @@ factory AmcosModel.fromJsonToModelObject(Map<String, dynamic> json) {
       website: json['website'] as String,
       status: json['status'] as String,
       crops: json['crops'] as String,
-      idCounter: json['idCounter'] as int
+      idCounter: json['idCounter'] as int,
     );
+  }
+
+  static String? _nullableString(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

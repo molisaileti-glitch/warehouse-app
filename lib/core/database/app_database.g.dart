@@ -1714,6 +1714,25 @@ class $AmcosTableTable extends AmcosTable
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _serverIdMeta =
+      const VerificationMeta('serverId');
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+      'server_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('synced'));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -1866,6 +1885,9 @@ class $AmcosTableTable extends AmcosTable
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        uuid,
+        serverId,
+        syncStatus,
         name,
         memberCategory,
         registrationNumber,
@@ -1903,6 +1925,20 @@ class $AmcosTableTable extends AmcosTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(_serverIdMeta,
+          serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta));
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -2080,6 +2116,12 @@ class $AmcosTableTable extends AmcosTable
     return Amcos(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid']),
+      serverId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}server_id']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       memberCategory: attachedDatabase.typeMapping.read(
@@ -2140,6 +2182,9 @@ class $AmcosTableTable extends AmcosTable
 
 class Amcos extends DataClass implements Insertable<Amcos> {
   final int id;
+  final String? uuid;
+  final int? serverId;
+  final String syncStatus;
   final String name;
   final String memberCategory;
   final String registrationNumber;
@@ -2166,6 +2211,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
   final int idCounter;
   const Amcos(
       {required this.id,
+      this.uuid,
+      this.serverId,
+      required this.syncStatus,
       required this.name,
       required this.memberCategory,
       required this.registrationNumber,
@@ -2194,6 +2242,13 @@ class Amcos extends DataClass implements Insertable<Amcos> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || uuid != null) {
+      map['uuid'] = Variable<String>(uuid);
+    }
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<int>(serverId);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
     map['name'] = Variable<String>(name);
     map['member_category'] = Variable<String>(memberCategory);
     map['registration_number'] = Variable<String>(registrationNumber);
@@ -2225,6 +2280,11 @@ class Amcos extends DataClass implements Insertable<Amcos> {
   AmcosTableCompanion toCompanion(bool nullToAbsent) {
     return AmcosTableCompanion(
       id: Value(id),
+      uuid: uuid == null && nullToAbsent ? const Value.absent() : Value(uuid),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      syncStatus: Value(syncStatus),
       name: Value(name),
       memberCategory: Value(memberCategory),
       registrationNumber: Value(registrationNumber),
@@ -2257,6 +2317,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Amcos(
       id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String?>(json['uuid']),
+      serverId: serializer.fromJson<int?>(json['serverId']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
       name: serializer.fromJson<String>(json['name']),
       memberCategory: serializer.fromJson<String>(json['memberCategory']),
       registrationNumber:
@@ -2292,6 +2355,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String?>(uuid),
+      'serverId': serializer.toJson<int?>(serverId),
+      'syncStatus': serializer.toJson<String>(syncStatus),
       'name': serializer.toJson<String>(name),
       'memberCategory': serializer.toJson<String>(memberCategory),
       'registrationNumber': serializer.toJson<String>(registrationNumber),
@@ -2322,6 +2388,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
 
   Amcos copyWith(
           {int? id,
+          Value<String?> uuid = const Value.absent(),
+          Value<int?> serverId = const Value.absent(),
+          String? syncStatus,
           String? name,
           String? memberCategory,
           String? registrationNumber,
@@ -2348,6 +2417,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
           int? idCounter}) =>
       Amcos(
         id: id ?? this.id,
+        uuid: uuid.present ? uuid.value : this.uuid,
+        serverId: serverId.present ? serverId.value : this.serverId,
+        syncStatus: syncStatus ?? this.syncStatus,
         name: name ?? this.name,
         memberCategory: memberCategory ?? this.memberCategory,
         registrationNumber: registrationNumber ?? this.registrationNumber,
@@ -2377,6 +2449,10 @@ class Amcos extends DataClass implements Insertable<Amcos> {
   Amcos copyWithCompanion(AmcosTableCompanion data) {
     return Amcos(
       id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
       name: data.name.present ? data.name.value : this.name,
       memberCategory: data.memberCategory.present
           ? data.memberCategory.value
@@ -2425,6 +2501,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
   String toString() {
     return (StringBuffer('Amcos(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('syncStatus: $syncStatus, ')
           ..write('name: $name, ')
           ..write('memberCategory: $memberCategory, ')
           ..write('registrationNumber: $registrationNumber, ')
@@ -2456,6 +2535,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
   @override
   int get hashCode => Object.hashAll([
         id,
+        uuid,
+        serverId,
+        syncStatus,
         name,
         memberCategory,
         registrationNumber,
@@ -2486,6 +2568,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
       identical(this, other) ||
       (other is Amcos &&
           other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.serverId == this.serverId &&
+          other.syncStatus == this.syncStatus &&
           other.name == this.name &&
           other.memberCategory == this.memberCategory &&
           other.registrationNumber == this.registrationNumber &&
@@ -2514,6 +2599,9 @@ class Amcos extends DataClass implements Insertable<Amcos> {
 
 class AmcosTableCompanion extends UpdateCompanion<Amcos> {
   final Value<int> id;
+  final Value<String?> uuid;
+  final Value<int?> serverId;
+  final Value<String> syncStatus;
   final Value<String> name;
   final Value<String> memberCategory;
   final Value<String> registrationNumber;
@@ -2540,6 +2628,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
   final Value<int> idCounter;
   const AmcosTableCompanion({
     this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
     this.name = const Value.absent(),
     this.memberCategory = const Value.absent(),
     this.registrationNumber = const Value.absent(),
@@ -2567,6 +2658,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
   });
   AmcosTableCompanion.insert({
     this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.syncStatus = const Value.absent(),
     required String name,
     required String memberCategory,
     required String registrationNumber,
@@ -2617,6 +2711,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
         idCounter = Value(idCounter);
   static Insertable<Amcos> custom({
     Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<int>? serverId,
+    Expression<String>? syncStatus,
     Expression<String>? name,
     Expression<String>? memberCategory,
     Expression<String>? registrationNumber,
@@ -2644,6 +2741,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (serverId != null) 'server_id': serverId,
+      if (syncStatus != null) 'sync_status': syncStatus,
       if (name != null) 'name': name,
       if (memberCategory != null) 'member_category': memberCategory,
       if (registrationNumber != null) 'registration_number': registrationNumber,
@@ -2676,6 +2776,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
 
   AmcosTableCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? uuid,
+      Value<int?>? serverId,
+      Value<String>? syncStatus,
       Value<String>? name,
       Value<String>? memberCategory,
       Value<String>? registrationNumber,
@@ -2702,6 +2805,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
       Value<int>? idCounter}) {
     return AmcosTableCompanion(
       id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      serverId: serverId ?? this.serverId,
+      syncStatus: syncStatus ?? this.syncStatus,
       name: name ?? this.name,
       memberCategory: memberCategory ?? this.memberCategory,
       registrationNumber: registrationNumber ?? this.registrationNumber,
@@ -2735,6 +2841,15 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -2816,6 +2931,9 @@ class AmcosTableCompanion extends UpdateCompanion<Amcos> {
   String toString() {
     return (StringBuffer('AmcosTableCompanion(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('syncStatus: $syncStatus, ')
           ..write('name: $name, ')
           ..write('memberCategory: $memberCategory, ')
           ..write('registrationNumber: $registrationNumber, ')
@@ -6631,6 +6749,14 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('synced'));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -6663,7 +6789,8 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
         maritalStatus,
         noOfShares,
         createdAt,
-        updatedAt
+        updatedAt,
+        syncStatus
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -6846,6 +6973,12 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
+    }
     return context;
   }
 
@@ -6917,6 +7050,8 @@ class $FarmersTable extends Farmers with TableInfo<$FarmersTable, Farmer> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
     );
   }
 
@@ -6958,6 +7093,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
   final double? noOfShares;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String syncStatus;
   const Farmer(
       {required this.id,
       this.serverId,
@@ -6989,7 +7125,8 @@ class Farmer extends DataClass implements Insertable<Farmer> {
       required this.maritalStatus,
       this.noOfShares,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt,
+      required this.syncStatus});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -7052,6 +7189,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
     }
+    map['sync_status'] = Variable<String>(syncStatus);
     return map;
   }
 
@@ -7114,6 +7252,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
+      syncStatus: Value(syncStatus),
     );
   }
 
@@ -7153,6 +7292,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
       noOfShares: serializer.fromJson<double?>(json['noOfShares']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
     );
   }
   @override
@@ -7190,6 +7330,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
       'noOfShares': serializer.toJson<double?>(noOfShares),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
     };
   }
 
@@ -7224,7 +7365,8 @@ class Farmer extends DataClass implements Insertable<Farmer> {
           String? maritalStatus,
           Value<double?> noOfShares = const Value.absent(),
           Value<DateTime?> createdAt = const Value.absent(),
-          Value<DateTime?> updatedAt = const Value.absent()}) =>
+          Value<DateTime?> updatedAt = const Value.absent(),
+          String? syncStatus}) =>
       Farmer(
         id: id ?? this.id,
         serverId: serverId.present ? serverId.value : this.serverId,
@@ -7259,6 +7401,7 @@ class Farmer extends DataClass implements Insertable<Farmer> {
         noOfShares: noOfShares.present ? noOfShares.value : this.noOfShares,
         createdAt: createdAt.present ? createdAt.value : this.createdAt,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        syncStatus: syncStatus ?? this.syncStatus,
       );
   Farmer copyWithCompanion(FarmersCompanion data) {
     return Farmer(
@@ -7310,6 +7453,8 @@ class Farmer extends DataClass implements Insertable<Farmer> {
           data.noOfShares.present ? data.noOfShares.value : this.noOfShares,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
     );
   }
 
@@ -7346,7 +7491,8 @@ class Farmer extends DataClass implements Insertable<Farmer> {
           ..write('maritalStatus: $maritalStatus, ')
           ..write('noOfShares: $noOfShares, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
           ..write(')'))
         .toString();
   }
@@ -7383,7 +7529,8 @@ class Farmer extends DataClass implements Insertable<Farmer> {
         maritalStatus,
         noOfShares,
         createdAt,
-        updatedAt
+        updatedAt,
+        syncStatus
       ]);
   @override
   bool operator ==(Object other) =>
@@ -7419,7 +7566,8 @@ class Farmer extends DataClass implements Insertable<Farmer> {
           other.maritalStatus == this.maritalStatus &&
           other.noOfShares == this.noOfShares &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
 }
 
 class FarmersCompanion extends UpdateCompanion<Farmer> {
@@ -7454,6 +7602,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
   final Value<double?> noOfShares;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
+  final Value<String> syncStatus;
   const FarmersCompanion({
     this.id = const Value.absent(),
     this.serverId = const Value.absent(),
@@ -7486,6 +7635,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
     this.noOfShares = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
   });
   FarmersCompanion.insert({
     this.id = const Value.absent(),
@@ -7519,6 +7669,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
     this.noOfShares = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
   })  : firstName = Value(firstName),
         lastName = Value(lastName),
         sex = Value(sex),
@@ -7564,6 +7715,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
     Expression<double>? noOfShares,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -7598,6 +7750,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
       if (noOfShares != null) 'no_of_shares': noOfShares,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
     });
   }
 
@@ -7632,7 +7785,8 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
       Value<String>? maritalStatus,
       Value<double?>? noOfShares,
       Value<DateTime?>? createdAt,
-      Value<DateTime?>? updatedAt}) {
+      Value<DateTime?>? updatedAt,
+      Value<String>? syncStatus}) {
     return FarmersCompanion(
       id: id ?? this.id,
       serverId: serverId ?? this.serverId,
@@ -7665,6 +7819,7 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
       noOfShares: noOfShares ?? this.noOfShares,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
     );
   }
 
@@ -7764,6 +7919,9 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
     return map;
   }
 
@@ -7800,7 +7958,8 @@ class FarmersCompanion extends UpdateCompanion<Farmer> {
           ..write('maritalStatus: $maritalStatus, ')
           ..write('noOfShares: $noOfShares, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
           ..write(')'))
         .toString();
   }
@@ -7889,6 +8048,19 @@ class $FarmerDependantsTable extends FarmerDependants
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('synced'));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -7903,7 +8075,9 @@ class $FarmerDependantsTable extends FarmerDependants
         address,
         email,
         createdAt,
-        updatedAt
+        updatedAt,
+        uuid,
+        syncStatus
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7984,6 +8158,16 @@ class $FarmerDependantsTable extends FarmerDependants
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
+    }
     return context;
   }
 
@@ -8019,6 +8203,10 @@ class $FarmerDependantsTable extends FarmerDependants
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
     );
   }
 
@@ -8042,6 +8230,8 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
   final String? email;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? uuid;
+  final String syncStatus;
   const FarmerDependant(
       {required this.id,
       required this.farmerId,
@@ -8055,7 +8245,9 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
       this.address,
       this.email,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt,
+      this.uuid,
+      required this.syncStatus});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -8084,6 +8276,10 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
     }
+    if (!nullToAbsent || uuid != null) {
+      map['uuid'] = Variable<String>(uuid);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
     return map;
   }
 
@@ -8113,6 +8309,8 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
+      uuid: uuid == null && nullToAbsent ? const Value.absent() : Value(uuid),
+      syncStatus: Value(syncStatus),
     );
   }
 
@@ -8133,6 +8331,8 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
       email: serializer.fromJson<String?>(json['email']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      uuid: serializer.fromJson<String?>(json['uuid']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
     );
   }
   @override
@@ -8152,6 +8352,8 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
       'email': serializer.toJson<String?>(email),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'uuid': serializer.toJson<String?>(uuid),
+      'syncStatus': serializer.toJson<String>(syncStatus),
     };
   }
 
@@ -8168,7 +8370,9 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
           Value<String?> address = const Value.absent(),
           Value<String?> email = const Value.absent(),
           Value<DateTime?> createdAt = const Value.absent(),
-          Value<DateTime?> updatedAt = const Value.absent()}) =>
+          Value<DateTime?> updatedAt = const Value.absent(),
+          Value<String?> uuid = const Value.absent(),
+          String? syncStatus}) =>
       FarmerDependant(
         id: id ?? this.id,
         farmerId: farmerId ?? this.farmerId,
@@ -8183,6 +8387,8 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
         email: email.present ? email.value : this.email,
         createdAt: createdAt.present ? createdAt.value : this.createdAt,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        uuid: uuid.present ? uuid.value : this.uuid,
+        syncStatus: syncStatus ?? this.syncStatus,
       );
   FarmerDependant copyWithCompanion(FarmerDependantsCompanion data) {
     return FarmerDependant(
@@ -8203,6 +8409,9 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
       email: data.email.present ? data.email.value : this.email,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
     );
   }
 
@@ -8221,7 +8430,9 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
           ..write('address: $address, ')
           ..write('email: $email, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus')
           ..write(')'))
         .toString();
   }
@@ -8240,7 +8451,9 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
       address,
       email,
       createdAt,
-      updatedAt);
+      updatedAt,
+      uuid,
+      syncStatus);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8257,7 +8470,9 @@ class FarmerDependant extends DataClass implements Insertable<FarmerDependant> {
           other.address == this.address &&
           other.email == this.email &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.uuid == this.uuid &&
+          other.syncStatus == this.syncStatus);
 }
 
 class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
@@ -8274,6 +8489,8 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
   final Value<String?> email;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
+  final Value<String?> uuid;
+  final Value<String> syncStatus;
   const FarmerDependantsCompanion({
     this.id = const Value.absent(),
     this.farmerId = const Value.absent(),
@@ -8288,6 +8505,8 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
     this.email = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
   });
   FarmerDependantsCompanion.insert({
     this.id = const Value.absent(),
@@ -8303,6 +8522,8 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
     this.email = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.syncStatus = const Value.absent(),
   })  : farmerId = Value(farmerId),
         firstName = Value(firstName),
         lastName = Value(lastName),
@@ -8323,6 +8544,8 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
     Expression<String>? email,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? uuid,
+    Expression<String>? syncStatus,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -8338,6 +8561,8 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
       if (email != null) 'email': email,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (uuid != null) 'uuid': uuid,
+      if (syncStatus != null) 'sync_status': syncStatus,
     });
   }
 
@@ -8354,7 +8579,9 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
       Value<String?>? address,
       Value<String?>? email,
       Value<DateTime?>? createdAt,
-      Value<DateTime?>? updatedAt}) {
+      Value<DateTime?>? updatedAt,
+      Value<String?>? uuid,
+      Value<String>? syncStatus}) {
     return FarmerDependantsCompanion(
       id: id ?? this.id,
       farmerId: farmerId ?? this.farmerId,
@@ -8369,6 +8596,8 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uuid: uuid ?? this.uuid,
+      syncStatus: syncStatus ?? this.syncStatus,
     );
   }
 
@@ -8414,6 +8643,12 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
     return map;
   }
 
@@ -8432,7 +8667,9 @@ class FarmerDependantsCompanion extends UpdateCompanion<FarmerDependant> {
           ..write('address: $address, ')
           ..write('email: $email, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('uuid: $uuid, ')
+          ..write('syncStatus: $syncStatus')
           ..write(')'))
         .toString();
   }
@@ -13086,6 +13323,9 @@ typedef $$VillagesTableTableProcessedTableManager = ProcessedTableManager<
         {bool ward, bool amcosTableRefs, bool warehousesRefs})>;
 typedef $$AmcosTableTableCreateCompanionBuilder = AmcosTableCompanion Function({
   Value<int> id,
+  Value<String?> uuid,
+  Value<int?> serverId,
+  Value<String> syncStatus,
   required String name,
   required String memberCategory,
   required String registrationNumber,
@@ -13113,6 +13353,9 @@ typedef $$AmcosTableTableCreateCompanionBuilder = AmcosTableCompanion Function({
 });
 typedef $$AmcosTableTableUpdateCompanionBuilder = AmcosTableCompanion Function({
   Value<int> id,
+  Value<String?> uuid,
+  Value<int?> serverId,
+  Value<String> syncStatus,
   Value<String> name,
   Value<String> memberCategory,
   Value<String> registrationNumber,
@@ -13243,6 +13486,15 @@ class $$AmcosTableTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnFilters(column));
@@ -13445,6 +13697,15 @@ class $$AmcosTableTableOrderingComposer
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnOrderings(column));
 
@@ -13604,6 +13865,15 @@ class $$AmcosTableTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -13818,6 +14088,9 @@ class $$AmcosTableTableTableManager extends RootTableManager<
               $$AmcosTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<String?> uuid = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> memberCategory = const Value.absent(),
             Value<String> registrationNumber = const Value.absent(),
@@ -13845,6 +14118,9 @@ class $$AmcosTableTableTableManager extends RootTableManager<
           }) =>
               AmcosTableCompanion(
             id: id,
+            uuid: uuid,
+            serverId: serverId,
+            syncStatus: syncStatus,
             name: name,
             memberCategory: memberCategory,
             registrationNumber: registrationNumber,
@@ -13872,6 +14148,9 @@ class $$AmcosTableTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<String?> uuid = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
             required String name,
             required String memberCategory,
             required String registrationNumber,
@@ -13899,6 +14178,9 @@ class $$AmcosTableTableTableManager extends RootTableManager<
           }) =>
               AmcosTableCompanion.insert(
             id: id,
+            uuid: uuid,
+            serverId: serverId,
+            syncStatus: syncStatus,
             name: name,
             memberCategory: memberCategory,
             registrationNumber: registrationNumber,
@@ -17296,6 +17578,7 @@ typedef $$FarmersTableCreateCompanionBuilder = FarmersCompanion Function({
   Value<double?> noOfShares,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
+  Value<String> syncStatus,
 });
 typedef $$FarmersTableUpdateCompanionBuilder = FarmersCompanion Function({
   Value<int> id,
@@ -17329,6 +17612,7 @@ typedef $$FarmersTableUpdateCompanionBuilder = FarmersCompanion Function({
   Value<double?> noOfShares,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
+  Value<String> syncStatus,
 });
 
 final class $$FarmersTableReferences
@@ -17521,6 +17805,9 @@ class $$FarmersTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
 
   $$CropTableTableFilterComposer get mainCrop {
     final $$CropTableTableFilterComposer composer = $composerBuilder(
@@ -17744,6 +18031,9 @@ class $$FarmersTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
   $$CropTableTableOrderingComposer get mainCrop {
     final $$CropTableTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -17897,6 +18187,9 @@ class $$FarmersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
 
   $$CropTableTableAnnotationComposer get mainCrop {
     final $$CropTableTableAnnotationComposer composer = $composerBuilder(
@@ -18082,6 +18375,7 @@ class $$FarmersTableTableManager extends RootTableManager<
             Value<double?> noOfShares = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
           }) =>
               FarmersCompanion(
             id: id,
@@ -18115,6 +18409,7 @@ class $$FarmersTableTableManager extends RootTableManager<
             noOfShares: noOfShares,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            syncStatus: syncStatus,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -18148,6 +18443,7 @@ class $$FarmersTableTableManager extends RootTableManager<
             Value<double?> noOfShares = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
           }) =>
               FarmersCompanion.insert(
             id: id,
@@ -18181,6 +18477,7 @@ class $$FarmersTableTableManager extends RootTableManager<
             noOfShares: noOfShares,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            syncStatus: syncStatus,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>
@@ -18326,6 +18623,8 @@ typedef $$FarmerDependantsTableCreateCompanionBuilder
   Value<String?> email,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
+  Value<String?> uuid,
+  Value<String> syncStatus,
 });
 typedef $$FarmerDependantsTableUpdateCompanionBuilder
     = FarmerDependantsCompanion Function({
@@ -18342,6 +18641,8 @@ typedef $$FarmerDependantsTableUpdateCompanionBuilder
   Value<String?> email,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
+  Value<String?> uuid,
+  Value<String> syncStatus,
 });
 
 final class $$FarmerDependantsTableReferences extends BaseReferences<
@@ -18410,6 +18711,12 @@ class $$FarmerDependantsTableFilterComposer
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
+
   $$FarmersTableFilterComposer get farmerId {
     final $$FarmersTableFilterComposer composer = $composerBuilder(
         composer: this,
@@ -18477,6 +18784,12 @@ class $$FarmerDependantsTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
   $$FarmersTableOrderingComposer get farmerId {
     final $$FarmersTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -18543,6 +18856,12 @@ class $$FarmerDependantsTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
+
   $$FarmersTableAnnotationComposer get farmerId {
     final $$FarmersTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -18601,6 +18920,8 @@ class $$FarmerDependantsTableTableManager extends RootTableManager<
             Value<String?> email = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<String?> uuid = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
           }) =>
               FarmerDependantsCompanion(
             id: id,
@@ -18616,6 +18937,8 @@ class $$FarmerDependantsTableTableManager extends RootTableManager<
             email: email,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -18631,6 +18954,8 @@ class $$FarmerDependantsTableTableManager extends RootTableManager<
             Value<String?> email = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<String?> uuid = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
           }) =>
               FarmerDependantsCompanion.insert(
             id: id,
@@ -18646,6 +18971,8 @@ class $$FarmerDependantsTableTableManager extends RootTableManager<
             email: email,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            uuid: uuid,
+            syncStatus: syncStatus,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

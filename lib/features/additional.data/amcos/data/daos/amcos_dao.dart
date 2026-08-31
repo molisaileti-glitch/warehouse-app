@@ -12,6 +12,7 @@ part 'amcos_dao.g.dart';
     DistrictsTable,
     WardsTable,
     VillagesTable,
+    SyncQueue,
   ],
 )
 class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
@@ -75,6 +76,45 @@ class AmcosDao extends DatabaseAccessor<AppDatabase> with _$AmcosDaoMixin {
 
   Future<int> upsertAmcos(Insertable<Amcos> entry) =>
       into(amcosTable).insertOnConflictUpdate(entry);
+
+  // ── UUID-based lookups ───────────────────────────────────────────────────
+
+  /// Find a locally-created (pending) AMCOS by its UUID.
+  /// Used by the sync engine to resolve the server ID after a successful push.
+  Future<Amcos?> getAmcosByUuid(String uuid) {
+    return (select(amcosTable)..where((a) => a.uuid.equals(uuid)))
+        .getSingleOrNull();
+  }
+
+  /// Find a locally-stored AMCOS by the server ID that was written after push.
+  Future<Amcos?> getAmcosByServerId(int serverId) {
+    return (select(amcosTable)..where((a) => a.serverId.equals(serverId)))
+        .getSingleOrNull();
+  }
+
+  // ── Offline-first write helpers ──────────────────────────────────────────
+
+  /// Atomically insert a pending AMCOS row and its sync-queue entry.
+  Future<void> insertPendingAmcos({
+    required AmcosTableCompanion amcos,
+    required SyncQueueCompanion queueEntry,
+  }) {
+    return transaction(() async {
+      await into(amcosTable).insert(amcos);
+      await into(syncQueue).insert(queueEntry);
+    });
+  }
+
+  /// Record the server-assigned integer ID on an AMCOS that was created offline
+  /// and has just been pushed successfully. Flips syncStatus to 'synced'.
+  Future<void> markAmcosSynced(String uuid, {required int serverId}) {
+    return (update(amcosTable)..where((a) => a.uuid.equals(uuid))).write(
+      AmcosTableCompanion(
+        serverId: Value(serverId),
+        syncStatus: const Value('synced'),
+      ),
+    );
+  }
 
   Future<void> ensureAmcosReferences({
     required int regionId,

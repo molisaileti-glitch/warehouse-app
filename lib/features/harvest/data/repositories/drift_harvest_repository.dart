@@ -272,12 +272,15 @@ class DriftHarvestRepository implements HarvestRepository {
 
     for (final row in rows) {
       final serverId = _nullableInt(row['id']);
-      final farmerId =
-          _nullableInt(row['farmerId']) ?? _nullableInt(row['farmer']);
+      // 'farmerId' is the server integer ID; 'farmer' is the farmerUuid
+      // (backend naming inconsistency — both may exist in the response).
+      final farmerId = _nullableInt(row['farmerId']);
+      // The 'farmer' field is the farmerUuid string, NOT an integer.
+      final farmerUuidFromResponse = _nullableString(row['farmer']);
       final cropId = _nullableInt(row['crop']);
       final collectionCenterId = _nullableInt(row['collectionCenter']);
       if (serverId == null ||
-          farmerId == null ||
+          (farmerId == null && farmerUuidFromResponse == null) ||
           cropId == null ||
           collectionCenterId == null) {
         developer.log(
@@ -290,8 +293,15 @@ class DriftHarvestRepository implements HarvestRepository {
         continue;
       }
 
-      final farmer = await _farmerDao.getFarmerByServerId(farmerId) ??
-          await _farmerDao.getFarmerById(farmerId);
+      // Try three lookups: serverId → localId → UUID.
+      // The 'farmer' field from the response IS the farmerUuid.
+      final farmer = (farmerId != null
+              ? (await _farmerDao.getFarmerByServerId(farmerId) ??
+                  await _farmerDao.getFarmerById(farmerId))
+              : null) ??
+          (farmerUuidFromResponse != null
+              ? await _farmerDao.getFarmerByUuid(farmerUuidFromResponse)
+              : null);
       final crop = await _cropDao.getCropById(cropId);
       final warehouse =
           await _warehouseDao.getWarehouseById(collectionCenterId.toString());
@@ -305,6 +315,7 @@ class DriftHarvestRepository implements HarvestRepository {
         skippedMissingDependency++;
         continue;
       }
+
 
       final rawUuid = _nullableString(row['uuid']);
       final uuid = rawUuid ?? 'server-harvest-$serverId';
