@@ -392,7 +392,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           const SizedBox(height: 16),
           AppDropdownFormField<String>(
-            labelText: l10n.businessType,
+            labelText: optionalLabel(l10n.businessType),
             icon: Icons.category_outlined,
             value: _selectedType,
             hintText: l10n.selectBusinessType,
@@ -424,11 +424,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _registrationNumberCtrl,
-            labelText: l10n.registrationNumber,
+            labelText: optionalLabel(l10n.registrationNumber),
             icon: Icons.numbers_outlined,
             hintText: l10n.enterRegistrationNumber,
-            validator: (v) =>
-                Validators.required(v, l10n.enterRegistrationNumber),
           ),
           const SizedBox(height: 16),
           AppTextFormField(
@@ -442,13 +440,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _emailCtrl,
-            labelText: l10n.businessEmail,
+            labelText: optionalLabel(l10n.businessEmail),
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
             hintText: l10n.enterBusinessEmail,
             validator: (v) {
-              if (v == null || v.isEmpty) return l10n.validationEmailRequired;
+              if (v == null || v.trim().isEmpty) return null;
               if (!v.contains('@')) return l10n.validationEmailInvalid;
               return null;
             },
@@ -456,20 +454,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _tinNumberCtrl,
-            labelText: l10n.tinNumber,
+            labelText: optionalLabel(l10n.tinNumber),
             icon: Icons.badge_outlined,
             hintText: l10n.enterTinNumber,
-            validator: (v) => Validators.required(v, l10n.enterTinNumber),
           ),
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _websiteCtrl,
-            labelText: l10n.website,
+            labelText: optionalLabel(l10n.website),
             icon: Icons.language_outlined,
             keyboardType: TextInputType.url,
             autocorrect: false,
             hintText: l10n.enterWebsiteUrl,
-            validator: (v) => Validators.required(v, l10n.enterWebsiteUrl),
           ),
         ],
       ),
@@ -484,31 +480,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         children: [
           AppTextFormField(
             controller: _contactPersonNameCtrl,
-            labelText: l10n.contactName,
+            labelText: optionalLabel(l10n.contactName),
             icon: Icons.person_outline_rounded,
             textCapitalization: TextCapitalization.words,
             hintText: l10n.enterContactName,
-            validator: (v) => Validators.required(v, l10n.enterContactName),
           ),
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _contactPersonPhoneNumberCtrl,
-            labelText: l10n.contactPhone,
+            labelText: optionalLabel(l10n.contactPhone),
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             hintText: l10n.enterContactPhone,
-            validator: (v) => Validators.required(v, l10n.enterContactPhone),
           ),
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _contactPersonEmailCtrl,
-            labelText: l10n.contactEmail,
+            labelText: optionalLabel(l10n.contactEmail),
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
             hintText: l10n.enterContactEmail,
             validator: (v) {
-              if (v == null || v.isEmpty) return l10n.enterContactEmail;
+              if (v == null || v.trim().isEmpty) return null;
               if (!v.contains('@')) return l10n.validationEmailInvalid;
               return null;
             },
@@ -516,10 +510,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _contactPersonTitleCtrl,
-            labelText: l10n.contactTitle,
+            labelText: optionalLabel(l10n.contactTitle),
             icon: Icons.work_outline_rounded,
             hintText: l10n.enterJobTitle,
-            validator: (v) => Validators.required(v, l10n.enterJobTitle),
           ),
           const SizedBox(height: 16),
           AppTextFormField(

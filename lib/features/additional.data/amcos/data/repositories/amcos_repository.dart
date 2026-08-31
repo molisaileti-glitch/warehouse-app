@@ -42,7 +42,7 @@ class AmcosRepository {
     required String contactPersonEmail,
     required String contactPersonTitle,
     required String website,
-    required int cropId,
+    required int? cropId,
   }) async {
     try {
       final uuid = newUuid();
@@ -65,7 +65,7 @@ class AmcosRepository {
         'contactPersonEmail': contactPersonEmail,
         'contactPersonTitle': contactPersonTitle,
         'website': website,
-        'crops': [cropId],
+        if (cropId != null) 'crops': [cropId],
         'idCounter': 0,
       };
 
@@ -95,7 +95,7 @@ class AmcosRepository {
         contactPersonTitle: contactPersonTitle,
         website: website,
         status: 'ACTIVE',
-        crops: cropId.toString(),
+        crops: cropId?.toString() ?? '',
         idCounter: 0,
       );
 

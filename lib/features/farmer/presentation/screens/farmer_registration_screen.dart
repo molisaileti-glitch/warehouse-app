@@ -198,7 +198,7 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _middleNameCtrl,
-            labelText: l10n.middleName,
+            labelText: optionalLabel(l10n.middleName),
             icon: Icons.person_outline,
             textCapitalization: TextCapitalization.words,
           ),
@@ -225,7 +225,7 @@ class _FarmerRegistrationScreenState
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: l10n.idType,
+            labelText: optionalLabel(l10n.idType),
             icon: Icons.badge_outlined,
             value: _idType,
             items: kFarmerIdTypes
@@ -236,9 +236,8 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _idNumberCtrl,
-            labelText: l10n.idNumber,
+            labelText: optionalLabel(l10n.idNumber),
             icon: Icons.numbers_outlined,
-            validator: _required,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
@@ -320,7 +319,7 @@ class _FarmerRegistrationScreenState
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: l10n.memberType,
+            labelText: optionalLabel(l10n.memberType),
             icon: Icons.groups_outlined,
             value: _memberType,
             items: kFarmerMemberTypes
@@ -333,7 +332,7 @@ class _FarmerRegistrationScreenState
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: l10n.maritalStatus,
+            labelText: optionalLabel(l10n.maritalStatus),
             icon: Icons.favorite_border_rounded,
             value: _maritalStatus,
             items: kFarmerMaritalStatuses
@@ -347,43 +346,43 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _amcosMemberCtrl,
-            labelText: l10n.amcosMemberId,
+            labelText: optionalLabel(l10n.amcosMemberId),
             icon: Icons.assignment_ind_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _tumeCtrl,
-            labelText: l10n.tumeNumber,
+            labelText: optionalLabel(l10n.tumeNumber),
             icon: Icons.confirmation_number_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _ttbCtrl,
-            labelText: l10n.ttbNumber,
+            labelText: optionalLabel(l10n.ttbNumber),
             icon: Icons.receipt_long_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _tinCtrl,
-            labelText: l10n.tinNumber,
+            labelText: optionalLabel(l10n.tinNumber),
             icon: Icons.badge_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _voterCtrl,
-            labelText: l10n.voterId,
+            labelText: optionalLabel(l10n.voterId),
             icon: Icons.how_to_vote_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _driversLicenseCtrl,
-            labelText: l10n.driversLicense,
+            labelText: optionalLabel(l10n.driversLicense),
             icon: Icons.credit_card_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _sharesCtrl,
-            labelText: l10n.numberOfShares,
+            labelText: optionalLabel(l10n.numberOfShares),
             icon: Icons.pie_chart_outline,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: (value) {

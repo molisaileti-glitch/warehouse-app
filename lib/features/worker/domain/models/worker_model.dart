@@ -4,7 +4,7 @@ class WorkerModel {
   final String phoneNumber;
   final String password;
   final int mcu;
-  final int amcos;
+  final int? amcos;
   final String? warehouseId;
   final String role;
 
@@ -14,7 +14,7 @@ class WorkerModel {
     required this.phoneNumber,
     required this.password,
     required this.mcu,
-    required this.amcos,
+    this.amcos,
     this.warehouseId,
     this.role = 'AMCOS_USER',
   });
@@ -28,7 +28,7 @@ class WorkerModel {
       'password': password,
       'role': role,
       'mcu': mcu,
-      'amcos': amcos,
+      if (amcos != null) 'amcos': amcos,
       if (warehouseId != null) 'warehouseId': warehouseId,
       if (collectionCenter != null) 'collectionCenterId': collectionCenter,
     };

@@ -4,6 +4,8 @@
 
 import 'package:flutter/material.dart';
 
+String optionalLabel(String label) => '$label (Optional)';
+
 class AppTextFormField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;

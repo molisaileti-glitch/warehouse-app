@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/providers/auth_provider.dart';

@@ -107,6 +107,7 @@ class _DependantFormState extends State<DependantForm> {
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
               textCapitalization: TextCapitalization.words,
+              validator: _required,
             ),
             const SizedBox(height: 14),
             AppTextFormField(
@@ -168,7 +169,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _phoneCtrl,
-              labelText: l10n.phoneNumber,
+              labelText: optionalLabel(l10n.phoneNumber),
               icon: Icons.phone_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -177,7 +178,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _emailCtrl,
-              labelText: l10n.emailAddress,
+              labelText: optionalLabel(l10n.emailAddress),
               icon: Icons.email_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -191,7 +192,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _addressCtrl,
-              labelText: l10n.address,
+              labelText: optionalLabel(l10n.address),
               icon: Icons.location_on_outlined,
               useFloatingLabel: true,
               floatingLabelBehavior: FloatingLabelBehavior.always,

@@ -85,8 +85,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_crop == null ||
-        _region == null ||
+    if (_region == null ||
         _district == null ||
         _ward == null ||
         _village == null) {
@@ -128,7 +127,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
 
     final result = await ref.read(amcosRepositoryProvider).create(
           name: _name.text.trim(),
-          memberCategory: _category!,
+          memberCategory: _category ?? '',
           registrationNumber: _registrationNumber.text.trim(),
           tinNumber: _tinNumber.text.trim(),
           mcuId: mcuId,
@@ -148,7 +147,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
           contactPersonEmail: _contactEmail.text.trim(),
           contactPersonTitle: _contactTitle.text.trim(),
           website: _website.text.trim(),
-          cropId: _crop!.id,
+          cropId: _crop?.id,
         );
 
     if (!mounted) return;
@@ -232,7 +231,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               ),
               const SizedBox(height: 14),
               AppDropdownFormField<String>(
-                labelText: l10n.memberCategory,
+                labelText: optionalLabel(l10n.memberCategory),
                 icon: Icons.category_outlined,
                 value: _category,
                 hintText: l10n.selectMemberCategory,
@@ -245,25 +244,22 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
                     )
                     .toList(),
                 onChanged: (value) => setState(() => _category = value),
-                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _registrationNumber,
-                labelText: l10n.registrationNumber,
+                labelText: optionalLabel(l10n.registrationNumber),
                 icon: Icons.numbers_outlined,
-                validator: _required,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _tinNumber,
-                labelText: l10n.tinNumber,
+                labelText: optionalLabel(l10n.tinNumber),
                 icon: Icons.badge_outlined,
-                validator: _required,
               ),
               const SizedBox(height: 14),
               AppDropdownFormField<Crop>(
-                labelText: l10n.crop,
+                labelText: optionalLabel(l10n.crop),
                 icon: Icons.agriculture_outlined,
                 value: _crop,
                 hintText: l10n.selectCrop,
@@ -276,7 +272,6 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
                     )
                     .toList(),
                 onChanged: (value) => setState(() => _crop = value),
-                validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 20),
               _locationDropdown<Region>(
@@ -349,18 +344,22 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _email,
-                labelText: l10n.businessEmail,
+                labelText: optionalLabel(l10n.businessEmail),
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                validator: _required,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  return value.contains('@')
+                      ? null
+                      : l10n.validationEmailInvalid;
+                },
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _website,
-                labelText: l10n.website,
+                labelText: optionalLabel(l10n.website),
                 icon: Icons.language_outlined,
                 keyboardType: TextInputType.url,
-                validator: _required,
               ),
               const SizedBox(height: 20),
               Text(
@@ -374,33 +373,35 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactName,
-                labelText: l10n.contactName,
+                labelText: optionalLabel(l10n.contactName),
                 icon: Icons.person_outline_rounded,
-                validator: _required,
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactPhone,
-                labelText: l10n.contactPhone,
+                labelText: optionalLabel(l10n.contactPhone),
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
-                validator: _required,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactEmail,
-                labelText: l10n.contactEmail,
+                labelText: optionalLabel(l10n.contactEmail),
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                validator: _required,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  return value.contains('@')
+                      ? null
+                      : l10n.validationEmailInvalid;
+                },
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactTitle,
-                labelText: l10n.contactTitle,
+                labelText: optionalLabel(l10n.contactTitle),
                 icon: Icons.work_outline_rounded,
-                validator: _required,
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(

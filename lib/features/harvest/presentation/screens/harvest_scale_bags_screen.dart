@@ -34,15 +34,13 @@ class _HarvestScaleBagsScreenState
     extends ConsumerState<HarvestScaleBagsScreen> {
   final _bagFormKey = GlobalKey<FormState>();
   final _tagCtrl = TextEditingController();
-  final _packagingCtrl = TextEditingController(text: '1');
+  final _moistureCtrl = TextEditingController(text: '0');
   bool _submitting = false;
-
-  static const _moisturePercent = 1.0;
 
   @override
   void dispose() {
     _tagCtrl.dispose();
-    _packagingCtrl.dispose();
+    _moistureCtrl.dispose();
     super.dispose();
   }
 
@@ -106,6 +104,8 @@ class _HarvestScaleBagsScreenState
         .firstOrNull;
     final unit =
         _selectedUnit(unitsAsync.valueOrNull ?? const [], session.uomId);
+    final packagingWeight = _cropPackagingWeight(crop);
+    final needsMoisture = crop?.moistureContentComputation ?? false;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -133,15 +133,14 @@ class _HarvestScaleBagsScreenState
                         controller: _tagCtrl,
                         decoration: InputDecoration(
                           labelText: l10n.bagTag,
+                          hintText: 'BAG-1234-5678',
                           prefixIcon: Icon(Icons.qr_code_2_outlined),
                         ),
-                        textCapitalization: TextCapitalization.characters,
+                        keyboardType: TextInputType.number,
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[A-Za-z0-9-]'),
-                          ),
+                          const _BagTagInputFormatter(),
                         ],
-                        validator: _required,
+                        validator: _bagTagValidator,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -153,20 +152,30 @@ class _HarvestScaleBagsScreenState
                   ],
                 ),
                 const SizedBox(height: 14),
-                TextFormField(
-                  controller: _packagingCtrl,
-                  decoration: InputDecoration(
-                    labelText: l10n.packagingWeightKg,
-                    prefixIcon: Icon(Icons.inventory_2_outlined),
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                  ],
-                  validator: _packagingValidator,
+                _packagingWeightSummary(
+                  label: l10n.packagingWeightKg,
+                  value: packagingWeight,
+                  unit: scaleState.uom,
                 ),
+                if (needsMoisture) ...[
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _moistureCtrl,
+                    decoration: InputDecoration(
+                      labelText: l10n.moisture,
+                      suffixText: '%',
+                      prefixIcon: const Icon(Icons.water_drop_outlined),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
+                    onChanged: (_) => setState(() {}),
+                    validator: _moistureValidator,
+                  ),
+                ],
               ],
             ),
           ),
@@ -176,7 +185,9 @@ class _HarvestScaleBagsScreenState
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed:
-                      _canAddBag(scaleState) ? () => _addBag(scaleState) : null,
+                      _canAddBag(scaleState)
+                          ? () => _addBag(scaleState, crop)
+                          : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.workerColor,
                   ),
@@ -207,7 +218,9 @@ class _HarvestScaleBagsScreenState
           ),
           const SizedBox(height: 14),
           Text(
-            l10n.moistureReceiptMessage(_formatWeight(_moisturePercent)),
+            l10n.moistureReceiptMessage(
+              _formatWeight(_moistureContentValue(crop)),
+            ),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -395,9 +408,10 @@ class _HarvestScaleBagsScreenState
     final random = Random().nextInt(9000) + 1000;
     _tagCtrl.text =
         'BAG-${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-$random';
+    _tagCtrl.selection = TextSelection.collapsed(offset: _tagCtrl.text.length);
   }
 
-  void _addBag(WeightScaleState scaleState) {
+  void _addBag(WeightScaleState scaleState, Crop? crop) {
     if (!(_bagFormKey.currentState?.validate() ?? false)) return;
     if (!scaleState.isConnected || !scaleState.isStreaming) {
       _showError(AppLocalizations.of(context)!.connectScaleBeforeBag);
@@ -412,11 +426,12 @@ class _HarvestScaleBagsScreenState
       return;
     }
 
-    final packagingWeight = _packagingWeightValue();
+    final packagingWeight = _cropPackagingWeight(crop);
     if (packagingWeight >= scaleState.weight) {
       _showError(AppLocalizations.of(context)!.packagingLessThanGross);
       return;
     }
+    final moistureContent = _moistureContentValue(crop);
 
     ref
         .read(harvestReceivingControllerProvider(widget.warehouseId).notifier)
@@ -425,11 +440,14 @@ class _HarvestScaleBagsScreenState
             tag: _tagCtrl.text.trim(),
             grossWeight: scaleState.weight,
             packagingWeight: packagingWeight,
-            moistureContent: _moisturePercent,
+            moistureContent: moistureContent,
           ),
         );
 
     _tagCtrl.clear();
+    if (crop?.moistureContentComputation != true) {
+      _moistureCtrl.text = '0';
+    }
     ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
   }
 
@@ -669,23 +687,30 @@ class _HarvestScaleBagsScreenState
     );
   }
 
-  String? _required(String? value) {
-    return value == null || value.trim().isEmpty
-        ? AppLocalizations.of(context)!.requiredField
-        : null;
+  String? _bagTagValidator(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+    if (value == null || value.trim().isEmpty) return l10n.requiredField;
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    return digits.length == 8 ? null : 'Enter 8 digits';
   }
 
-  String? _packagingValidator(String? value) {
+  String? _moistureValidator(String? value) {
     final l10n = AppLocalizations.of(context)!;
     if (value == null || value.trim().isEmpty) return l10n.requiredField;
     final parsed = double.tryParse(value.trim());
-    if (parsed == null) return l10n.enterValidWeight;
+    if (parsed == null) return l10n.enterValidNumber;
     if (parsed < 0) return l10n.cannotBeNegative;
+    if (parsed > 100) return l10n.enterValidNumber;
     return null;
   }
 
-  double _packagingWeightValue() {
-    return double.tryParse(_packagingCtrl.text.trim()) ?? 1;
+  double _cropPackagingWeight(Crop? crop) {
+    return crop?.packagingWeight ?? 0;
+  }
+
+  double _moistureContentValue(Crop? crop) {
+    if (crop?.moistureContentComputation != true) return 0;
+    return double.tryParse(_moistureCtrl.text.trim()) ?? 0;
   }
 
   String _farmerName(Farmer farmer) {
@@ -708,9 +733,80 @@ class _HarvestScaleBagsScreenState
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(2);
   }
 
+  Widget _packagingWeightSummary({
+    required String label,
+    required double value,
+    required String unit,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.ownerColor.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.ownerColor.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.inventory_2_outlined,
+            color: AppColors.ownerColor,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            '${_formatWeight(value)} $unit',
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.error),
+    );
+  }
+}
+
+class _BagTagInputFormatter extends TextInputFormatter {
+  const _BagTagInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final clipped = digits.length > 8 ? digits.substring(0, 8) : digits;
+    final text = clipped.length <= 4
+        ? 'BAG-$clipped'
+        : 'BAG-${clipped.substring(0, 4)}-${clipped.substring(4)}';
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }
