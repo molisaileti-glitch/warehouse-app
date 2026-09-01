@@ -38,12 +38,16 @@ class WorkerShell extends ConsumerWidget {
           onTap: (i) {
             if (i == 0) context.go(AppRoutes.workerDashboard);
             if (i == 1) {
-              showTopToast(
-                context,
-                l10n.featureWillBeImplementedSoon,
-                AppColors.info,
-                icon: Icons.info_outline_rounded,
-              );
+              if (warehouseId != null) {
+                context.go(AppRoutes.workerInventoryFor(warehouseId));
+              } else {
+                showTopToast(
+                  context,
+                  l10n.selectWarehouse,
+                  AppColors.info,
+                  icon: Icons.info_outline_rounded,
+                );
+              }
               return;
             }
             if (i == 2 && warehouseId != null) {

@@ -50,6 +50,10 @@ class AppRoutes {
   static const ownerDashboard = '/owner';
   static const ownerWarehouses = '/owner/warehouses';
   static const ownerWarehouseDetail = '/owner/warehouses/:id';
+  static const ownerWarehouseOperations = '/owner/warehouse-operations/:id';
+  static const ownerCropStock = '/owner/warehouse-operations/:id/crops/:cropId';
+  static const ownerWarehouseOperationForm =
+      '/owner/warehouse-operations/:id/crops/:cropId/:operation';
   static const ownerUsers = '/owner/users';
   static const ownerUserDetail = '/owner/users/:id';
   static const ownerAuditLog = '/owner/audit';
@@ -70,6 +74,9 @@ class AppRoutes {
   // Worker
   static const workerDashboard = '/worker';
   static const workerInventory = '/worker/inventory/:warehouseId';
+  static const workerCropStock = '/worker/inventory/:warehouseId/crops/:cropId';
+  static const workerWarehouseOperationForm =
+      '/worker/inventory/:warehouseId/crops/:cropId/:operation';
   static const workerInventoryItem =
       '/worker/inventory/:warehouseId/item/:itemId';
   static const workerHarvests = '/worker/harvests/:warehouseId';
@@ -86,6 +93,16 @@ class AppRoutes {
 
   static String workerInventoryFor(String warehouseId) =>
       '/worker/inventory/$warehouseId';
+
+  static String workerCropStockFor(String warehouseId, String cropId) =>
+      '/worker/inventory/$warehouseId/crops/$cropId';
+
+  static String workerWarehouseOperationFormFor(
+    String warehouseId,
+    String cropId,
+    String operation,
+  ) =>
+      '/worker/inventory/$warehouseId/crops/$cropId/$operation';
 
   static String workerInventoryItemFor(String warehouseId, String itemId) =>
       '/worker/inventory/$warehouseId/item/$itemId';
@@ -124,6 +141,19 @@ class AppRoutes {
 
   static String ownerReceiptFor(String warehouseId) =>
       '/owner/harvests/receipt/$warehouseId';
+
+  static String ownerWarehouseOperationsFor(String warehouseId) =>
+      '/owner/warehouse-operations/$warehouseId';
+
+  static String ownerCropStockFor(String warehouseId, String cropId) =>
+      '/owner/warehouse-operations/$warehouseId/crops/$cropId';
+
+  static String ownerWarehouseOperationFormFor(
+    String warehouseId,
+    String cropId,
+    String operation,
+  ) =>
+      '/owner/warehouse-operations/$warehouseId/crops/$cropId/$operation';
 
   static String ownerUserDetailFor(String id) => '/owner/users/$id';
 
@@ -215,6 +245,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 WarehouseDetailScreen(warehouseId: state.pathParameters['id']!),
           ),
           GoRoute(
+            path: AppRoutes.ownerWarehouseOperations,
+            builder: (_, state) => WarehouseInventoryScreen(
+              warehouseId: state.pathParameters['id']!,
+              ownerFlow: true,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerCropStock,
+            builder: (_, state) => CropStockDetailsScreen(
+              warehouseId: state.pathParameters['id']!,
+              cropId: int.parse(state.pathParameters['cropId']!),
+              ownerFlow: true,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.ownerWarehouseOperationForm,
+            builder: (_, state) => WarehouseOperationFormScreen(
+              warehouseId: state.pathParameters['id']!,
+              cropId: int.parse(state.pathParameters['cropId']!),
+              operation: state.pathParameters['operation']!,
+              ownerFlow: true,
+            ),
+          ),
+          GoRoute(
               path: AppRoutes.ownerUsers,
               builder: (_, __) => const UserManagementScreen()),
           GoRoute(
@@ -304,6 +358,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.workerInventory,
             builder: (_, state) => WarehouseInventoryScreen(
               warehouseId: state.pathParameters['warehouseId']!,
+              ownerFlow: false,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.workerCropStock,
+            builder: (_, state) => CropStockDetailsScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              cropId: int.parse(state.pathParameters['cropId']!),
+              ownerFlow: false,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.workerWarehouseOperationForm,
+            builder: (_, state) => WarehouseOperationFormScreen(
+              warehouseId: state.pathParameters['warehouseId']!,
+              cropId: int.parse(state.pathParameters['cropId']!),
+              operation: state.pathParameters['operation']!,
+              ownerFlow: false,
             ),
           ),
           GoRoute(

@@ -74,7 +74,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
               final filtered = query.isEmpty
                   ? baseList
                   : baseList.where((warehouse) {
-                      final location = _warehouseLocation(warehouse, l10n);
+                      final location = _warehouseSearchText(warehouse, l10n);
                       return warehouse.name.toLowerCase().contains(query) ||
                           location.toLowerCase().contains(query);
                     }).toList();
@@ -264,58 +264,84 @@ class _WarehouseTile extends StatelessWidget {
     return AppCard(
       onTap: () => context.push('/owner/warehouses/${warehouse.id}'),
       padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        warehouse.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    _WarehouseStatusBadge(active: active),
-                  ],
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  warehouse.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                const SizedBox(height: 9),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      color: AppColors.textSecondary.withValues(alpha: 0.9),
-                      size: 17,
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        location,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+              _WarehouseStatusBadge(active: active),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.textMuted),
+            ],
           ),
-          const SizedBox(width: 10),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          const SizedBox(height: 10),
+          _WarehouseDetailLine(
+            icon: Icons.location_on_outlined,
+            value: location,
+          ),
+          if ((warehouse.amcosName ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 7),
+            _WarehouseDetailLine(
+              icon: Icons.account_tree_outlined,
+              value: warehouse.amcosName!.trim(),
+            ),
+          ],
+          if ((warehouse.villageName ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 7),
+            _WarehouseDetailLine(
+              icon: Icons.home_work_outlined,
+              value: warehouse.villageName!.trim(),
+            ),
+          ],
+          const SizedBox(height: 10),
+          SyncStatusBadge(status: warehouse.syncStatus),
         ],
       ),
+    );
+  }
+}
+
+class _WarehouseDetailLine extends StatelessWidget {
+  final IconData icon;
+  final String value;
+
+  const _WarehouseDetailLine({required this.icon, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: AppColors.textSecondary.withValues(alpha: 0.9),
+          size: 17,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -351,13 +377,22 @@ class _WarehouseStatusBadge extends StatelessWidget {
 String _warehouseLocation(Warehouse warehouse, AppLocalizations l10n) {
   final value = warehouse.gpsLocation?.trim();
   if (value != null && value.isNotEmpty) {
-    return value.split(',').first.trim();
+    return value;
   }
   final village = warehouse.villageName?.trim();
   if (village != null && village.isNotEmpty) return village;
   final amcos = warehouse.amcosName?.trim();
   if (amcos != null && amcos.isNotEmpty) return amcos;
   return l10n.locationNotSet;
+}
+
+String _warehouseSearchText(Warehouse warehouse, AppLocalizations l10n) {
+  return <String?>[
+    warehouse.name,
+    _warehouseLocation(warehouse, l10n),
+    warehouse.amcosName,
+    warehouse.villageName,
+  ].whereType<String>().join(' ');
 }
 
 class _CreateWarehouseSheet extends ConsumerStatefulWidget {

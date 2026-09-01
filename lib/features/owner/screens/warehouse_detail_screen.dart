@@ -33,10 +33,7 @@ class WarehouseDetailScreen extends ConsumerWidget {
           child: const Icon(Icons.arrow_back),
           onTap: () => context.pop(),
         ),
-        title: warehouseAsync.maybeWhen(
-          data: (w) => Text(w?.name ?? ''),
-          orElse: () => Text(l10n.warehouse),
-        ),
+        title: const SizedBox.shrink(),
         actions: [
           warehouseAsync.maybeWhen(
             data: (w) => w != null
@@ -53,6 +50,20 @@ class WarehouseDetailScreen extends ConsumerWidget {
           if (warehouse == null) {
             return ErrorView(message: l10n.warehouseNotFound);
           }
+          final inventoryItems =
+              inventoryAsync.valueOrNull ?? const <WarehouseInventory>[];
+          final totalBags = inventoryItems.fold<num>(
+            0,
+            (sum, item) => sum + item.totalBags,
+          );
+          final totalPackagingWeight = inventoryItems.fold<num>(
+            0,
+            (sum, item) => sum + item.totalPackagingWeight,
+          );
+          final totalNetWeight = inventoryItems.fold<num>(
+            0,
+            (sum, item) => sum + item.totalNetWeight,
+          );
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -60,104 +71,105 @@ class WarehouseDetailScreen extends ConsumerWidget {
                   margin: const EdgeInsets.all(16),
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryLight],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: AppColors.primary,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [
-                        const Icon(Icons.warehouse_rounded,
+                      const Row(children: [
+                        Icon(Icons.inventory_2_rounded,
                             color: Colors.white, size: 28),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
-                            child: Text(warehouse.name,
-                                style: const TextStyle(
+                            child: Text('Inventory summary',
+                                style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700))),
-                        SyncStatusBadge(status: warehouse.syncStatus),
                       ]),
-                      if (warehouse.gpsLocation != null) ...[
-                        const SizedBox(height: 8),
-                        Row(children: [
-                          const Icon(Icons.location_on_rounded,
-                              color: Colors.white60, size: 14),
-                          const SizedBox(width: 4),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
                           Expanded(
-                              child: Text(warehouse.gpsLocation!,
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 13))),
-                        ]),
-                      ],
-                      if (warehouse.amcosName != null ||
-                          warehouse.villageName != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          [
-                            if (warehouse.amcosName != null)
-                              warehouse.amcosName!
-                            else
-                              null,
-                            if (warehouse.villageName != null)
-                              warehouse.villageName!
-                            else
-                              null
-                          ].whereType<String>().join(' • '),
-                          style: const TextStyle(
-                              color: Colors.white60, fontSize: 12),
-                        ),
-                      ],
+                            child: _SummaryMetric(
+                              label: l10n.crops,
+                              value: '${inventoryItems.length}',
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _SummaryMetric(
+                              label: 'Bags',
+                              value: _formatNumber(totalBags),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _SummaryMetric(
+                              label: l10n.packagingWeightKg,
+                              value:
+                                  '${_formatNumber(totalPackagingWeight)} kg',
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _SummaryMetric(
+                              label: l10n.netWeight,
+                              value: '${_formatNumber(totalNetWeight)} kg',
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: StatCard(
-                              label: l10n.totalItems,
-                              value:
-                                  '${inventoryAsync.valueOrNull?.length ?? 0}',
-                              icon: Icons.inventory_2_rounded,
-                              color: AppColors.primary)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: StatCard(
-                              label: 'Bags',
-                              value: _formatNumber(
-                                (inventoryAsync.valueOrNull ?? const [])
-                                    .fold<double>(
-                                  0,
-                                  (sum, item) => sum + item.totalBags,
-                                ),
-                              ),
-                              icon: Icons.shopping_bag_rounded,
-                              color: AppColors.warning)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: StatCard(
-                              label: l10n.workers,
-                              value: '${workersAsync.valueOrNull?.length ?? 0}',
-                              icon: Icons.people_rounded,
-                              color: AppColors.workerColor)),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push(
+                      AppRoutes.ownerWarehouseOperationsFor(warehouse.id),
+                    ),
+                    icon: const Icon(Icons.tune_rounded),
+                    label: const Text('Manage stock'),
                   ),
                 ),
               ),
               SliverToBoxAdapter(
-                child: SectionHeader(title: l10n.inventory),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.inventory,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => context.push(
+                          AppRoutes.ownerWarehouseOperationsFor(warehouse.id),
+                        ),
+                        icon: const Icon(Icons.chevron_right_rounded),
+                        label: const Text('View all'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               inventoryAsync.when(
                 data: (items) {
-                  final preview = items.take(5).toList();
+                  final preview = items.take(3).toList();
                   if (preview.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Padding(
@@ -181,6 +193,29 @@ class WarehouseDetailScreen extends ConsumerWidget {
                 loading: () => const SliverToBoxAdapter(child: LoadingView()),
                 error: (e, _) =>
                     SliverToBoxAdapter(child: ErrorView(message: '$e')),
+              ),
+              inventoryAsync.maybeWhen(
+                data: (items) {
+                  final remaining = items.length - 3;
+                  if (remaining <= 0) {
+                    return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+                      child: Text(
+                        '$remaining more crops',
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                orElse: () =>
+                    const SliverToBoxAdapter(child: SizedBox.shrink()),
               ),
               SliverToBoxAdapter(
                   child: SectionHeader(title: l10n.assignedWorkers)),
@@ -300,6 +335,41 @@ class WarehouseDetailScreen extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _EditWarehouseSheet(warehouse: warehouse),
+    );
+  }
+}
+
+class _SummaryMetric extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _SummaryMetric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
+        ),
+      ],
     );
   }
 }
