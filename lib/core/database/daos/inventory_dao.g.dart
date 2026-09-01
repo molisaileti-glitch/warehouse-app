@@ -13,4 +13,5 @@ mixin _$InventoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $InventoryItemsTable get inventoryItems => attachedDatabase.inventoryItems;
   $UsersTable get users => attachedDatabase.users;
   $StockMovementsTable get stockMovements => attachedDatabase.stockMovements;
+  $SyncQueueTable get syncQueue => attachedDatabase.syncQueue;
 }

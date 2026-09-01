@@ -17,6 +17,8 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:warehouse_app/features/additional.data/location/data/tables/locations_tables.dart';
 import 'package:warehouse_app/features/warehouse/data/daos/warehouse_dao.dart';
 import 'package:warehouse_app/features/warehouse/data/tables/warehouse_table.dart';
+import 'package:warehouse_app/features/warehouse_operations/data/daos/warehouse_operations_dao.dart';
+import 'package:warehouse_app/features/warehouse_operations/data/tables/warehouse_operation_tables.dart';
 import 'package:warehouse_app/features/worker/data/daos/worker_dao.dart';
 import 'package:warehouse_app/features/worker/data/tables/worker_table.dart';
 import 'package:warehouse_app/features/additional.data/crop/data/daos/crop_dao.dart';
@@ -51,6 +53,8 @@ export 'daos/sync_queue_dao.dart';
 export 'daos/audit_log_dao.dart';
 export 'package:warehouse_app/features/warehouse/data/daos/warehouse_dao.dart';
 export 'package:warehouse_app/features/warehouse/data/tables/warehouse_table.dart';
+export 'package:warehouse_app/features/warehouse_operations/data/daos/warehouse_operations_dao.dart';
+export 'package:warehouse_app/features/warehouse_operations/data/tables/warehouse_operation_tables.dart';
 export 'package:warehouse_app/features/worker/data/daos/worker_dao.dart';
 export 'package:warehouse_app/features/worker/data/tables/worker_table.dart';
 export 'package:warehouse_app/features/additional.data/crop/data/daos/crop_dao.dart';
@@ -75,6 +79,10 @@ part 'app_database.g.dart';
     Warehouses,
     InventoryItems,
     StockMovements,
+    WarehouseInventoryItems,
+    WarehouseDispatches,
+    WarehouseStockCounts,
+    WarehouseStockAdjustments,
     SyncQueue,
     AuditLogs,
     RegionsTable,
@@ -93,6 +101,7 @@ part 'app_database.g.dart';
   daos: [
     WorkerDao,
     WarehouseDao,
+    WarehouseOperationsDao,
     InventoryDao,
     SyncQueueDao,
     AuditLogDao,
@@ -121,7 +130,7 @@ class AppDatabase extends _$AppDatabase {
   // ── Schema version ───────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   // ── Migrations ───────────────────────────────────────────────────────────
 
@@ -241,6 +250,16 @@ class AppDatabase extends _$AppDatabase {
             'WHERE uuid IS NOT NULL AND server_id IS NULL',
           );
         }
+
+        // v12 -> v13: crop-based warehouse operations from the backend API.
+        // These records keep the local warehouseId for UI relations and the
+        // collectionCenterUuid for offline-safe sync requests.
+        if (from < 13) {
+          await m.createTable(warehouseInventoryItems);
+          await m.createTable(warehouseDispatches);
+          await m.createTable(warehouseStockCounts);
+          await m.createTable(warehouseStockAdjustments);
+        }
       },
       beforeOpen: (details) async {
         // Enable WAL mode for better concurrent read/write performance.
@@ -260,6 +279,10 @@ class AppDatabase extends _$AppDatabase {
       // Delete in reverse dependency order to avoid FK violations.
       await delete(auditLogs).go();
       await delete(syncQueue).go();
+      await delete(warehouseStockAdjustments).go();
+      await delete(warehouseStockCounts).go();
+      await delete(warehouseDispatches).go();
+      await delete(warehouseInventoryItems).go();
       await delete(farmerHarvestBags).go();
       await delete(farmerHarvests).go();
       await delete(stockMovements).go();

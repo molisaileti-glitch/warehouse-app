@@ -26,7 +26,7 @@ import '../../features/owner/screens/amcos_form_screen.dart';
 import '../../features/worker/presentation/screens/worker_shell.dart';
 import '../../features/worker/presentation/screens/worker_dashboard_screen.dart';
 import '../../features/worker/presentation/screens/inventory_item_screen.dart';
-import '../../features/worker/presentation/screens/inventory_list_screen.dart';
+import '../../features/warehouse_operations/presentation/screens/warehouse_inventory_screen.dart';
 import '../../features/harvest/presentation/screens/harvest_connect_scale_screen.dart';
 import '../../features/harvest/presentation/screens/harvest_farmer_details_screen.dart';
 import '../../features/harvest/presentation/screens/harvest_list_screen.dart';
@@ -302,7 +302,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               builder: (_, __) => const WorkerDashboardScreen()),
           GoRoute(
             path: AppRoutes.workerInventory,
-            builder: (_, state) => InventoryListScreen(
+            builder: (_, state) => WarehouseInventoryScreen(
               warehouseId: state.pathParameters['warehouseId']!,
             ),
           ),

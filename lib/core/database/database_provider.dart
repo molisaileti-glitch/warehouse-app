@@ -45,6 +45,11 @@ final warehouseDaoProvider = Provider<WarehouseDao>(
   name: 'warehouseDao',
 );
 
+final warehouseOperationsDaoProvider = Provider<WarehouseOperationsDao>(
+  (ref) => ref.watch(appDatabaseProvider).warehouseOperationsDao,
+  name: 'warehouseOperationsDao',
+);
+
 final inventoryDaoProvider = Provider<InventoryDao>(
   (ref) => ref.watch(appDatabaseProvider).inventoryDao,
   name: 'inventoryDao',

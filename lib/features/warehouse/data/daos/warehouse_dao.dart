@@ -10,6 +10,10 @@ part 'warehouse_dao.g.dart';
     Users,
     InventoryItems,
     StockMovements,
+    WarehouseInventoryItems,
+    WarehouseDispatches,
+    WarehouseStockCounts,
+    WarehouseStockAdjustments,
     AuditLogs,
     FarmerHarvests,
     SyncQueue,
@@ -157,6 +161,38 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
           .write(
         StockMovementsCompanion(
           relatedWarehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(warehouseInventoryItems)
+            ..where((i) => i.warehouseId.equals(localId)))
+          .write(
+        WarehouseInventoryItemsCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(warehouseDispatches)
+            ..where((item) => item.warehouseId.equals(localId)))
+          .write(
+        WarehouseDispatchesCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(warehouseStockCounts)
+            ..where((item) => item.warehouseId.equals(localId)))
+          .write(
+        WarehouseStockCountsCompanion(
+          warehouseId: Value(serverId),
+          updatedAt: Value(now),
+        ),
+      );
+      await (update(warehouseStockAdjustments)
+            ..where((item) => item.warehouseId.equals(localId)))
+          .write(
+        WarehouseStockAdjustmentsCompanion(
+          warehouseId: Value(serverId),
           updatedAt: Value(now),
         ),
       );

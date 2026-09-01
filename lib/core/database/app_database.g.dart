@@ -5089,6 +5089,5046 @@ class StockMovementsCompanion extends UpdateCompanion<StockMovement> {
   }
 }
 
+class $CropTableTable extends CropTable with TableInfo<$CropTableTable, Crop> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CropTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _uomMeta = const VerificationMeta('uom');
+  @override
+  late final GeneratedColumn<String> uom = GeneratedColumn<String>(
+      'uom', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _packagingMeta =
+      const VerificationMeta('packaging');
+  @override
+  late final GeneratedColumn<String> packaging = GeneratedColumn<String>(
+      'packaging', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _gradingMeta =
+      const VerificationMeta('grading');
+  @override
+  late final GeneratedColumn<String> grading = GeneratedColumn<String>(
+      'grading', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _moistureContentComputationMeta =
+      const VerificationMeta('moistureContentComputation');
+  @override
+  late final GeneratedColumn<bool> moistureContentComputation =
+      GeneratedColumn<bool>('moisture_content_computation', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("moisture_content_computation" IN (0, 1))'),
+          defaultValue: const Constant(false));
+  static const VerificationMeta _maxMoisureContentMeta =
+      const VerificationMeta('maxMoisureContent');
+  @override
+  late final GeneratedColumn<double> maxMoisureContent =
+      GeneratedColumn<double>('max_moisure_content', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _packagingWeightMeta =
+      const VerificationMeta('packagingWeight');
+  @override
+  late final GeneratedColumn<double> packagingWeight = GeneratedColumn<double>(
+      'packaging_weight', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        type,
+        uom,
+        packaging,
+        grading,
+        moistureContentComputation,
+        maxMoisureContent,
+        packagingWeight
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'crop_table';
+  @override
+  VerificationContext validateIntegrity(Insertable<Crop> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    }
+    if (data.containsKey('uom')) {
+      context.handle(
+          _uomMeta, uom.isAcceptableOrUnknown(data['uom']!, _uomMeta));
+    }
+    if (data.containsKey('packaging')) {
+      context.handle(_packagingMeta,
+          packaging.isAcceptableOrUnknown(data['packaging']!, _packagingMeta));
+    }
+    if (data.containsKey('grading')) {
+      context.handle(_gradingMeta,
+          grading.isAcceptableOrUnknown(data['grading']!, _gradingMeta));
+    }
+    if (data.containsKey('moisture_content_computation')) {
+      context.handle(
+          _moistureContentComputationMeta,
+          moistureContentComputation.isAcceptableOrUnknown(
+              data['moisture_content_computation']!,
+              _moistureContentComputationMeta));
+    }
+    if (data.containsKey('max_moisure_content')) {
+      context.handle(
+          _maxMoisureContentMeta,
+          maxMoisureContent.isAcceptableOrUnknown(
+              data['max_moisure_content']!, _maxMoisureContentMeta));
+    }
+    if (data.containsKey('packaging_weight')) {
+      context.handle(
+          _packagingWeightMeta,
+          packagingWeight.isAcceptableOrUnknown(
+              data['packaging_weight']!, _packagingWeightMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Crop map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Crop(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type']),
+      uom: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uom']),
+      packaging: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}packaging']),
+      grading: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}grading']),
+      moistureContentComputation: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}moisture_content_computation'])!,
+      maxMoisureContent: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}max_moisure_content']),
+      packagingWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}packaging_weight']),
+    );
+  }
+
+  @override
+  $CropTableTable createAlias(String alias) {
+    return $CropTableTable(attachedDatabase, alias);
+  }
+}
+
+class Crop extends DataClass implements Insertable<Crop> {
+  final int id;
+  final String name;
+  final String? type;
+  final String? uom;
+  final String? packaging;
+  final String? grading;
+  final bool moistureContentComputation;
+  final double? maxMoisureContent;
+  final double? packagingWeight;
+  const Crop(
+      {required this.id,
+      required this.name,
+      this.type,
+      this.uom,
+      this.packaging,
+      this.grading,
+      required this.moistureContentComputation,
+      this.maxMoisureContent,
+      this.packagingWeight});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || type != null) {
+      map['type'] = Variable<String>(type);
+    }
+    if (!nullToAbsent || uom != null) {
+      map['uom'] = Variable<String>(uom);
+    }
+    if (!nullToAbsent || packaging != null) {
+      map['packaging'] = Variable<String>(packaging);
+    }
+    if (!nullToAbsent || grading != null) {
+      map['grading'] = Variable<String>(grading);
+    }
+    map['moisture_content_computation'] =
+        Variable<bool>(moistureContentComputation);
+    if (!nullToAbsent || maxMoisureContent != null) {
+      map['max_moisure_content'] = Variable<double>(maxMoisureContent);
+    }
+    if (!nullToAbsent || packagingWeight != null) {
+      map['packaging_weight'] = Variable<double>(packagingWeight);
+    }
+    return map;
+  }
+
+  CropTableCompanion toCompanion(bool nullToAbsent) {
+    return CropTableCompanion(
+      id: Value(id),
+      name: Value(name),
+      type: type == null && nullToAbsent ? const Value.absent() : Value(type),
+      uom: uom == null && nullToAbsent ? const Value.absent() : Value(uom),
+      packaging: packaging == null && nullToAbsent
+          ? const Value.absent()
+          : Value(packaging),
+      grading: grading == null && nullToAbsent
+          ? const Value.absent()
+          : Value(grading),
+      moistureContentComputation: Value(moistureContentComputation),
+      maxMoisureContent: maxMoisureContent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(maxMoisureContent),
+      packagingWeight: packagingWeight == null && nullToAbsent
+          ? const Value.absent()
+          : Value(packagingWeight),
+    );
+  }
+
+  factory Crop.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Crop(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      type: serializer.fromJson<String?>(json['type']),
+      uom: serializer.fromJson<String?>(json['uom']),
+      packaging: serializer.fromJson<String?>(json['packaging']),
+      grading: serializer.fromJson<String?>(json['grading']),
+      moistureContentComputation:
+          serializer.fromJson<bool>(json['moistureContentComputation']),
+      maxMoisureContent:
+          serializer.fromJson<double?>(json['maxMoisureContent']),
+      packagingWeight: serializer.fromJson<double?>(json['packagingWeight']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'type': serializer.toJson<String?>(type),
+      'uom': serializer.toJson<String?>(uom),
+      'packaging': serializer.toJson<String?>(packaging),
+      'grading': serializer.toJson<String?>(grading),
+      'moistureContentComputation':
+          serializer.toJson<bool>(moistureContentComputation),
+      'maxMoisureContent': serializer.toJson<double?>(maxMoisureContent),
+      'packagingWeight': serializer.toJson<double?>(packagingWeight),
+    };
+  }
+
+  Crop copyWith(
+          {int? id,
+          String? name,
+          Value<String?> type = const Value.absent(),
+          Value<String?> uom = const Value.absent(),
+          Value<String?> packaging = const Value.absent(),
+          Value<String?> grading = const Value.absent(),
+          bool? moistureContentComputation,
+          Value<double?> maxMoisureContent = const Value.absent(),
+          Value<double?> packagingWeight = const Value.absent()}) =>
+      Crop(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        type: type.present ? type.value : this.type,
+        uom: uom.present ? uom.value : this.uom,
+        packaging: packaging.present ? packaging.value : this.packaging,
+        grading: grading.present ? grading.value : this.grading,
+        moistureContentComputation:
+            moistureContentComputation ?? this.moistureContentComputation,
+        maxMoisureContent: maxMoisureContent.present
+            ? maxMoisureContent.value
+            : this.maxMoisureContent,
+        packagingWeight: packagingWeight.present
+            ? packagingWeight.value
+            : this.packagingWeight,
+      );
+  Crop copyWithCompanion(CropTableCompanion data) {
+    return Crop(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      type: data.type.present ? data.type.value : this.type,
+      uom: data.uom.present ? data.uom.value : this.uom,
+      packaging: data.packaging.present ? data.packaging.value : this.packaging,
+      grading: data.grading.present ? data.grading.value : this.grading,
+      moistureContentComputation: data.moistureContentComputation.present
+          ? data.moistureContentComputation.value
+          : this.moistureContentComputation,
+      maxMoisureContent: data.maxMoisureContent.present
+          ? data.maxMoisureContent.value
+          : this.maxMoisureContent,
+      packagingWeight: data.packagingWeight.present
+          ? data.packagingWeight.value
+          : this.packagingWeight,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Crop(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('type: $type, ')
+          ..write('uom: $uom, ')
+          ..write('packaging: $packaging, ')
+          ..write('grading: $grading, ')
+          ..write('moistureContentComputation: $moistureContentComputation, ')
+          ..write('maxMoisureContent: $maxMoisureContent, ')
+          ..write('packagingWeight: $packagingWeight')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, type, uom, packaging, grading,
+      moistureContentComputation, maxMoisureContent, packagingWeight);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Crop &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.type == this.type &&
+          other.uom == this.uom &&
+          other.packaging == this.packaging &&
+          other.grading == this.grading &&
+          other.moistureContentComputation == this.moistureContentComputation &&
+          other.maxMoisureContent == this.maxMoisureContent &&
+          other.packagingWeight == this.packagingWeight);
+}
+
+class CropTableCompanion extends UpdateCompanion<Crop> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String?> type;
+  final Value<String?> uom;
+  final Value<String?> packaging;
+  final Value<String?> grading;
+  final Value<bool> moistureContentComputation;
+  final Value<double?> maxMoisureContent;
+  final Value<double?> packagingWeight;
+  const CropTableCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.type = const Value.absent(),
+    this.uom = const Value.absent(),
+    this.packaging = const Value.absent(),
+    this.grading = const Value.absent(),
+    this.moistureContentComputation = const Value.absent(),
+    this.maxMoisureContent = const Value.absent(),
+    this.packagingWeight = const Value.absent(),
+  });
+  CropTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.type = const Value.absent(),
+    this.uom = const Value.absent(),
+    this.packaging = const Value.absent(),
+    this.grading = const Value.absent(),
+    this.moistureContentComputation = const Value.absent(),
+    this.maxMoisureContent = const Value.absent(),
+    this.packagingWeight = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Crop> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? type,
+    Expression<String>? uom,
+    Expression<String>? packaging,
+    Expression<String>? grading,
+    Expression<bool>? moistureContentComputation,
+    Expression<double>? maxMoisureContent,
+    Expression<double>? packagingWeight,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (type != null) 'type': type,
+      if (uom != null) 'uom': uom,
+      if (packaging != null) 'packaging': packaging,
+      if (grading != null) 'grading': grading,
+      if (moistureContentComputation != null)
+        'moisture_content_computation': moistureContentComputation,
+      if (maxMoisureContent != null) 'max_moisure_content': maxMoisureContent,
+      if (packagingWeight != null) 'packaging_weight': packagingWeight,
+    });
+  }
+
+  CropTableCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String?>? type,
+      Value<String?>? uom,
+      Value<String?>? packaging,
+      Value<String?>? grading,
+      Value<bool>? moistureContentComputation,
+      Value<double?>? maxMoisureContent,
+      Value<double?>? packagingWeight}) {
+    return CropTableCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      uom: uom ?? this.uom,
+      packaging: packaging ?? this.packaging,
+      grading: grading ?? this.grading,
+      moistureContentComputation:
+          moistureContentComputation ?? this.moistureContentComputation,
+      maxMoisureContent: maxMoisureContent ?? this.maxMoisureContent,
+      packagingWeight: packagingWeight ?? this.packagingWeight,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (uom.present) {
+      map['uom'] = Variable<String>(uom.value);
+    }
+    if (packaging.present) {
+      map['packaging'] = Variable<String>(packaging.value);
+    }
+    if (grading.present) {
+      map['grading'] = Variable<String>(grading.value);
+    }
+    if (moistureContentComputation.present) {
+      map['moisture_content_computation'] =
+          Variable<bool>(moistureContentComputation.value);
+    }
+    if (maxMoisureContent.present) {
+      map['max_moisure_content'] = Variable<double>(maxMoisureContent.value);
+    }
+    if (packagingWeight.present) {
+      map['packaging_weight'] = Variable<double>(packagingWeight.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CropTableCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('type: $type, ')
+          ..write('uom: $uom, ')
+          ..write('packaging: $packaging, ')
+          ..write('grading: $grading, ')
+          ..write('moistureContentComputation: $moistureContentComputation, ')
+          ..write('maxMoisureContent: $maxMoisureContent, ')
+          ..write('packagingWeight: $packagingWeight')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WarehouseInventoryItemsTable extends WarehouseInventoryItems
+    with TableInfo<$WarehouseInventoryItemsTable, WarehouseInventory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WarehouseInventoryItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _serverIdMeta =
+      const VerificationMeta('serverId');
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+      'server_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES warehouses (id)'));
+  static const VerificationMeta _collectionCenterMeta =
+      const VerificationMeta('collectionCenter');
+  @override
+  late final GeneratedColumn<int> collectionCenter = GeneratedColumn<int>(
+      'collection_center', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _collectionCenterUuidMeta =
+      const VerificationMeta('collectionCenterUuid');
+  @override
+  late final GeneratedColumn<String> collectionCenterUuid =
+      GeneratedColumn<String>('collection_center_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _collectionCenterNameMeta =
+      const VerificationMeta('collectionCenterName');
+  @override
+  late final GeneratedColumn<String> collectionCenterName =
+      GeneratedColumn<String>('collection_center_name', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _amcosMeta = const VerificationMeta('amcos');
+  @override
+  late final GeneratedColumn<int> amcos = GeneratedColumn<int>(
+      'amcos', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _amcosNameMeta =
+      const VerificationMeta('amcosName');
+  @override
+  late final GeneratedColumn<String> amcosName = GeneratedColumn<String>(
+      'amcos_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _mcuMeta = const VerificationMeta('mcu');
+  @override
+  late final GeneratedColumn<int> mcu = GeneratedColumn<int>(
+      'mcu', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _mcuNameMeta =
+      const VerificationMeta('mcuName');
+  @override
+  late final GeneratedColumn<String> mcuName = GeneratedColumn<String>(
+      'mcu_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cropMeta = const VerificationMeta('crop');
+  @override
+  late final GeneratedColumn<int> crop = GeneratedColumn<int>(
+      'crop', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES crop_table (id)'));
+  static const VerificationMeta _cropNameMeta =
+      const VerificationMeta('cropName');
+  @override
+  late final GeneratedColumn<String> cropName = GeneratedColumn<String>(
+      'crop_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _totalBagsMeta =
+      const VerificationMeta('totalBags');
+  @override
+  late final GeneratedColumn<int> totalBags = GeneratedColumn<int>(
+      'total_bags', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _totalGrossWeightMeta =
+      const VerificationMeta('totalGrossWeight');
+  @override
+  late final GeneratedColumn<double> totalGrossWeight = GeneratedColumn<double>(
+      'total_gross_weight', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _totalPackagingWeightMeta =
+      const VerificationMeta('totalPackagingWeight');
+  @override
+  late final GeneratedColumn<double> totalPackagingWeight =
+      GeneratedColumn<double>('total_packaging_weight', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0));
+  static const VerificationMeta _totalNetWeightMeta =
+      const VerificationMeta('totalNetWeight');
+  @override
+  late final GeneratedColumn<double> totalNetWeight = GeneratedColumn<double>(
+      'total_net_weight', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        totalBags,
+        totalGrossWeight,
+        totalPackagingWeight,
+        totalNetWeight,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'warehouse_inventory_items';
+  @override
+  VerificationContext validateIntegrity(Insertable<WarehouseInventory> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(_serverIdMeta,
+          serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta));
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    } else if (isInserting) {
+      context.missing(_warehouseIdMeta);
+    }
+    if (data.containsKey('collection_center')) {
+      context.handle(
+          _collectionCenterMeta,
+          collectionCenter.isAcceptableOrUnknown(
+              data['collection_center']!, _collectionCenterMeta));
+    }
+    if (data.containsKey('collection_center_uuid')) {
+      context.handle(
+          _collectionCenterUuidMeta,
+          collectionCenterUuid.isAcceptableOrUnknown(
+              data['collection_center_uuid']!, _collectionCenterUuidMeta));
+    } else if (isInserting) {
+      context.missing(_collectionCenterUuidMeta);
+    }
+    if (data.containsKey('collection_center_name')) {
+      context.handle(
+          _collectionCenterNameMeta,
+          collectionCenterName.isAcceptableOrUnknown(
+              data['collection_center_name']!, _collectionCenterNameMeta));
+    }
+    if (data.containsKey('amcos')) {
+      context.handle(
+          _amcosMeta, amcos.isAcceptableOrUnknown(data['amcos']!, _amcosMeta));
+    }
+    if (data.containsKey('amcos_name')) {
+      context.handle(_amcosNameMeta,
+          amcosName.isAcceptableOrUnknown(data['amcos_name']!, _amcosNameMeta));
+    }
+    if (data.containsKey('mcu')) {
+      context.handle(
+          _mcuMeta, mcu.isAcceptableOrUnknown(data['mcu']!, _mcuMeta));
+    }
+    if (data.containsKey('mcu_name')) {
+      context.handle(_mcuNameMeta,
+          mcuName.isAcceptableOrUnknown(data['mcu_name']!, _mcuNameMeta));
+    }
+    if (data.containsKey('crop')) {
+      context.handle(
+          _cropMeta, crop.isAcceptableOrUnknown(data['crop']!, _cropMeta));
+    } else if (isInserting) {
+      context.missing(_cropMeta);
+    }
+    if (data.containsKey('crop_name')) {
+      context.handle(_cropNameMeta,
+          cropName.isAcceptableOrUnknown(data['crop_name']!, _cropNameMeta));
+    } else if (isInserting) {
+      context.missing(_cropNameMeta);
+    }
+    if (data.containsKey('total_bags')) {
+      context.handle(_totalBagsMeta,
+          totalBags.isAcceptableOrUnknown(data['total_bags']!, _totalBagsMeta));
+    }
+    if (data.containsKey('total_gross_weight')) {
+      context.handle(
+          _totalGrossWeightMeta,
+          totalGrossWeight.isAcceptableOrUnknown(
+              data['total_gross_weight']!, _totalGrossWeightMeta));
+    }
+    if (data.containsKey('total_packaging_weight')) {
+      context.handle(
+          _totalPackagingWeightMeta,
+          totalPackagingWeight.isAcceptableOrUnknown(
+              data['total_packaging_weight']!, _totalPackagingWeightMeta));
+    }
+    if (data.containsKey('total_net_weight')) {
+      context.handle(
+          _totalNetWeightMeta,
+          totalNetWeight.isAcceptableOrUnknown(
+              data['total_net_weight']!, _totalNetWeightMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  WarehouseInventory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WarehouseInventory(
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      serverId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}server_id']),
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id'])!,
+      collectionCenter: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}collection_center']),
+      collectionCenterUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_uuid'])!,
+      collectionCenterName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_name']),
+      amcos: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amcos']),
+      amcosName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}amcos_name']),
+      mcu: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}mcu']),
+      mcuName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mcu_name']),
+      crop: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}crop'])!,
+      cropName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}crop_name'])!,
+      totalBags: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}total_bags'])!,
+      totalGrossWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}total_gross_weight'])!,
+      totalPackagingWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}total_packaging_weight'])!,
+      totalNetWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}total_net_weight'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at']),
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+    );
+  }
+
+  @override
+  $WarehouseInventoryItemsTable createAlias(String alias) {
+    return $WarehouseInventoryItemsTable(attachedDatabase, alias);
+  }
+}
+
+class WarehouseInventory extends DataClass
+    implements Insertable<WarehouseInventory> {
+  final String uuid;
+  final int? serverId;
+  final String warehouseId;
+  final int? collectionCenter;
+  final String collectionCenterUuid;
+  final String? collectionCenterName;
+  final int? amcos;
+  final String? amcosName;
+  final int? mcu;
+  final String? mcuName;
+  final int crop;
+  final String cropName;
+  final int totalBags;
+  final double totalGrossWeight;
+  final double totalPackagingWeight;
+  final double totalNetWeight;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const WarehouseInventory(
+      {required this.uuid,
+      this.serverId,
+      required this.warehouseId,
+      this.collectionCenter,
+      required this.collectionCenterUuid,
+      this.collectionCenterName,
+      this.amcos,
+      this.amcosName,
+      this.mcu,
+      this.mcuName,
+      required this.crop,
+      required this.cropName,
+      required this.totalBags,
+      required this.totalGrossWeight,
+      required this.totalPackagingWeight,
+      required this.totalNetWeight,
+      this.createdAt,
+      this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<int>(serverId);
+    }
+    map['warehouse_id'] = Variable<String>(warehouseId);
+    if (!nullToAbsent || collectionCenter != null) {
+      map['collection_center'] = Variable<int>(collectionCenter);
+    }
+    map['collection_center_uuid'] = Variable<String>(collectionCenterUuid);
+    if (!nullToAbsent || collectionCenterName != null) {
+      map['collection_center_name'] = Variable<String>(collectionCenterName);
+    }
+    if (!nullToAbsent || amcos != null) {
+      map['amcos'] = Variable<int>(amcos);
+    }
+    if (!nullToAbsent || amcosName != null) {
+      map['amcos_name'] = Variable<String>(amcosName);
+    }
+    if (!nullToAbsent || mcu != null) {
+      map['mcu'] = Variable<int>(mcu);
+    }
+    if (!nullToAbsent || mcuName != null) {
+      map['mcu_name'] = Variable<String>(mcuName);
+    }
+    map['crop'] = Variable<int>(crop);
+    map['crop_name'] = Variable<String>(cropName);
+    map['total_bags'] = Variable<int>(totalBags);
+    map['total_gross_weight'] = Variable<double>(totalGrossWeight);
+    map['total_packaging_weight'] = Variable<double>(totalPackagingWeight);
+    map['total_net_weight'] = Variable<double>(totalNetWeight);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  WarehouseInventoryItemsCompanion toCompanion(bool nullToAbsent) {
+    return WarehouseInventoryItemsCompanion(
+      uuid: Value(uuid),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      warehouseId: Value(warehouseId),
+      collectionCenter: collectionCenter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenter),
+      collectionCenterUuid: Value(collectionCenterUuid),
+      collectionCenterName: collectionCenterName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenterName),
+      amcos:
+          amcos == null && nullToAbsent ? const Value.absent() : Value(amcos),
+      amcosName: amcosName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amcosName),
+      mcu: mcu == null && nullToAbsent ? const Value.absent() : Value(mcu),
+      mcuName: mcuName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mcuName),
+      crop: Value(crop),
+      cropName: Value(cropName),
+      totalBags: Value(totalBags),
+      totalGrossWeight: Value(totalGrossWeight),
+      totalPackagingWeight: Value(totalPackagingWeight),
+      totalNetWeight: Value(totalNetWeight),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory WarehouseInventory.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WarehouseInventory(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      serverId: serializer.fromJson<int?>(json['serverId']),
+      warehouseId: serializer.fromJson<String>(json['warehouseId']),
+      collectionCenter: serializer.fromJson<int?>(json['collectionCenter']),
+      collectionCenterUuid:
+          serializer.fromJson<String>(json['collectionCenterUuid']),
+      collectionCenterName:
+          serializer.fromJson<String?>(json['collectionCenterName']),
+      amcos: serializer.fromJson<int?>(json['amcos']),
+      amcosName: serializer.fromJson<String?>(json['amcosName']),
+      mcu: serializer.fromJson<int?>(json['mcu']),
+      mcuName: serializer.fromJson<String?>(json['mcuName']),
+      crop: serializer.fromJson<int>(json['crop']),
+      cropName: serializer.fromJson<String>(json['cropName']),
+      totalBags: serializer.fromJson<int>(json['totalBags']),
+      totalGrossWeight: serializer.fromJson<double>(json['totalGrossWeight']),
+      totalPackagingWeight:
+          serializer.fromJson<double>(json['totalPackagingWeight']),
+      totalNetWeight: serializer.fromJson<double>(json['totalNetWeight']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'serverId': serializer.toJson<int?>(serverId),
+      'warehouseId': serializer.toJson<String>(warehouseId),
+      'collectionCenter': serializer.toJson<int?>(collectionCenter),
+      'collectionCenterUuid': serializer.toJson<String>(collectionCenterUuid),
+      'collectionCenterName': serializer.toJson<String?>(collectionCenterName),
+      'amcos': serializer.toJson<int?>(amcos),
+      'amcosName': serializer.toJson<String?>(amcosName),
+      'mcu': serializer.toJson<int?>(mcu),
+      'mcuName': serializer.toJson<String?>(mcuName),
+      'crop': serializer.toJson<int>(crop),
+      'cropName': serializer.toJson<String>(cropName),
+      'totalBags': serializer.toJson<int>(totalBags),
+      'totalGrossWeight': serializer.toJson<double>(totalGrossWeight),
+      'totalPackagingWeight': serializer.toJson<double>(totalPackagingWeight),
+      'totalNetWeight': serializer.toJson<double>(totalNetWeight),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  WarehouseInventory copyWith(
+          {String? uuid,
+          Value<int?> serverId = const Value.absent(),
+          String? warehouseId,
+          Value<int?> collectionCenter = const Value.absent(),
+          String? collectionCenterUuid,
+          Value<String?> collectionCenterName = const Value.absent(),
+          Value<int?> amcos = const Value.absent(),
+          Value<String?> amcosName = const Value.absent(),
+          Value<int?> mcu = const Value.absent(),
+          Value<String?> mcuName = const Value.absent(),
+          int? crop,
+          String? cropName,
+          int? totalBags,
+          double? totalGrossWeight,
+          double? totalPackagingWeight,
+          double? totalNetWeight,
+          Value<DateTime?> createdAt = const Value.absent(),
+          Value<DateTime?> updatedAt = const Value.absent()}) =>
+      WarehouseInventory(
+        uuid: uuid ?? this.uuid,
+        serverId: serverId.present ? serverId.value : this.serverId,
+        warehouseId: warehouseId ?? this.warehouseId,
+        collectionCenter: collectionCenter.present
+            ? collectionCenter.value
+            : this.collectionCenter,
+        collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+        collectionCenterName: collectionCenterName.present
+            ? collectionCenterName.value
+            : this.collectionCenterName,
+        amcos: amcos.present ? amcos.value : this.amcos,
+        amcosName: amcosName.present ? amcosName.value : this.amcosName,
+        mcu: mcu.present ? mcu.value : this.mcu,
+        mcuName: mcuName.present ? mcuName.value : this.mcuName,
+        crop: crop ?? this.crop,
+        cropName: cropName ?? this.cropName,
+        totalBags: totalBags ?? this.totalBags,
+        totalGrossWeight: totalGrossWeight ?? this.totalGrossWeight,
+        totalPackagingWeight: totalPackagingWeight ?? this.totalPackagingWeight,
+        totalNetWeight: totalNetWeight ?? this.totalNetWeight,
+        createdAt: createdAt.present ? createdAt.value : this.createdAt,
+        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+      );
+  WarehouseInventory copyWithCompanion(WarehouseInventoryItemsCompanion data) {
+    return WarehouseInventory(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      collectionCenter: data.collectionCenter.present
+          ? data.collectionCenter.value
+          : this.collectionCenter,
+      collectionCenterUuid: data.collectionCenterUuid.present
+          ? data.collectionCenterUuid.value
+          : this.collectionCenterUuid,
+      collectionCenterName: data.collectionCenterName.present
+          ? data.collectionCenterName.value
+          : this.collectionCenterName,
+      amcos: data.amcos.present ? data.amcos.value : this.amcos,
+      amcosName: data.amcosName.present ? data.amcosName.value : this.amcosName,
+      mcu: data.mcu.present ? data.mcu.value : this.mcu,
+      mcuName: data.mcuName.present ? data.mcuName.value : this.mcuName,
+      crop: data.crop.present ? data.crop.value : this.crop,
+      cropName: data.cropName.present ? data.cropName.value : this.cropName,
+      totalBags: data.totalBags.present ? data.totalBags.value : this.totalBags,
+      totalGrossWeight: data.totalGrossWeight.present
+          ? data.totalGrossWeight.value
+          : this.totalGrossWeight,
+      totalPackagingWeight: data.totalPackagingWeight.present
+          ? data.totalPackagingWeight.value
+          : this.totalPackagingWeight,
+      totalNetWeight: data.totalNetWeight.present
+          ? data.totalNetWeight.value
+          : this.totalNetWeight,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseInventory(')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('totalBags: $totalBags, ')
+          ..write('totalGrossWeight: $totalGrossWeight, ')
+          ..write('totalPackagingWeight: $totalPackagingWeight, ')
+          ..write('totalNetWeight: $totalNetWeight, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      uuid,
+      serverId,
+      warehouseId,
+      collectionCenter,
+      collectionCenterUuid,
+      collectionCenterName,
+      amcos,
+      amcosName,
+      mcu,
+      mcuName,
+      crop,
+      cropName,
+      totalBags,
+      totalGrossWeight,
+      totalPackagingWeight,
+      totalNetWeight,
+      createdAt,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WarehouseInventory &&
+          other.uuid == this.uuid &&
+          other.serverId == this.serverId &&
+          other.warehouseId == this.warehouseId &&
+          other.collectionCenter == this.collectionCenter &&
+          other.collectionCenterUuid == this.collectionCenterUuid &&
+          other.collectionCenterName == this.collectionCenterName &&
+          other.amcos == this.amcos &&
+          other.amcosName == this.amcosName &&
+          other.mcu == this.mcu &&
+          other.mcuName == this.mcuName &&
+          other.crop == this.crop &&
+          other.cropName == this.cropName &&
+          other.totalBags == this.totalBags &&
+          other.totalGrossWeight == this.totalGrossWeight &&
+          other.totalPackagingWeight == this.totalPackagingWeight &&
+          other.totalNetWeight == this.totalNetWeight &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class WarehouseInventoryItemsCompanion
+    extends UpdateCompanion<WarehouseInventory> {
+  final Value<String> uuid;
+  final Value<int?> serverId;
+  final Value<String> warehouseId;
+  final Value<int?> collectionCenter;
+  final Value<String> collectionCenterUuid;
+  final Value<String?> collectionCenterName;
+  final Value<int?> amcos;
+  final Value<String?> amcosName;
+  final Value<int?> mcu;
+  final Value<String?> mcuName;
+  final Value<int> crop;
+  final Value<String> cropName;
+  final Value<int> totalBags;
+  final Value<double> totalGrossWeight;
+  final Value<double> totalPackagingWeight;
+  final Value<double> totalNetWeight;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const WarehouseInventoryItemsCompanion({
+    this.uuid = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.collectionCenter = const Value.absent(),
+    this.collectionCenterUuid = const Value.absent(),
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    this.crop = const Value.absent(),
+    this.cropName = const Value.absent(),
+    this.totalBags = const Value.absent(),
+    this.totalGrossWeight = const Value.absent(),
+    this.totalPackagingWeight = const Value.absent(),
+    this.totalNetWeight = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WarehouseInventoryItemsCompanion.insert({
+    required String uuid,
+    this.serverId = const Value.absent(),
+    required String warehouseId,
+    this.collectionCenter = const Value.absent(),
+    required String collectionCenterUuid,
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    required int crop,
+    required String cropName,
+    this.totalBags = const Value.absent(),
+    this.totalGrossWeight = const Value.absent(),
+    this.totalPackagingWeight = const Value.absent(),
+    this.totalNetWeight = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        warehouseId = Value(warehouseId),
+        collectionCenterUuid = Value(collectionCenterUuid),
+        crop = Value(crop),
+        cropName = Value(cropName);
+  static Insertable<WarehouseInventory> custom({
+    Expression<String>? uuid,
+    Expression<int>? serverId,
+    Expression<String>? warehouseId,
+    Expression<int>? collectionCenter,
+    Expression<String>? collectionCenterUuid,
+    Expression<String>? collectionCenterName,
+    Expression<int>? amcos,
+    Expression<String>? amcosName,
+    Expression<int>? mcu,
+    Expression<String>? mcuName,
+    Expression<int>? crop,
+    Expression<String>? cropName,
+    Expression<int>? totalBags,
+    Expression<double>? totalGrossWeight,
+    Expression<double>? totalPackagingWeight,
+    Expression<double>? totalNetWeight,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (serverId != null) 'server_id': serverId,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (collectionCenter != null) 'collection_center': collectionCenter,
+      if (collectionCenterUuid != null)
+        'collection_center_uuid': collectionCenterUuid,
+      if (collectionCenterName != null)
+        'collection_center_name': collectionCenterName,
+      if (amcos != null) 'amcos': amcos,
+      if (amcosName != null) 'amcos_name': amcosName,
+      if (mcu != null) 'mcu': mcu,
+      if (mcuName != null) 'mcu_name': mcuName,
+      if (crop != null) 'crop': crop,
+      if (cropName != null) 'crop_name': cropName,
+      if (totalBags != null) 'total_bags': totalBags,
+      if (totalGrossWeight != null) 'total_gross_weight': totalGrossWeight,
+      if (totalPackagingWeight != null)
+        'total_packaging_weight': totalPackagingWeight,
+      if (totalNetWeight != null) 'total_net_weight': totalNetWeight,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WarehouseInventoryItemsCompanion copyWith(
+      {Value<String>? uuid,
+      Value<int?>? serverId,
+      Value<String>? warehouseId,
+      Value<int?>? collectionCenter,
+      Value<String>? collectionCenterUuid,
+      Value<String?>? collectionCenterName,
+      Value<int?>? amcos,
+      Value<String?>? amcosName,
+      Value<int?>? mcu,
+      Value<String?>? mcuName,
+      Value<int>? crop,
+      Value<String>? cropName,
+      Value<int>? totalBags,
+      Value<double>? totalGrossWeight,
+      Value<double>? totalPackagingWeight,
+      Value<double>? totalNetWeight,
+      Value<DateTime?>? createdAt,
+      Value<DateTime?>? updatedAt,
+      Value<int>? rowid}) {
+    return WarehouseInventoryItemsCompanion(
+      uuid: uuid ?? this.uuid,
+      serverId: serverId ?? this.serverId,
+      warehouseId: warehouseId ?? this.warehouseId,
+      collectionCenter: collectionCenter ?? this.collectionCenter,
+      collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+      collectionCenterName: collectionCenterName ?? this.collectionCenterName,
+      amcos: amcos ?? this.amcos,
+      amcosName: amcosName ?? this.amcosName,
+      mcu: mcu ?? this.mcu,
+      mcuName: mcuName ?? this.mcuName,
+      crop: crop ?? this.crop,
+      cropName: cropName ?? this.cropName,
+      totalBags: totalBags ?? this.totalBags,
+      totalGrossWeight: totalGrossWeight ?? this.totalGrossWeight,
+      totalPackagingWeight: totalPackagingWeight ?? this.totalPackagingWeight,
+      totalNetWeight: totalNetWeight ?? this.totalNetWeight,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (collectionCenter.present) {
+      map['collection_center'] = Variable<int>(collectionCenter.value);
+    }
+    if (collectionCenterUuid.present) {
+      map['collection_center_uuid'] =
+          Variable<String>(collectionCenterUuid.value);
+    }
+    if (collectionCenterName.present) {
+      map['collection_center_name'] =
+          Variable<String>(collectionCenterName.value);
+    }
+    if (amcos.present) {
+      map['amcos'] = Variable<int>(amcos.value);
+    }
+    if (amcosName.present) {
+      map['amcos_name'] = Variable<String>(amcosName.value);
+    }
+    if (mcu.present) {
+      map['mcu'] = Variable<int>(mcu.value);
+    }
+    if (mcuName.present) {
+      map['mcu_name'] = Variable<String>(mcuName.value);
+    }
+    if (crop.present) {
+      map['crop'] = Variable<int>(crop.value);
+    }
+    if (cropName.present) {
+      map['crop_name'] = Variable<String>(cropName.value);
+    }
+    if (totalBags.present) {
+      map['total_bags'] = Variable<int>(totalBags.value);
+    }
+    if (totalGrossWeight.present) {
+      map['total_gross_weight'] = Variable<double>(totalGrossWeight.value);
+    }
+    if (totalPackagingWeight.present) {
+      map['total_packaging_weight'] =
+          Variable<double>(totalPackagingWeight.value);
+    }
+    if (totalNetWeight.present) {
+      map['total_net_weight'] = Variable<double>(totalNetWeight.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseInventoryItemsCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('totalBags: $totalBags, ')
+          ..write('totalGrossWeight: $totalGrossWeight, ')
+          ..write('totalPackagingWeight: $totalPackagingWeight, ')
+          ..write('totalNetWeight: $totalNetWeight, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WarehouseDispatchesTable extends WarehouseDispatches
+    with TableInfo<$WarehouseDispatchesTable, WarehouseDispatch> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WarehouseDispatchesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('pending'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _serverIdMeta =
+      const VerificationMeta('serverId');
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+      'server_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES warehouses (id)'));
+  static const VerificationMeta _collectionCenterMeta =
+      const VerificationMeta('collectionCenter');
+  @override
+  late final GeneratedColumn<int> collectionCenter = GeneratedColumn<int>(
+      'collection_center', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _collectionCenterUuidMeta =
+      const VerificationMeta('collectionCenterUuid');
+  @override
+  late final GeneratedColumn<String> collectionCenterUuid =
+      GeneratedColumn<String>('collection_center_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _collectionCenterNameMeta =
+      const VerificationMeta('collectionCenterName');
+  @override
+  late final GeneratedColumn<String> collectionCenterName =
+      GeneratedColumn<String>('collection_center_name', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _amcosMeta = const VerificationMeta('amcos');
+  @override
+  late final GeneratedColumn<int> amcos = GeneratedColumn<int>(
+      'amcos', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _amcosNameMeta =
+      const VerificationMeta('amcosName');
+  @override
+  late final GeneratedColumn<String> amcosName = GeneratedColumn<String>(
+      'amcos_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _mcuMeta = const VerificationMeta('mcu');
+  @override
+  late final GeneratedColumn<int> mcu = GeneratedColumn<int>(
+      'mcu', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _mcuNameMeta =
+      const VerificationMeta('mcuName');
+  @override
+  late final GeneratedColumn<String> mcuName = GeneratedColumn<String>(
+      'mcu_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cropMeta = const VerificationMeta('crop');
+  @override
+  late final GeneratedColumn<int> crop = GeneratedColumn<int>(
+      'crop', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES crop_table (id)'));
+  static const VerificationMeta _cropNameMeta =
+      const VerificationMeta('cropName');
+  @override
+  late final GeneratedColumn<String> cropName = GeneratedColumn<String>(
+      'crop_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _recipientTypeMeta =
+      const VerificationMeta('recipientType');
+  @override
+  late final GeneratedColumn<String> recipientType = GeneratedColumn<String>(
+      'recipient_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _recipientNameMeta =
+      const VerificationMeta('recipientName');
+  @override
+  late final GeneratedColumn<String> recipientName = GeneratedColumn<String>(
+      'recipient_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _recipientPhoneMeta =
+      const VerificationMeta('recipientPhone');
+  @override
+  late final GeneratedColumn<String> recipientPhone = GeneratedColumn<String>(
+      'recipient_phone', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _totalBagsMeta =
+      const VerificationMeta('totalBags');
+  @override
+  late final GeneratedColumn<int> totalBags = GeneratedColumn<int>(
+      'total_bags', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _totalGrossWeightMeta =
+      const VerificationMeta('totalGrossWeight');
+  @override
+  late final GeneratedColumn<double> totalGrossWeight = GeneratedColumn<double>(
+      'total_gross_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _totalPackagingWeightMeta =
+      const VerificationMeta('totalPackagingWeight');
+  @override
+  late final GeneratedColumn<double> totalPackagingWeight =
+      GeneratedColumn<double>('total_packaging_weight', aliasedName, false,
+          type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _totalNetWeightMeta =
+      const VerificationMeta('totalNetWeight');
+  @override
+  late final GeneratedColumn<double> totalNetWeight = GeneratedColumn<double>(
+      'total_net_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _moistureContentMeta =
+      const VerificationMeta('moistureContent');
+  @override
+  late final GeneratedColumn<double> moistureContent = GeneratedColumn<double>(
+      'moisture_content', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _dispatchedByMeta =
+      const VerificationMeta('dispatchedBy');
+  @override
+  late final GeneratedColumn<int> dispatchedBy = GeneratedColumn<int>(
+      'dispatched_by', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _dispatchedByNameMeta =
+      const VerificationMeta('dispatchedByName');
+  @override
+  late final GeneratedColumn<String> dispatchedByName = GeneratedColumn<String>(
+      'dispatched_by_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _dispatchedAtMeta =
+      const VerificationMeta('dispatchedAt');
+  @override
+  late final GeneratedColumn<DateTime> dispatchedAt = GeneratedColumn<DateTime>(
+      'dispatched_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        createdAt,
+        updatedAt,
+        deletedAt,
+        syncStatus,
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        recipientType,
+        recipientName,
+        recipientPhone,
+        totalBags,
+        totalGrossWeight,
+        totalPackagingWeight,
+        totalNetWeight,
+        moistureContent,
+        dispatchedBy,
+        dispatchedByName,
+        dispatchedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'warehouse_dispatches';
+  @override
+  VerificationContext validateIntegrity(Insertable<WarehouseDispatch> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(_serverIdMeta,
+          serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta));
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    } else if (isInserting) {
+      context.missing(_warehouseIdMeta);
+    }
+    if (data.containsKey('collection_center')) {
+      context.handle(
+          _collectionCenterMeta,
+          collectionCenter.isAcceptableOrUnknown(
+              data['collection_center']!, _collectionCenterMeta));
+    }
+    if (data.containsKey('collection_center_uuid')) {
+      context.handle(
+          _collectionCenterUuidMeta,
+          collectionCenterUuid.isAcceptableOrUnknown(
+              data['collection_center_uuid']!, _collectionCenterUuidMeta));
+    } else if (isInserting) {
+      context.missing(_collectionCenterUuidMeta);
+    }
+    if (data.containsKey('collection_center_name')) {
+      context.handle(
+          _collectionCenterNameMeta,
+          collectionCenterName.isAcceptableOrUnknown(
+              data['collection_center_name']!, _collectionCenterNameMeta));
+    }
+    if (data.containsKey('amcos')) {
+      context.handle(
+          _amcosMeta, amcos.isAcceptableOrUnknown(data['amcos']!, _amcosMeta));
+    }
+    if (data.containsKey('amcos_name')) {
+      context.handle(_amcosNameMeta,
+          amcosName.isAcceptableOrUnknown(data['amcos_name']!, _amcosNameMeta));
+    }
+    if (data.containsKey('mcu')) {
+      context.handle(
+          _mcuMeta, mcu.isAcceptableOrUnknown(data['mcu']!, _mcuMeta));
+    }
+    if (data.containsKey('mcu_name')) {
+      context.handle(_mcuNameMeta,
+          mcuName.isAcceptableOrUnknown(data['mcu_name']!, _mcuNameMeta));
+    }
+    if (data.containsKey('crop')) {
+      context.handle(
+          _cropMeta, crop.isAcceptableOrUnknown(data['crop']!, _cropMeta));
+    } else if (isInserting) {
+      context.missing(_cropMeta);
+    }
+    if (data.containsKey('crop_name')) {
+      context.handle(_cropNameMeta,
+          cropName.isAcceptableOrUnknown(data['crop_name']!, _cropNameMeta));
+    } else if (isInserting) {
+      context.missing(_cropNameMeta);
+    }
+    if (data.containsKey('recipient_type')) {
+      context.handle(
+          _recipientTypeMeta,
+          recipientType.isAcceptableOrUnknown(
+              data['recipient_type']!, _recipientTypeMeta));
+    } else if (isInserting) {
+      context.missing(_recipientTypeMeta);
+    }
+    if (data.containsKey('recipient_name')) {
+      context.handle(
+          _recipientNameMeta,
+          recipientName.isAcceptableOrUnknown(
+              data['recipient_name']!, _recipientNameMeta));
+    } else if (isInserting) {
+      context.missing(_recipientNameMeta);
+    }
+    if (data.containsKey('recipient_phone')) {
+      context.handle(
+          _recipientPhoneMeta,
+          recipientPhone.isAcceptableOrUnknown(
+              data['recipient_phone']!, _recipientPhoneMeta));
+    }
+    if (data.containsKey('total_bags')) {
+      context.handle(_totalBagsMeta,
+          totalBags.isAcceptableOrUnknown(data['total_bags']!, _totalBagsMeta));
+    } else if (isInserting) {
+      context.missing(_totalBagsMeta);
+    }
+    if (data.containsKey('total_gross_weight')) {
+      context.handle(
+          _totalGrossWeightMeta,
+          totalGrossWeight.isAcceptableOrUnknown(
+              data['total_gross_weight']!, _totalGrossWeightMeta));
+    } else if (isInserting) {
+      context.missing(_totalGrossWeightMeta);
+    }
+    if (data.containsKey('total_packaging_weight')) {
+      context.handle(
+          _totalPackagingWeightMeta,
+          totalPackagingWeight.isAcceptableOrUnknown(
+              data['total_packaging_weight']!, _totalPackagingWeightMeta));
+    } else if (isInserting) {
+      context.missing(_totalPackagingWeightMeta);
+    }
+    if (data.containsKey('total_net_weight')) {
+      context.handle(
+          _totalNetWeightMeta,
+          totalNetWeight.isAcceptableOrUnknown(
+              data['total_net_weight']!, _totalNetWeightMeta));
+    } else if (isInserting) {
+      context.missing(_totalNetWeightMeta);
+    }
+    if (data.containsKey('moisture_content')) {
+      context.handle(
+          _moistureContentMeta,
+          moistureContent.isAcceptableOrUnknown(
+              data['moisture_content']!, _moistureContentMeta));
+    }
+    if (data.containsKey('dispatched_by')) {
+      context.handle(
+          _dispatchedByMeta,
+          dispatchedBy.isAcceptableOrUnknown(
+              data['dispatched_by']!, _dispatchedByMeta));
+    }
+    if (data.containsKey('dispatched_by_name')) {
+      context.handle(
+          _dispatchedByNameMeta,
+          dispatchedByName.isAcceptableOrUnknown(
+              data['dispatched_by_name']!, _dispatchedByNameMeta));
+    }
+    if (data.containsKey('dispatched_at')) {
+      context.handle(
+          _dispatchedAtMeta,
+          dispatchedAt.isAcceptableOrUnknown(
+              data['dispatched_at']!, _dispatchedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  WarehouseDispatch map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WarehouseDispatch(
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      serverId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}server_id']),
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id'])!,
+      collectionCenter: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}collection_center']),
+      collectionCenterUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_uuid'])!,
+      collectionCenterName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_name']),
+      amcos: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amcos']),
+      amcosName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}amcos_name']),
+      mcu: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}mcu']),
+      mcuName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mcu_name']),
+      crop: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}crop'])!,
+      cropName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}crop_name'])!,
+      recipientType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recipient_type'])!,
+      recipientName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recipient_name'])!,
+      recipientPhone: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recipient_phone']),
+      totalBags: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}total_bags'])!,
+      totalGrossWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}total_gross_weight'])!,
+      totalPackagingWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}total_packaging_weight'])!,
+      totalNetWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}total_net_weight'])!,
+      moistureContent: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}moisture_content'])!,
+      dispatchedBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}dispatched_by']),
+      dispatchedByName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}dispatched_by_name']),
+      dispatchedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}dispatched_at'])!,
+    );
+  }
+
+  @override
+  $WarehouseDispatchesTable createAlias(String alias) {
+    return $WarehouseDispatchesTable(attachedDatabase, alias);
+  }
+}
+
+class WarehouseDispatch extends DataClass
+    implements Insertable<WarehouseDispatch> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String syncStatus;
+  final String uuid;
+  final int? serverId;
+  final String warehouseId;
+  final int? collectionCenter;
+  final String collectionCenterUuid;
+  final String? collectionCenterName;
+  final int? amcos;
+  final String? amcosName;
+  final int? mcu;
+  final String? mcuName;
+  final int crop;
+  final String cropName;
+  final String recipientType;
+  final String recipientName;
+  final String? recipientPhone;
+  final int totalBags;
+  final double totalGrossWeight;
+  final double totalPackagingWeight;
+  final double totalNetWeight;
+  final double moistureContent;
+  final int? dispatchedBy;
+  final String? dispatchedByName;
+  final DateTime dispatchedAt;
+  const WarehouseDispatch(
+      {required this.createdAt,
+      required this.updatedAt,
+      this.deletedAt,
+      required this.syncStatus,
+      required this.uuid,
+      this.serverId,
+      required this.warehouseId,
+      this.collectionCenter,
+      required this.collectionCenterUuid,
+      this.collectionCenterName,
+      this.amcos,
+      this.amcosName,
+      this.mcu,
+      this.mcuName,
+      required this.crop,
+      required this.cropName,
+      required this.recipientType,
+      required this.recipientName,
+      this.recipientPhone,
+      required this.totalBags,
+      required this.totalGrossWeight,
+      required this.totalPackagingWeight,
+      required this.totalNetWeight,
+      required this.moistureContent,
+      this.dispatchedBy,
+      this.dispatchedByName,
+      required this.dispatchedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['uuid'] = Variable<String>(uuid);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<int>(serverId);
+    }
+    map['warehouse_id'] = Variable<String>(warehouseId);
+    if (!nullToAbsent || collectionCenter != null) {
+      map['collection_center'] = Variable<int>(collectionCenter);
+    }
+    map['collection_center_uuid'] = Variable<String>(collectionCenterUuid);
+    if (!nullToAbsent || collectionCenterName != null) {
+      map['collection_center_name'] = Variable<String>(collectionCenterName);
+    }
+    if (!nullToAbsent || amcos != null) {
+      map['amcos'] = Variable<int>(amcos);
+    }
+    if (!nullToAbsent || amcosName != null) {
+      map['amcos_name'] = Variable<String>(amcosName);
+    }
+    if (!nullToAbsent || mcu != null) {
+      map['mcu'] = Variable<int>(mcu);
+    }
+    if (!nullToAbsent || mcuName != null) {
+      map['mcu_name'] = Variable<String>(mcuName);
+    }
+    map['crop'] = Variable<int>(crop);
+    map['crop_name'] = Variable<String>(cropName);
+    map['recipient_type'] = Variable<String>(recipientType);
+    map['recipient_name'] = Variable<String>(recipientName);
+    if (!nullToAbsent || recipientPhone != null) {
+      map['recipient_phone'] = Variable<String>(recipientPhone);
+    }
+    map['total_bags'] = Variable<int>(totalBags);
+    map['total_gross_weight'] = Variable<double>(totalGrossWeight);
+    map['total_packaging_weight'] = Variable<double>(totalPackagingWeight);
+    map['total_net_weight'] = Variable<double>(totalNetWeight);
+    map['moisture_content'] = Variable<double>(moistureContent);
+    if (!nullToAbsent || dispatchedBy != null) {
+      map['dispatched_by'] = Variable<int>(dispatchedBy);
+    }
+    if (!nullToAbsent || dispatchedByName != null) {
+      map['dispatched_by_name'] = Variable<String>(dispatchedByName);
+    }
+    map['dispatched_at'] = Variable<DateTime>(dispatchedAt);
+    return map;
+  }
+
+  WarehouseDispatchesCompanion toCompanion(bool nullToAbsent) {
+    return WarehouseDispatchesCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      syncStatus: Value(syncStatus),
+      uuid: Value(uuid),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      warehouseId: Value(warehouseId),
+      collectionCenter: collectionCenter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenter),
+      collectionCenterUuid: Value(collectionCenterUuid),
+      collectionCenterName: collectionCenterName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenterName),
+      amcos:
+          amcos == null && nullToAbsent ? const Value.absent() : Value(amcos),
+      amcosName: amcosName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amcosName),
+      mcu: mcu == null && nullToAbsent ? const Value.absent() : Value(mcu),
+      mcuName: mcuName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mcuName),
+      crop: Value(crop),
+      cropName: Value(cropName),
+      recipientType: Value(recipientType),
+      recipientName: Value(recipientName),
+      recipientPhone: recipientPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recipientPhone),
+      totalBags: Value(totalBags),
+      totalGrossWeight: Value(totalGrossWeight),
+      totalPackagingWeight: Value(totalPackagingWeight),
+      totalNetWeight: Value(totalNetWeight),
+      moistureContent: Value(moistureContent),
+      dispatchedBy: dispatchedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dispatchedBy),
+      dispatchedByName: dispatchedByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dispatchedByName),
+      dispatchedAt: Value(dispatchedAt),
+    );
+  }
+
+  factory WarehouseDispatch.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WarehouseDispatch(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      serverId: serializer.fromJson<int?>(json['serverId']),
+      warehouseId: serializer.fromJson<String>(json['warehouseId']),
+      collectionCenter: serializer.fromJson<int?>(json['collectionCenter']),
+      collectionCenterUuid:
+          serializer.fromJson<String>(json['collectionCenterUuid']),
+      collectionCenterName:
+          serializer.fromJson<String?>(json['collectionCenterName']),
+      amcos: serializer.fromJson<int?>(json['amcos']),
+      amcosName: serializer.fromJson<String?>(json['amcosName']),
+      mcu: serializer.fromJson<int?>(json['mcu']),
+      mcuName: serializer.fromJson<String?>(json['mcuName']),
+      crop: serializer.fromJson<int>(json['crop']),
+      cropName: serializer.fromJson<String>(json['cropName']),
+      recipientType: serializer.fromJson<String>(json['recipientType']),
+      recipientName: serializer.fromJson<String>(json['recipientName']),
+      recipientPhone: serializer.fromJson<String?>(json['recipientPhone']),
+      totalBags: serializer.fromJson<int>(json['totalBags']),
+      totalGrossWeight: serializer.fromJson<double>(json['totalGrossWeight']),
+      totalPackagingWeight:
+          serializer.fromJson<double>(json['totalPackagingWeight']),
+      totalNetWeight: serializer.fromJson<double>(json['totalNetWeight']),
+      moistureContent: serializer.fromJson<double>(json['moistureContent']),
+      dispatchedBy: serializer.fromJson<int?>(json['dispatchedBy']),
+      dispatchedByName: serializer.fromJson<String?>(json['dispatchedByName']),
+      dispatchedAt: serializer.fromJson<DateTime>(json['dispatchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'uuid': serializer.toJson<String>(uuid),
+      'serverId': serializer.toJson<int?>(serverId),
+      'warehouseId': serializer.toJson<String>(warehouseId),
+      'collectionCenter': serializer.toJson<int?>(collectionCenter),
+      'collectionCenterUuid': serializer.toJson<String>(collectionCenterUuid),
+      'collectionCenterName': serializer.toJson<String?>(collectionCenterName),
+      'amcos': serializer.toJson<int?>(amcos),
+      'amcosName': serializer.toJson<String?>(amcosName),
+      'mcu': serializer.toJson<int?>(mcu),
+      'mcuName': serializer.toJson<String?>(mcuName),
+      'crop': serializer.toJson<int>(crop),
+      'cropName': serializer.toJson<String>(cropName),
+      'recipientType': serializer.toJson<String>(recipientType),
+      'recipientName': serializer.toJson<String>(recipientName),
+      'recipientPhone': serializer.toJson<String?>(recipientPhone),
+      'totalBags': serializer.toJson<int>(totalBags),
+      'totalGrossWeight': serializer.toJson<double>(totalGrossWeight),
+      'totalPackagingWeight': serializer.toJson<double>(totalPackagingWeight),
+      'totalNetWeight': serializer.toJson<double>(totalNetWeight),
+      'moistureContent': serializer.toJson<double>(moistureContent),
+      'dispatchedBy': serializer.toJson<int?>(dispatchedBy),
+      'dispatchedByName': serializer.toJson<String?>(dispatchedByName),
+      'dispatchedAt': serializer.toJson<DateTime>(dispatchedAt),
+    };
+  }
+
+  WarehouseDispatch copyWith(
+          {DateTime? createdAt,
+          DateTime? updatedAt,
+          Value<DateTime?> deletedAt = const Value.absent(),
+          String? syncStatus,
+          String? uuid,
+          Value<int?> serverId = const Value.absent(),
+          String? warehouseId,
+          Value<int?> collectionCenter = const Value.absent(),
+          String? collectionCenterUuid,
+          Value<String?> collectionCenterName = const Value.absent(),
+          Value<int?> amcos = const Value.absent(),
+          Value<String?> amcosName = const Value.absent(),
+          Value<int?> mcu = const Value.absent(),
+          Value<String?> mcuName = const Value.absent(),
+          int? crop,
+          String? cropName,
+          String? recipientType,
+          String? recipientName,
+          Value<String?> recipientPhone = const Value.absent(),
+          int? totalBags,
+          double? totalGrossWeight,
+          double? totalPackagingWeight,
+          double? totalNetWeight,
+          double? moistureContent,
+          Value<int?> dispatchedBy = const Value.absent(),
+          Value<String?> dispatchedByName = const Value.absent(),
+          DateTime? dispatchedAt}) =>
+      WarehouseDispatch(
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        syncStatus: syncStatus ?? this.syncStatus,
+        uuid: uuid ?? this.uuid,
+        serverId: serverId.present ? serverId.value : this.serverId,
+        warehouseId: warehouseId ?? this.warehouseId,
+        collectionCenter: collectionCenter.present
+            ? collectionCenter.value
+            : this.collectionCenter,
+        collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+        collectionCenterName: collectionCenterName.present
+            ? collectionCenterName.value
+            : this.collectionCenterName,
+        amcos: amcos.present ? amcos.value : this.amcos,
+        amcosName: amcosName.present ? amcosName.value : this.amcosName,
+        mcu: mcu.present ? mcu.value : this.mcu,
+        mcuName: mcuName.present ? mcuName.value : this.mcuName,
+        crop: crop ?? this.crop,
+        cropName: cropName ?? this.cropName,
+        recipientType: recipientType ?? this.recipientType,
+        recipientName: recipientName ?? this.recipientName,
+        recipientPhone:
+            recipientPhone.present ? recipientPhone.value : this.recipientPhone,
+        totalBags: totalBags ?? this.totalBags,
+        totalGrossWeight: totalGrossWeight ?? this.totalGrossWeight,
+        totalPackagingWeight: totalPackagingWeight ?? this.totalPackagingWeight,
+        totalNetWeight: totalNetWeight ?? this.totalNetWeight,
+        moistureContent: moistureContent ?? this.moistureContent,
+        dispatchedBy:
+            dispatchedBy.present ? dispatchedBy.value : this.dispatchedBy,
+        dispatchedByName: dispatchedByName.present
+            ? dispatchedByName.value
+            : this.dispatchedByName,
+        dispatchedAt: dispatchedAt ?? this.dispatchedAt,
+      );
+  WarehouseDispatch copyWithCompanion(WarehouseDispatchesCompanion data) {
+    return WarehouseDispatch(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      collectionCenter: data.collectionCenter.present
+          ? data.collectionCenter.value
+          : this.collectionCenter,
+      collectionCenterUuid: data.collectionCenterUuid.present
+          ? data.collectionCenterUuid.value
+          : this.collectionCenterUuid,
+      collectionCenterName: data.collectionCenterName.present
+          ? data.collectionCenterName.value
+          : this.collectionCenterName,
+      amcos: data.amcos.present ? data.amcos.value : this.amcos,
+      amcosName: data.amcosName.present ? data.amcosName.value : this.amcosName,
+      mcu: data.mcu.present ? data.mcu.value : this.mcu,
+      mcuName: data.mcuName.present ? data.mcuName.value : this.mcuName,
+      crop: data.crop.present ? data.crop.value : this.crop,
+      cropName: data.cropName.present ? data.cropName.value : this.cropName,
+      recipientType: data.recipientType.present
+          ? data.recipientType.value
+          : this.recipientType,
+      recipientName: data.recipientName.present
+          ? data.recipientName.value
+          : this.recipientName,
+      recipientPhone: data.recipientPhone.present
+          ? data.recipientPhone.value
+          : this.recipientPhone,
+      totalBags: data.totalBags.present ? data.totalBags.value : this.totalBags,
+      totalGrossWeight: data.totalGrossWeight.present
+          ? data.totalGrossWeight.value
+          : this.totalGrossWeight,
+      totalPackagingWeight: data.totalPackagingWeight.present
+          ? data.totalPackagingWeight.value
+          : this.totalPackagingWeight,
+      totalNetWeight: data.totalNetWeight.present
+          ? data.totalNetWeight.value
+          : this.totalNetWeight,
+      moistureContent: data.moistureContent.present
+          ? data.moistureContent.value
+          : this.moistureContent,
+      dispatchedBy: data.dispatchedBy.present
+          ? data.dispatchedBy.value
+          : this.dispatchedBy,
+      dispatchedByName: data.dispatchedByName.present
+          ? data.dispatchedByName.value
+          : this.dispatchedByName,
+      dispatchedAt: data.dispatchedAt.present
+          ? data.dispatchedAt.value
+          : this.dispatchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseDispatch(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('recipientType: $recipientType, ')
+          ..write('recipientName: $recipientName, ')
+          ..write('recipientPhone: $recipientPhone, ')
+          ..write('totalBags: $totalBags, ')
+          ..write('totalGrossWeight: $totalGrossWeight, ')
+          ..write('totalPackagingWeight: $totalPackagingWeight, ')
+          ..write('totalNetWeight: $totalNetWeight, ')
+          ..write('moistureContent: $moistureContent, ')
+          ..write('dispatchedBy: $dispatchedBy, ')
+          ..write('dispatchedByName: $dispatchedByName, ')
+          ..write('dispatchedAt: $dispatchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        createdAt,
+        updatedAt,
+        deletedAt,
+        syncStatus,
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        recipientType,
+        recipientName,
+        recipientPhone,
+        totalBags,
+        totalGrossWeight,
+        totalPackagingWeight,
+        totalNetWeight,
+        moistureContent,
+        dispatchedBy,
+        dispatchedByName,
+        dispatchedAt
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WarehouseDispatch &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.uuid == this.uuid &&
+          other.serverId == this.serverId &&
+          other.warehouseId == this.warehouseId &&
+          other.collectionCenter == this.collectionCenter &&
+          other.collectionCenterUuid == this.collectionCenterUuid &&
+          other.collectionCenterName == this.collectionCenterName &&
+          other.amcos == this.amcos &&
+          other.amcosName == this.amcosName &&
+          other.mcu == this.mcu &&
+          other.mcuName == this.mcuName &&
+          other.crop == this.crop &&
+          other.cropName == this.cropName &&
+          other.recipientType == this.recipientType &&
+          other.recipientName == this.recipientName &&
+          other.recipientPhone == this.recipientPhone &&
+          other.totalBags == this.totalBags &&
+          other.totalGrossWeight == this.totalGrossWeight &&
+          other.totalPackagingWeight == this.totalPackagingWeight &&
+          other.totalNetWeight == this.totalNetWeight &&
+          other.moistureContent == this.moistureContent &&
+          other.dispatchedBy == this.dispatchedBy &&
+          other.dispatchedByName == this.dispatchedByName &&
+          other.dispatchedAt == this.dispatchedAt);
+}
+
+class WarehouseDispatchesCompanion extends UpdateCompanion<WarehouseDispatch> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> syncStatus;
+  final Value<String> uuid;
+  final Value<int?> serverId;
+  final Value<String> warehouseId;
+  final Value<int?> collectionCenter;
+  final Value<String> collectionCenterUuid;
+  final Value<String?> collectionCenterName;
+  final Value<int?> amcos;
+  final Value<String?> amcosName;
+  final Value<int?> mcu;
+  final Value<String?> mcuName;
+  final Value<int> crop;
+  final Value<String> cropName;
+  final Value<String> recipientType;
+  final Value<String> recipientName;
+  final Value<String?> recipientPhone;
+  final Value<int> totalBags;
+  final Value<double> totalGrossWeight;
+  final Value<double> totalPackagingWeight;
+  final Value<double> totalNetWeight;
+  final Value<double> moistureContent;
+  final Value<int?> dispatchedBy;
+  final Value<String?> dispatchedByName;
+  final Value<DateTime> dispatchedAt;
+  final Value<int> rowid;
+  const WarehouseDispatchesCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.collectionCenter = const Value.absent(),
+    this.collectionCenterUuid = const Value.absent(),
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    this.crop = const Value.absent(),
+    this.cropName = const Value.absent(),
+    this.recipientType = const Value.absent(),
+    this.recipientName = const Value.absent(),
+    this.recipientPhone = const Value.absent(),
+    this.totalBags = const Value.absent(),
+    this.totalGrossWeight = const Value.absent(),
+    this.totalPackagingWeight = const Value.absent(),
+    this.totalNetWeight = const Value.absent(),
+    this.moistureContent = const Value.absent(),
+    this.dispatchedBy = const Value.absent(),
+    this.dispatchedByName = const Value.absent(),
+    this.dispatchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WarehouseDispatchesCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String uuid,
+    this.serverId = const Value.absent(),
+    required String warehouseId,
+    this.collectionCenter = const Value.absent(),
+    required String collectionCenterUuid,
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    required int crop,
+    required String cropName,
+    required String recipientType,
+    required String recipientName,
+    this.recipientPhone = const Value.absent(),
+    required int totalBags,
+    required double totalGrossWeight,
+    required double totalPackagingWeight,
+    required double totalNetWeight,
+    this.moistureContent = const Value.absent(),
+    this.dispatchedBy = const Value.absent(),
+    this.dispatchedByName = const Value.absent(),
+    this.dispatchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        warehouseId = Value(warehouseId),
+        collectionCenterUuid = Value(collectionCenterUuid),
+        crop = Value(crop),
+        cropName = Value(cropName),
+        recipientType = Value(recipientType),
+        recipientName = Value(recipientName),
+        totalBags = Value(totalBags),
+        totalGrossWeight = Value(totalGrossWeight),
+        totalPackagingWeight = Value(totalPackagingWeight),
+        totalNetWeight = Value(totalNetWeight);
+  static Insertable<WarehouseDispatch> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? uuid,
+    Expression<int>? serverId,
+    Expression<String>? warehouseId,
+    Expression<int>? collectionCenter,
+    Expression<String>? collectionCenterUuid,
+    Expression<String>? collectionCenterName,
+    Expression<int>? amcos,
+    Expression<String>? amcosName,
+    Expression<int>? mcu,
+    Expression<String>? mcuName,
+    Expression<int>? crop,
+    Expression<String>? cropName,
+    Expression<String>? recipientType,
+    Expression<String>? recipientName,
+    Expression<String>? recipientPhone,
+    Expression<int>? totalBags,
+    Expression<double>? totalGrossWeight,
+    Expression<double>? totalPackagingWeight,
+    Expression<double>? totalNetWeight,
+    Expression<double>? moistureContent,
+    Expression<int>? dispatchedBy,
+    Expression<String>? dispatchedByName,
+    Expression<DateTime>? dispatchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (uuid != null) 'uuid': uuid,
+      if (serverId != null) 'server_id': serverId,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (collectionCenter != null) 'collection_center': collectionCenter,
+      if (collectionCenterUuid != null)
+        'collection_center_uuid': collectionCenterUuid,
+      if (collectionCenterName != null)
+        'collection_center_name': collectionCenterName,
+      if (amcos != null) 'amcos': amcos,
+      if (amcosName != null) 'amcos_name': amcosName,
+      if (mcu != null) 'mcu': mcu,
+      if (mcuName != null) 'mcu_name': mcuName,
+      if (crop != null) 'crop': crop,
+      if (cropName != null) 'crop_name': cropName,
+      if (recipientType != null) 'recipient_type': recipientType,
+      if (recipientName != null) 'recipient_name': recipientName,
+      if (recipientPhone != null) 'recipient_phone': recipientPhone,
+      if (totalBags != null) 'total_bags': totalBags,
+      if (totalGrossWeight != null) 'total_gross_weight': totalGrossWeight,
+      if (totalPackagingWeight != null)
+        'total_packaging_weight': totalPackagingWeight,
+      if (totalNetWeight != null) 'total_net_weight': totalNetWeight,
+      if (moistureContent != null) 'moisture_content': moistureContent,
+      if (dispatchedBy != null) 'dispatched_by': dispatchedBy,
+      if (dispatchedByName != null) 'dispatched_by_name': dispatchedByName,
+      if (dispatchedAt != null) 'dispatched_at': dispatchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WarehouseDispatchesCompanion copyWith(
+      {Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String>? syncStatus,
+      Value<String>? uuid,
+      Value<int?>? serverId,
+      Value<String>? warehouseId,
+      Value<int?>? collectionCenter,
+      Value<String>? collectionCenterUuid,
+      Value<String?>? collectionCenterName,
+      Value<int?>? amcos,
+      Value<String?>? amcosName,
+      Value<int?>? mcu,
+      Value<String?>? mcuName,
+      Value<int>? crop,
+      Value<String>? cropName,
+      Value<String>? recipientType,
+      Value<String>? recipientName,
+      Value<String?>? recipientPhone,
+      Value<int>? totalBags,
+      Value<double>? totalGrossWeight,
+      Value<double>? totalPackagingWeight,
+      Value<double>? totalNetWeight,
+      Value<double>? moistureContent,
+      Value<int?>? dispatchedBy,
+      Value<String?>? dispatchedByName,
+      Value<DateTime>? dispatchedAt,
+      Value<int>? rowid}) {
+    return WarehouseDispatchesCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      uuid: uuid ?? this.uuid,
+      serverId: serverId ?? this.serverId,
+      warehouseId: warehouseId ?? this.warehouseId,
+      collectionCenter: collectionCenter ?? this.collectionCenter,
+      collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+      collectionCenterName: collectionCenterName ?? this.collectionCenterName,
+      amcos: amcos ?? this.amcos,
+      amcosName: amcosName ?? this.amcosName,
+      mcu: mcu ?? this.mcu,
+      mcuName: mcuName ?? this.mcuName,
+      crop: crop ?? this.crop,
+      cropName: cropName ?? this.cropName,
+      recipientType: recipientType ?? this.recipientType,
+      recipientName: recipientName ?? this.recipientName,
+      recipientPhone: recipientPhone ?? this.recipientPhone,
+      totalBags: totalBags ?? this.totalBags,
+      totalGrossWeight: totalGrossWeight ?? this.totalGrossWeight,
+      totalPackagingWeight: totalPackagingWeight ?? this.totalPackagingWeight,
+      totalNetWeight: totalNetWeight ?? this.totalNetWeight,
+      moistureContent: moistureContent ?? this.moistureContent,
+      dispatchedBy: dispatchedBy ?? this.dispatchedBy,
+      dispatchedByName: dispatchedByName ?? this.dispatchedByName,
+      dispatchedAt: dispatchedAt ?? this.dispatchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (collectionCenter.present) {
+      map['collection_center'] = Variable<int>(collectionCenter.value);
+    }
+    if (collectionCenterUuid.present) {
+      map['collection_center_uuid'] =
+          Variable<String>(collectionCenterUuid.value);
+    }
+    if (collectionCenterName.present) {
+      map['collection_center_name'] =
+          Variable<String>(collectionCenterName.value);
+    }
+    if (amcos.present) {
+      map['amcos'] = Variable<int>(amcos.value);
+    }
+    if (amcosName.present) {
+      map['amcos_name'] = Variable<String>(amcosName.value);
+    }
+    if (mcu.present) {
+      map['mcu'] = Variable<int>(mcu.value);
+    }
+    if (mcuName.present) {
+      map['mcu_name'] = Variable<String>(mcuName.value);
+    }
+    if (crop.present) {
+      map['crop'] = Variable<int>(crop.value);
+    }
+    if (cropName.present) {
+      map['crop_name'] = Variable<String>(cropName.value);
+    }
+    if (recipientType.present) {
+      map['recipient_type'] = Variable<String>(recipientType.value);
+    }
+    if (recipientName.present) {
+      map['recipient_name'] = Variable<String>(recipientName.value);
+    }
+    if (recipientPhone.present) {
+      map['recipient_phone'] = Variable<String>(recipientPhone.value);
+    }
+    if (totalBags.present) {
+      map['total_bags'] = Variable<int>(totalBags.value);
+    }
+    if (totalGrossWeight.present) {
+      map['total_gross_weight'] = Variable<double>(totalGrossWeight.value);
+    }
+    if (totalPackagingWeight.present) {
+      map['total_packaging_weight'] =
+          Variable<double>(totalPackagingWeight.value);
+    }
+    if (totalNetWeight.present) {
+      map['total_net_weight'] = Variable<double>(totalNetWeight.value);
+    }
+    if (moistureContent.present) {
+      map['moisture_content'] = Variable<double>(moistureContent.value);
+    }
+    if (dispatchedBy.present) {
+      map['dispatched_by'] = Variable<int>(dispatchedBy.value);
+    }
+    if (dispatchedByName.present) {
+      map['dispatched_by_name'] = Variable<String>(dispatchedByName.value);
+    }
+    if (dispatchedAt.present) {
+      map['dispatched_at'] = Variable<DateTime>(dispatchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseDispatchesCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('recipientType: $recipientType, ')
+          ..write('recipientName: $recipientName, ')
+          ..write('recipientPhone: $recipientPhone, ')
+          ..write('totalBags: $totalBags, ')
+          ..write('totalGrossWeight: $totalGrossWeight, ')
+          ..write('totalPackagingWeight: $totalPackagingWeight, ')
+          ..write('totalNetWeight: $totalNetWeight, ')
+          ..write('moistureContent: $moistureContent, ')
+          ..write('dispatchedBy: $dispatchedBy, ')
+          ..write('dispatchedByName: $dispatchedByName, ')
+          ..write('dispatchedAt: $dispatchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WarehouseStockCountsTable extends WarehouseStockCounts
+    with TableInfo<$WarehouseStockCountsTable, WarehouseStockCount> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WarehouseStockCountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('pending'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _serverIdMeta =
+      const VerificationMeta('serverId');
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+      'server_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES warehouses (id)'));
+  static const VerificationMeta _collectionCenterMeta =
+      const VerificationMeta('collectionCenter');
+  @override
+  late final GeneratedColumn<int> collectionCenter = GeneratedColumn<int>(
+      'collection_center', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _collectionCenterUuidMeta =
+      const VerificationMeta('collectionCenterUuid');
+  @override
+  late final GeneratedColumn<String> collectionCenterUuid =
+      GeneratedColumn<String>('collection_center_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _collectionCenterNameMeta =
+      const VerificationMeta('collectionCenterName');
+  @override
+  late final GeneratedColumn<String> collectionCenterName =
+      GeneratedColumn<String>('collection_center_name', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _amcosMeta = const VerificationMeta('amcos');
+  @override
+  late final GeneratedColumn<int> amcos = GeneratedColumn<int>(
+      'amcos', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _amcosNameMeta =
+      const VerificationMeta('amcosName');
+  @override
+  late final GeneratedColumn<String> amcosName = GeneratedColumn<String>(
+      'amcos_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _mcuMeta = const VerificationMeta('mcu');
+  @override
+  late final GeneratedColumn<int> mcu = GeneratedColumn<int>(
+      'mcu', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _mcuNameMeta =
+      const VerificationMeta('mcuName');
+  @override
+  late final GeneratedColumn<String> mcuName = GeneratedColumn<String>(
+      'mcu_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cropMeta = const VerificationMeta('crop');
+  @override
+  late final GeneratedColumn<int> crop = GeneratedColumn<int>(
+      'crop', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES crop_table (id)'));
+  static const VerificationMeta _cropNameMeta =
+      const VerificationMeta('cropName');
+  @override
+  late final GeneratedColumn<String> cropName = GeneratedColumn<String>(
+      'crop_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _expectedBagsMeta =
+      const VerificationMeta('expectedBags');
+  @override
+  late final GeneratedColumn<int> expectedBags = GeneratedColumn<int>(
+      'expected_bags', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _expectedNetWeightMeta =
+      const VerificationMeta('expectedNetWeight');
+  @override
+  late final GeneratedColumn<double> expectedNetWeight =
+      GeneratedColumn<double>('expected_net_weight', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0));
+  static const VerificationMeta _countedBagsMeta =
+      const VerificationMeta('countedBags');
+  @override
+  late final GeneratedColumn<int> countedBags = GeneratedColumn<int>(
+      'counted_bags', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _countedGrossWeightMeta =
+      const VerificationMeta('countedGrossWeight');
+  @override
+  late final GeneratedColumn<double> countedGrossWeight =
+      GeneratedColumn<double>('counted_gross_weight', aliasedName, false,
+          type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _countedPackagingWeightMeta =
+      const VerificationMeta('countedPackagingWeight');
+  @override
+  late final GeneratedColumn<double> countedPackagingWeight =
+      GeneratedColumn<double>('counted_packaging_weight', aliasedName, false,
+          type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _countedNetWeightMeta =
+      const VerificationMeta('countedNetWeight');
+  @override
+  late final GeneratedColumn<double> countedNetWeight = GeneratedColumn<double>(
+      'counted_net_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _moistureContentMeta =
+      const VerificationMeta('moistureContent');
+  @override
+  late final GeneratedColumn<double> moistureContent = GeneratedColumn<double>(
+      'moisture_content', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _countedByMeta =
+      const VerificationMeta('countedBy');
+  @override
+  late final GeneratedColumn<int> countedBy = GeneratedColumn<int>(
+      'counted_by', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _countedByNameMeta =
+      const VerificationMeta('countedByName');
+  @override
+  late final GeneratedColumn<String> countedByName = GeneratedColumn<String>(
+      'counted_by_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _countedAtMeta =
+      const VerificationMeta('countedAt');
+  @override
+  late final GeneratedColumn<DateTime> countedAt = GeneratedColumn<DateTime>(
+      'counted_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        createdAt,
+        updatedAt,
+        deletedAt,
+        syncStatus,
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        expectedBags,
+        expectedNetWeight,
+        countedBags,
+        countedGrossWeight,
+        countedPackagingWeight,
+        countedNetWeight,
+        moistureContent,
+        countedBy,
+        countedByName,
+        countedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'warehouse_stock_counts';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<WarehouseStockCount> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(_serverIdMeta,
+          serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta));
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    } else if (isInserting) {
+      context.missing(_warehouseIdMeta);
+    }
+    if (data.containsKey('collection_center')) {
+      context.handle(
+          _collectionCenterMeta,
+          collectionCenter.isAcceptableOrUnknown(
+              data['collection_center']!, _collectionCenterMeta));
+    }
+    if (data.containsKey('collection_center_uuid')) {
+      context.handle(
+          _collectionCenterUuidMeta,
+          collectionCenterUuid.isAcceptableOrUnknown(
+              data['collection_center_uuid']!, _collectionCenterUuidMeta));
+    } else if (isInserting) {
+      context.missing(_collectionCenterUuidMeta);
+    }
+    if (data.containsKey('collection_center_name')) {
+      context.handle(
+          _collectionCenterNameMeta,
+          collectionCenterName.isAcceptableOrUnknown(
+              data['collection_center_name']!, _collectionCenterNameMeta));
+    }
+    if (data.containsKey('amcos')) {
+      context.handle(
+          _amcosMeta, amcos.isAcceptableOrUnknown(data['amcos']!, _amcosMeta));
+    }
+    if (data.containsKey('amcos_name')) {
+      context.handle(_amcosNameMeta,
+          amcosName.isAcceptableOrUnknown(data['amcos_name']!, _amcosNameMeta));
+    }
+    if (data.containsKey('mcu')) {
+      context.handle(
+          _mcuMeta, mcu.isAcceptableOrUnknown(data['mcu']!, _mcuMeta));
+    }
+    if (data.containsKey('mcu_name')) {
+      context.handle(_mcuNameMeta,
+          mcuName.isAcceptableOrUnknown(data['mcu_name']!, _mcuNameMeta));
+    }
+    if (data.containsKey('crop')) {
+      context.handle(
+          _cropMeta, crop.isAcceptableOrUnknown(data['crop']!, _cropMeta));
+    } else if (isInserting) {
+      context.missing(_cropMeta);
+    }
+    if (data.containsKey('crop_name')) {
+      context.handle(_cropNameMeta,
+          cropName.isAcceptableOrUnknown(data['crop_name']!, _cropNameMeta));
+    } else if (isInserting) {
+      context.missing(_cropNameMeta);
+    }
+    if (data.containsKey('expected_bags')) {
+      context.handle(
+          _expectedBagsMeta,
+          expectedBags.isAcceptableOrUnknown(
+              data['expected_bags']!, _expectedBagsMeta));
+    }
+    if (data.containsKey('expected_net_weight')) {
+      context.handle(
+          _expectedNetWeightMeta,
+          expectedNetWeight.isAcceptableOrUnknown(
+              data['expected_net_weight']!, _expectedNetWeightMeta));
+    }
+    if (data.containsKey('counted_bags')) {
+      context.handle(
+          _countedBagsMeta,
+          countedBags.isAcceptableOrUnknown(
+              data['counted_bags']!, _countedBagsMeta));
+    } else if (isInserting) {
+      context.missing(_countedBagsMeta);
+    }
+    if (data.containsKey('counted_gross_weight')) {
+      context.handle(
+          _countedGrossWeightMeta,
+          countedGrossWeight.isAcceptableOrUnknown(
+              data['counted_gross_weight']!, _countedGrossWeightMeta));
+    } else if (isInserting) {
+      context.missing(_countedGrossWeightMeta);
+    }
+    if (data.containsKey('counted_packaging_weight')) {
+      context.handle(
+          _countedPackagingWeightMeta,
+          countedPackagingWeight.isAcceptableOrUnknown(
+              data['counted_packaging_weight']!, _countedPackagingWeightMeta));
+    } else if (isInserting) {
+      context.missing(_countedPackagingWeightMeta);
+    }
+    if (data.containsKey('counted_net_weight')) {
+      context.handle(
+          _countedNetWeightMeta,
+          countedNetWeight.isAcceptableOrUnknown(
+              data['counted_net_weight']!, _countedNetWeightMeta));
+    } else if (isInserting) {
+      context.missing(_countedNetWeightMeta);
+    }
+    if (data.containsKey('moisture_content')) {
+      context.handle(
+          _moistureContentMeta,
+          moistureContent.isAcceptableOrUnknown(
+              data['moisture_content']!, _moistureContentMeta));
+    }
+    if (data.containsKey('counted_by')) {
+      context.handle(_countedByMeta,
+          countedBy.isAcceptableOrUnknown(data['counted_by']!, _countedByMeta));
+    }
+    if (data.containsKey('counted_by_name')) {
+      context.handle(
+          _countedByNameMeta,
+          countedByName.isAcceptableOrUnknown(
+              data['counted_by_name']!, _countedByNameMeta));
+    }
+    if (data.containsKey('counted_at')) {
+      context.handle(_countedAtMeta,
+          countedAt.isAcceptableOrUnknown(data['counted_at']!, _countedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  WarehouseStockCount map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WarehouseStockCount(
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      serverId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}server_id']),
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id'])!,
+      collectionCenter: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}collection_center']),
+      collectionCenterUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_uuid'])!,
+      collectionCenterName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_name']),
+      amcos: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amcos']),
+      amcosName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}amcos_name']),
+      mcu: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}mcu']),
+      mcuName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mcu_name']),
+      crop: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}crop'])!,
+      cropName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}crop_name'])!,
+      expectedBags: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}expected_bags'])!,
+      expectedNetWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}expected_net_weight'])!,
+      countedBags: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}counted_bags'])!,
+      countedGrossWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}counted_gross_weight'])!,
+      countedPackagingWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}counted_packaging_weight'])!,
+      countedNetWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}counted_net_weight'])!,
+      moistureContent: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}moisture_content'])!,
+      countedBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}counted_by']),
+      countedByName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}counted_by_name']),
+      countedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}counted_at'])!,
+    );
+  }
+
+  @override
+  $WarehouseStockCountsTable createAlias(String alias) {
+    return $WarehouseStockCountsTable(attachedDatabase, alias);
+  }
+}
+
+class WarehouseStockCount extends DataClass
+    implements Insertable<WarehouseStockCount> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String syncStatus;
+  final String uuid;
+  final int? serverId;
+  final String warehouseId;
+  final int? collectionCenter;
+  final String collectionCenterUuid;
+  final String? collectionCenterName;
+  final int? amcos;
+  final String? amcosName;
+  final int? mcu;
+  final String? mcuName;
+  final int crop;
+  final String cropName;
+  final int expectedBags;
+  final double expectedNetWeight;
+  final int countedBags;
+  final double countedGrossWeight;
+  final double countedPackagingWeight;
+  final double countedNetWeight;
+  final double moistureContent;
+  final int? countedBy;
+  final String? countedByName;
+  final DateTime countedAt;
+  const WarehouseStockCount(
+      {required this.createdAt,
+      required this.updatedAt,
+      this.deletedAt,
+      required this.syncStatus,
+      required this.uuid,
+      this.serverId,
+      required this.warehouseId,
+      this.collectionCenter,
+      required this.collectionCenterUuid,
+      this.collectionCenterName,
+      this.amcos,
+      this.amcosName,
+      this.mcu,
+      this.mcuName,
+      required this.crop,
+      required this.cropName,
+      required this.expectedBags,
+      required this.expectedNetWeight,
+      required this.countedBags,
+      required this.countedGrossWeight,
+      required this.countedPackagingWeight,
+      required this.countedNetWeight,
+      required this.moistureContent,
+      this.countedBy,
+      this.countedByName,
+      required this.countedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['uuid'] = Variable<String>(uuid);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<int>(serverId);
+    }
+    map['warehouse_id'] = Variable<String>(warehouseId);
+    if (!nullToAbsent || collectionCenter != null) {
+      map['collection_center'] = Variable<int>(collectionCenter);
+    }
+    map['collection_center_uuid'] = Variable<String>(collectionCenterUuid);
+    if (!nullToAbsent || collectionCenterName != null) {
+      map['collection_center_name'] = Variable<String>(collectionCenterName);
+    }
+    if (!nullToAbsent || amcos != null) {
+      map['amcos'] = Variable<int>(amcos);
+    }
+    if (!nullToAbsent || amcosName != null) {
+      map['amcos_name'] = Variable<String>(amcosName);
+    }
+    if (!nullToAbsent || mcu != null) {
+      map['mcu'] = Variable<int>(mcu);
+    }
+    if (!nullToAbsent || mcuName != null) {
+      map['mcu_name'] = Variable<String>(mcuName);
+    }
+    map['crop'] = Variable<int>(crop);
+    map['crop_name'] = Variable<String>(cropName);
+    map['expected_bags'] = Variable<int>(expectedBags);
+    map['expected_net_weight'] = Variable<double>(expectedNetWeight);
+    map['counted_bags'] = Variable<int>(countedBags);
+    map['counted_gross_weight'] = Variable<double>(countedGrossWeight);
+    map['counted_packaging_weight'] = Variable<double>(countedPackagingWeight);
+    map['counted_net_weight'] = Variable<double>(countedNetWeight);
+    map['moisture_content'] = Variable<double>(moistureContent);
+    if (!nullToAbsent || countedBy != null) {
+      map['counted_by'] = Variable<int>(countedBy);
+    }
+    if (!nullToAbsent || countedByName != null) {
+      map['counted_by_name'] = Variable<String>(countedByName);
+    }
+    map['counted_at'] = Variable<DateTime>(countedAt);
+    return map;
+  }
+
+  WarehouseStockCountsCompanion toCompanion(bool nullToAbsent) {
+    return WarehouseStockCountsCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      syncStatus: Value(syncStatus),
+      uuid: Value(uuid),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      warehouseId: Value(warehouseId),
+      collectionCenter: collectionCenter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenter),
+      collectionCenterUuid: Value(collectionCenterUuid),
+      collectionCenterName: collectionCenterName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenterName),
+      amcos:
+          amcos == null && nullToAbsent ? const Value.absent() : Value(amcos),
+      amcosName: amcosName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amcosName),
+      mcu: mcu == null && nullToAbsent ? const Value.absent() : Value(mcu),
+      mcuName: mcuName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mcuName),
+      crop: Value(crop),
+      cropName: Value(cropName),
+      expectedBags: Value(expectedBags),
+      expectedNetWeight: Value(expectedNetWeight),
+      countedBags: Value(countedBags),
+      countedGrossWeight: Value(countedGrossWeight),
+      countedPackagingWeight: Value(countedPackagingWeight),
+      countedNetWeight: Value(countedNetWeight),
+      moistureContent: Value(moistureContent),
+      countedBy: countedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(countedBy),
+      countedByName: countedByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(countedByName),
+      countedAt: Value(countedAt),
+    );
+  }
+
+  factory WarehouseStockCount.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WarehouseStockCount(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      serverId: serializer.fromJson<int?>(json['serverId']),
+      warehouseId: serializer.fromJson<String>(json['warehouseId']),
+      collectionCenter: serializer.fromJson<int?>(json['collectionCenter']),
+      collectionCenterUuid:
+          serializer.fromJson<String>(json['collectionCenterUuid']),
+      collectionCenterName:
+          serializer.fromJson<String?>(json['collectionCenterName']),
+      amcos: serializer.fromJson<int?>(json['amcos']),
+      amcosName: serializer.fromJson<String?>(json['amcosName']),
+      mcu: serializer.fromJson<int?>(json['mcu']),
+      mcuName: serializer.fromJson<String?>(json['mcuName']),
+      crop: serializer.fromJson<int>(json['crop']),
+      cropName: serializer.fromJson<String>(json['cropName']),
+      expectedBags: serializer.fromJson<int>(json['expectedBags']),
+      expectedNetWeight: serializer.fromJson<double>(json['expectedNetWeight']),
+      countedBags: serializer.fromJson<int>(json['countedBags']),
+      countedGrossWeight:
+          serializer.fromJson<double>(json['countedGrossWeight']),
+      countedPackagingWeight:
+          serializer.fromJson<double>(json['countedPackagingWeight']),
+      countedNetWeight: serializer.fromJson<double>(json['countedNetWeight']),
+      moistureContent: serializer.fromJson<double>(json['moistureContent']),
+      countedBy: serializer.fromJson<int?>(json['countedBy']),
+      countedByName: serializer.fromJson<String?>(json['countedByName']),
+      countedAt: serializer.fromJson<DateTime>(json['countedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'uuid': serializer.toJson<String>(uuid),
+      'serverId': serializer.toJson<int?>(serverId),
+      'warehouseId': serializer.toJson<String>(warehouseId),
+      'collectionCenter': serializer.toJson<int?>(collectionCenter),
+      'collectionCenterUuid': serializer.toJson<String>(collectionCenterUuid),
+      'collectionCenterName': serializer.toJson<String?>(collectionCenterName),
+      'amcos': serializer.toJson<int?>(amcos),
+      'amcosName': serializer.toJson<String?>(amcosName),
+      'mcu': serializer.toJson<int?>(mcu),
+      'mcuName': serializer.toJson<String?>(mcuName),
+      'crop': serializer.toJson<int>(crop),
+      'cropName': serializer.toJson<String>(cropName),
+      'expectedBags': serializer.toJson<int>(expectedBags),
+      'expectedNetWeight': serializer.toJson<double>(expectedNetWeight),
+      'countedBags': serializer.toJson<int>(countedBags),
+      'countedGrossWeight': serializer.toJson<double>(countedGrossWeight),
+      'countedPackagingWeight':
+          serializer.toJson<double>(countedPackagingWeight),
+      'countedNetWeight': serializer.toJson<double>(countedNetWeight),
+      'moistureContent': serializer.toJson<double>(moistureContent),
+      'countedBy': serializer.toJson<int?>(countedBy),
+      'countedByName': serializer.toJson<String?>(countedByName),
+      'countedAt': serializer.toJson<DateTime>(countedAt),
+    };
+  }
+
+  WarehouseStockCount copyWith(
+          {DateTime? createdAt,
+          DateTime? updatedAt,
+          Value<DateTime?> deletedAt = const Value.absent(),
+          String? syncStatus,
+          String? uuid,
+          Value<int?> serverId = const Value.absent(),
+          String? warehouseId,
+          Value<int?> collectionCenter = const Value.absent(),
+          String? collectionCenterUuid,
+          Value<String?> collectionCenterName = const Value.absent(),
+          Value<int?> amcos = const Value.absent(),
+          Value<String?> amcosName = const Value.absent(),
+          Value<int?> mcu = const Value.absent(),
+          Value<String?> mcuName = const Value.absent(),
+          int? crop,
+          String? cropName,
+          int? expectedBags,
+          double? expectedNetWeight,
+          int? countedBags,
+          double? countedGrossWeight,
+          double? countedPackagingWeight,
+          double? countedNetWeight,
+          double? moistureContent,
+          Value<int?> countedBy = const Value.absent(),
+          Value<String?> countedByName = const Value.absent(),
+          DateTime? countedAt}) =>
+      WarehouseStockCount(
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        syncStatus: syncStatus ?? this.syncStatus,
+        uuid: uuid ?? this.uuid,
+        serverId: serverId.present ? serverId.value : this.serverId,
+        warehouseId: warehouseId ?? this.warehouseId,
+        collectionCenter: collectionCenter.present
+            ? collectionCenter.value
+            : this.collectionCenter,
+        collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+        collectionCenterName: collectionCenterName.present
+            ? collectionCenterName.value
+            : this.collectionCenterName,
+        amcos: amcos.present ? amcos.value : this.amcos,
+        amcosName: amcosName.present ? amcosName.value : this.amcosName,
+        mcu: mcu.present ? mcu.value : this.mcu,
+        mcuName: mcuName.present ? mcuName.value : this.mcuName,
+        crop: crop ?? this.crop,
+        cropName: cropName ?? this.cropName,
+        expectedBags: expectedBags ?? this.expectedBags,
+        expectedNetWeight: expectedNetWeight ?? this.expectedNetWeight,
+        countedBags: countedBags ?? this.countedBags,
+        countedGrossWeight: countedGrossWeight ?? this.countedGrossWeight,
+        countedPackagingWeight:
+            countedPackagingWeight ?? this.countedPackagingWeight,
+        countedNetWeight: countedNetWeight ?? this.countedNetWeight,
+        moistureContent: moistureContent ?? this.moistureContent,
+        countedBy: countedBy.present ? countedBy.value : this.countedBy,
+        countedByName:
+            countedByName.present ? countedByName.value : this.countedByName,
+        countedAt: countedAt ?? this.countedAt,
+      );
+  WarehouseStockCount copyWithCompanion(WarehouseStockCountsCompanion data) {
+    return WarehouseStockCount(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      collectionCenter: data.collectionCenter.present
+          ? data.collectionCenter.value
+          : this.collectionCenter,
+      collectionCenterUuid: data.collectionCenterUuid.present
+          ? data.collectionCenterUuid.value
+          : this.collectionCenterUuid,
+      collectionCenterName: data.collectionCenterName.present
+          ? data.collectionCenterName.value
+          : this.collectionCenterName,
+      amcos: data.amcos.present ? data.amcos.value : this.amcos,
+      amcosName: data.amcosName.present ? data.amcosName.value : this.amcosName,
+      mcu: data.mcu.present ? data.mcu.value : this.mcu,
+      mcuName: data.mcuName.present ? data.mcuName.value : this.mcuName,
+      crop: data.crop.present ? data.crop.value : this.crop,
+      cropName: data.cropName.present ? data.cropName.value : this.cropName,
+      expectedBags: data.expectedBags.present
+          ? data.expectedBags.value
+          : this.expectedBags,
+      expectedNetWeight: data.expectedNetWeight.present
+          ? data.expectedNetWeight.value
+          : this.expectedNetWeight,
+      countedBags:
+          data.countedBags.present ? data.countedBags.value : this.countedBags,
+      countedGrossWeight: data.countedGrossWeight.present
+          ? data.countedGrossWeight.value
+          : this.countedGrossWeight,
+      countedPackagingWeight: data.countedPackagingWeight.present
+          ? data.countedPackagingWeight.value
+          : this.countedPackagingWeight,
+      countedNetWeight: data.countedNetWeight.present
+          ? data.countedNetWeight.value
+          : this.countedNetWeight,
+      moistureContent: data.moistureContent.present
+          ? data.moistureContent.value
+          : this.moistureContent,
+      countedBy: data.countedBy.present ? data.countedBy.value : this.countedBy,
+      countedByName: data.countedByName.present
+          ? data.countedByName.value
+          : this.countedByName,
+      countedAt: data.countedAt.present ? data.countedAt.value : this.countedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseStockCount(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('expectedBags: $expectedBags, ')
+          ..write('expectedNetWeight: $expectedNetWeight, ')
+          ..write('countedBags: $countedBags, ')
+          ..write('countedGrossWeight: $countedGrossWeight, ')
+          ..write('countedPackagingWeight: $countedPackagingWeight, ')
+          ..write('countedNetWeight: $countedNetWeight, ')
+          ..write('moistureContent: $moistureContent, ')
+          ..write('countedBy: $countedBy, ')
+          ..write('countedByName: $countedByName, ')
+          ..write('countedAt: $countedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        createdAt,
+        updatedAt,
+        deletedAt,
+        syncStatus,
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        expectedBags,
+        expectedNetWeight,
+        countedBags,
+        countedGrossWeight,
+        countedPackagingWeight,
+        countedNetWeight,
+        moistureContent,
+        countedBy,
+        countedByName,
+        countedAt
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WarehouseStockCount &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.uuid == this.uuid &&
+          other.serverId == this.serverId &&
+          other.warehouseId == this.warehouseId &&
+          other.collectionCenter == this.collectionCenter &&
+          other.collectionCenterUuid == this.collectionCenterUuid &&
+          other.collectionCenterName == this.collectionCenterName &&
+          other.amcos == this.amcos &&
+          other.amcosName == this.amcosName &&
+          other.mcu == this.mcu &&
+          other.mcuName == this.mcuName &&
+          other.crop == this.crop &&
+          other.cropName == this.cropName &&
+          other.expectedBags == this.expectedBags &&
+          other.expectedNetWeight == this.expectedNetWeight &&
+          other.countedBags == this.countedBags &&
+          other.countedGrossWeight == this.countedGrossWeight &&
+          other.countedPackagingWeight == this.countedPackagingWeight &&
+          other.countedNetWeight == this.countedNetWeight &&
+          other.moistureContent == this.moistureContent &&
+          other.countedBy == this.countedBy &&
+          other.countedByName == this.countedByName &&
+          other.countedAt == this.countedAt);
+}
+
+class WarehouseStockCountsCompanion
+    extends UpdateCompanion<WarehouseStockCount> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> syncStatus;
+  final Value<String> uuid;
+  final Value<int?> serverId;
+  final Value<String> warehouseId;
+  final Value<int?> collectionCenter;
+  final Value<String> collectionCenterUuid;
+  final Value<String?> collectionCenterName;
+  final Value<int?> amcos;
+  final Value<String?> amcosName;
+  final Value<int?> mcu;
+  final Value<String?> mcuName;
+  final Value<int> crop;
+  final Value<String> cropName;
+  final Value<int> expectedBags;
+  final Value<double> expectedNetWeight;
+  final Value<int> countedBags;
+  final Value<double> countedGrossWeight;
+  final Value<double> countedPackagingWeight;
+  final Value<double> countedNetWeight;
+  final Value<double> moistureContent;
+  final Value<int?> countedBy;
+  final Value<String?> countedByName;
+  final Value<DateTime> countedAt;
+  final Value<int> rowid;
+  const WarehouseStockCountsCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.collectionCenter = const Value.absent(),
+    this.collectionCenterUuid = const Value.absent(),
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    this.crop = const Value.absent(),
+    this.cropName = const Value.absent(),
+    this.expectedBags = const Value.absent(),
+    this.expectedNetWeight = const Value.absent(),
+    this.countedBags = const Value.absent(),
+    this.countedGrossWeight = const Value.absent(),
+    this.countedPackagingWeight = const Value.absent(),
+    this.countedNetWeight = const Value.absent(),
+    this.moistureContent = const Value.absent(),
+    this.countedBy = const Value.absent(),
+    this.countedByName = const Value.absent(),
+    this.countedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WarehouseStockCountsCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String uuid,
+    this.serverId = const Value.absent(),
+    required String warehouseId,
+    this.collectionCenter = const Value.absent(),
+    required String collectionCenterUuid,
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    required int crop,
+    required String cropName,
+    this.expectedBags = const Value.absent(),
+    this.expectedNetWeight = const Value.absent(),
+    required int countedBags,
+    required double countedGrossWeight,
+    required double countedPackagingWeight,
+    required double countedNetWeight,
+    this.moistureContent = const Value.absent(),
+    this.countedBy = const Value.absent(),
+    this.countedByName = const Value.absent(),
+    this.countedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        warehouseId = Value(warehouseId),
+        collectionCenterUuid = Value(collectionCenterUuid),
+        crop = Value(crop),
+        cropName = Value(cropName),
+        countedBags = Value(countedBags),
+        countedGrossWeight = Value(countedGrossWeight),
+        countedPackagingWeight = Value(countedPackagingWeight),
+        countedNetWeight = Value(countedNetWeight);
+  static Insertable<WarehouseStockCount> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? uuid,
+    Expression<int>? serverId,
+    Expression<String>? warehouseId,
+    Expression<int>? collectionCenter,
+    Expression<String>? collectionCenterUuid,
+    Expression<String>? collectionCenterName,
+    Expression<int>? amcos,
+    Expression<String>? amcosName,
+    Expression<int>? mcu,
+    Expression<String>? mcuName,
+    Expression<int>? crop,
+    Expression<String>? cropName,
+    Expression<int>? expectedBags,
+    Expression<double>? expectedNetWeight,
+    Expression<int>? countedBags,
+    Expression<double>? countedGrossWeight,
+    Expression<double>? countedPackagingWeight,
+    Expression<double>? countedNetWeight,
+    Expression<double>? moistureContent,
+    Expression<int>? countedBy,
+    Expression<String>? countedByName,
+    Expression<DateTime>? countedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (uuid != null) 'uuid': uuid,
+      if (serverId != null) 'server_id': serverId,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (collectionCenter != null) 'collection_center': collectionCenter,
+      if (collectionCenterUuid != null)
+        'collection_center_uuid': collectionCenterUuid,
+      if (collectionCenterName != null)
+        'collection_center_name': collectionCenterName,
+      if (amcos != null) 'amcos': amcos,
+      if (amcosName != null) 'amcos_name': amcosName,
+      if (mcu != null) 'mcu': mcu,
+      if (mcuName != null) 'mcu_name': mcuName,
+      if (crop != null) 'crop': crop,
+      if (cropName != null) 'crop_name': cropName,
+      if (expectedBags != null) 'expected_bags': expectedBags,
+      if (expectedNetWeight != null) 'expected_net_weight': expectedNetWeight,
+      if (countedBags != null) 'counted_bags': countedBags,
+      if (countedGrossWeight != null)
+        'counted_gross_weight': countedGrossWeight,
+      if (countedPackagingWeight != null)
+        'counted_packaging_weight': countedPackagingWeight,
+      if (countedNetWeight != null) 'counted_net_weight': countedNetWeight,
+      if (moistureContent != null) 'moisture_content': moistureContent,
+      if (countedBy != null) 'counted_by': countedBy,
+      if (countedByName != null) 'counted_by_name': countedByName,
+      if (countedAt != null) 'counted_at': countedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WarehouseStockCountsCompanion copyWith(
+      {Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String>? syncStatus,
+      Value<String>? uuid,
+      Value<int?>? serverId,
+      Value<String>? warehouseId,
+      Value<int?>? collectionCenter,
+      Value<String>? collectionCenterUuid,
+      Value<String?>? collectionCenterName,
+      Value<int?>? amcos,
+      Value<String?>? amcosName,
+      Value<int?>? mcu,
+      Value<String?>? mcuName,
+      Value<int>? crop,
+      Value<String>? cropName,
+      Value<int>? expectedBags,
+      Value<double>? expectedNetWeight,
+      Value<int>? countedBags,
+      Value<double>? countedGrossWeight,
+      Value<double>? countedPackagingWeight,
+      Value<double>? countedNetWeight,
+      Value<double>? moistureContent,
+      Value<int?>? countedBy,
+      Value<String?>? countedByName,
+      Value<DateTime>? countedAt,
+      Value<int>? rowid}) {
+    return WarehouseStockCountsCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      uuid: uuid ?? this.uuid,
+      serverId: serverId ?? this.serverId,
+      warehouseId: warehouseId ?? this.warehouseId,
+      collectionCenter: collectionCenter ?? this.collectionCenter,
+      collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+      collectionCenterName: collectionCenterName ?? this.collectionCenterName,
+      amcos: amcos ?? this.amcos,
+      amcosName: amcosName ?? this.amcosName,
+      mcu: mcu ?? this.mcu,
+      mcuName: mcuName ?? this.mcuName,
+      crop: crop ?? this.crop,
+      cropName: cropName ?? this.cropName,
+      expectedBags: expectedBags ?? this.expectedBags,
+      expectedNetWeight: expectedNetWeight ?? this.expectedNetWeight,
+      countedBags: countedBags ?? this.countedBags,
+      countedGrossWeight: countedGrossWeight ?? this.countedGrossWeight,
+      countedPackagingWeight:
+          countedPackagingWeight ?? this.countedPackagingWeight,
+      countedNetWeight: countedNetWeight ?? this.countedNetWeight,
+      moistureContent: moistureContent ?? this.moistureContent,
+      countedBy: countedBy ?? this.countedBy,
+      countedByName: countedByName ?? this.countedByName,
+      countedAt: countedAt ?? this.countedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (collectionCenter.present) {
+      map['collection_center'] = Variable<int>(collectionCenter.value);
+    }
+    if (collectionCenterUuid.present) {
+      map['collection_center_uuid'] =
+          Variable<String>(collectionCenterUuid.value);
+    }
+    if (collectionCenterName.present) {
+      map['collection_center_name'] =
+          Variable<String>(collectionCenterName.value);
+    }
+    if (amcos.present) {
+      map['amcos'] = Variable<int>(amcos.value);
+    }
+    if (amcosName.present) {
+      map['amcos_name'] = Variable<String>(amcosName.value);
+    }
+    if (mcu.present) {
+      map['mcu'] = Variable<int>(mcu.value);
+    }
+    if (mcuName.present) {
+      map['mcu_name'] = Variable<String>(mcuName.value);
+    }
+    if (crop.present) {
+      map['crop'] = Variable<int>(crop.value);
+    }
+    if (cropName.present) {
+      map['crop_name'] = Variable<String>(cropName.value);
+    }
+    if (expectedBags.present) {
+      map['expected_bags'] = Variable<int>(expectedBags.value);
+    }
+    if (expectedNetWeight.present) {
+      map['expected_net_weight'] = Variable<double>(expectedNetWeight.value);
+    }
+    if (countedBags.present) {
+      map['counted_bags'] = Variable<int>(countedBags.value);
+    }
+    if (countedGrossWeight.present) {
+      map['counted_gross_weight'] = Variable<double>(countedGrossWeight.value);
+    }
+    if (countedPackagingWeight.present) {
+      map['counted_packaging_weight'] =
+          Variable<double>(countedPackagingWeight.value);
+    }
+    if (countedNetWeight.present) {
+      map['counted_net_weight'] = Variable<double>(countedNetWeight.value);
+    }
+    if (moistureContent.present) {
+      map['moisture_content'] = Variable<double>(moistureContent.value);
+    }
+    if (countedBy.present) {
+      map['counted_by'] = Variable<int>(countedBy.value);
+    }
+    if (countedByName.present) {
+      map['counted_by_name'] = Variable<String>(countedByName.value);
+    }
+    if (countedAt.present) {
+      map['counted_at'] = Variable<DateTime>(countedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseStockCountsCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('expectedBags: $expectedBags, ')
+          ..write('expectedNetWeight: $expectedNetWeight, ')
+          ..write('countedBags: $countedBags, ')
+          ..write('countedGrossWeight: $countedGrossWeight, ')
+          ..write('countedPackagingWeight: $countedPackagingWeight, ')
+          ..write('countedNetWeight: $countedNetWeight, ')
+          ..write('moistureContent: $moistureContent, ')
+          ..write('countedBy: $countedBy, ')
+          ..write('countedByName: $countedByName, ')
+          ..write('countedAt: $countedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WarehouseStockAdjustmentsTable extends WarehouseStockAdjustments
+    with TableInfo<$WarehouseStockAdjustmentsTable, WarehouseStockAdjustment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WarehouseStockAdjustmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncStatusMeta =
+      const VerificationMeta('syncStatus');
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+      'sync_status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('pending'));
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _serverIdMeta =
+      const VerificationMeta('serverId');
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+      'server_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES warehouses (id)'));
+  static const VerificationMeta _collectionCenterMeta =
+      const VerificationMeta('collectionCenter');
+  @override
+  late final GeneratedColumn<int> collectionCenter = GeneratedColumn<int>(
+      'collection_center', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _collectionCenterUuidMeta =
+      const VerificationMeta('collectionCenterUuid');
+  @override
+  late final GeneratedColumn<String> collectionCenterUuid =
+      GeneratedColumn<String>('collection_center_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _collectionCenterNameMeta =
+      const VerificationMeta('collectionCenterName');
+  @override
+  late final GeneratedColumn<String> collectionCenterName =
+      GeneratedColumn<String>('collection_center_name', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _amcosMeta = const VerificationMeta('amcos');
+  @override
+  late final GeneratedColumn<int> amcos = GeneratedColumn<int>(
+      'amcos', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _amcosNameMeta =
+      const VerificationMeta('amcosName');
+  @override
+  late final GeneratedColumn<String> amcosName = GeneratedColumn<String>(
+      'amcos_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _mcuMeta = const VerificationMeta('mcu');
+  @override
+  late final GeneratedColumn<int> mcu = GeneratedColumn<int>(
+      'mcu', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _mcuNameMeta =
+      const VerificationMeta('mcuName');
+  @override
+  late final GeneratedColumn<String> mcuName = GeneratedColumn<String>(
+      'mcu_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cropMeta = const VerificationMeta('crop');
+  @override
+  late final GeneratedColumn<int> crop = GeneratedColumn<int>(
+      'crop', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES crop_table (id)'));
+  static const VerificationMeta _cropNameMeta =
+      const VerificationMeta('cropName');
+  @override
+  late final GeneratedColumn<String> cropName = GeneratedColumn<String>(
+      'crop_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _adjustmentTypeMeta =
+      const VerificationMeta('adjustmentType');
+  @override
+  late final GeneratedColumn<String> adjustmentType = GeneratedColumn<String>(
+      'adjustment_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+      'reason', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _bagsMeta = const VerificationMeta('bags');
+  @override
+  late final GeneratedColumn<int> bags = GeneratedColumn<int>(
+      'bags', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _grossWeightMeta =
+      const VerificationMeta('grossWeight');
+  @override
+  late final GeneratedColumn<double> grossWeight = GeneratedColumn<double>(
+      'gross_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _packagingWeightMeta =
+      const VerificationMeta('packagingWeight');
+  @override
+  late final GeneratedColumn<double> packagingWeight = GeneratedColumn<double>(
+      'packaging_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _netWeightMeta =
+      const VerificationMeta('netWeight');
+  @override
+  late final GeneratedColumn<double> netWeight = GeneratedColumn<double>(
+      'net_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _moistureContentMeta =
+      const VerificationMeta('moistureContent');
+  @override
+  late final GeneratedColumn<double> moistureContent = GeneratedColumn<double>(
+      'moisture_content', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _adjustedByMeta =
+      const VerificationMeta('adjustedBy');
+  @override
+  late final GeneratedColumn<int> adjustedBy = GeneratedColumn<int>(
+      'adjusted_by', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _adjustedByNameMeta =
+      const VerificationMeta('adjustedByName');
+  @override
+  late final GeneratedColumn<String> adjustedByName = GeneratedColumn<String>(
+      'adjusted_by_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _adjustedAtMeta =
+      const VerificationMeta('adjustedAt');
+  @override
+  late final GeneratedColumn<DateTime> adjustedAt = GeneratedColumn<DateTime>(
+      'adjusted_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        createdAt,
+        updatedAt,
+        deletedAt,
+        syncStatus,
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        adjustmentType,
+        reason,
+        bags,
+        grossWeight,
+        packagingWeight,
+        netWeight,
+        moistureContent,
+        adjustedBy,
+        adjustedByName,
+        adjustedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'warehouse_stock_adjustments';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<WarehouseStockAdjustment> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+          _syncStatusMeta,
+          syncStatus.isAcceptableOrUnknown(
+              data['sync_status']!, _syncStatusMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(_serverIdMeta,
+          serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta));
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    } else if (isInserting) {
+      context.missing(_warehouseIdMeta);
+    }
+    if (data.containsKey('collection_center')) {
+      context.handle(
+          _collectionCenterMeta,
+          collectionCenter.isAcceptableOrUnknown(
+              data['collection_center']!, _collectionCenterMeta));
+    }
+    if (data.containsKey('collection_center_uuid')) {
+      context.handle(
+          _collectionCenterUuidMeta,
+          collectionCenterUuid.isAcceptableOrUnknown(
+              data['collection_center_uuid']!, _collectionCenterUuidMeta));
+    } else if (isInserting) {
+      context.missing(_collectionCenterUuidMeta);
+    }
+    if (data.containsKey('collection_center_name')) {
+      context.handle(
+          _collectionCenterNameMeta,
+          collectionCenterName.isAcceptableOrUnknown(
+              data['collection_center_name']!, _collectionCenterNameMeta));
+    }
+    if (data.containsKey('amcos')) {
+      context.handle(
+          _amcosMeta, amcos.isAcceptableOrUnknown(data['amcos']!, _amcosMeta));
+    }
+    if (data.containsKey('amcos_name')) {
+      context.handle(_amcosNameMeta,
+          amcosName.isAcceptableOrUnknown(data['amcos_name']!, _amcosNameMeta));
+    }
+    if (data.containsKey('mcu')) {
+      context.handle(
+          _mcuMeta, mcu.isAcceptableOrUnknown(data['mcu']!, _mcuMeta));
+    }
+    if (data.containsKey('mcu_name')) {
+      context.handle(_mcuNameMeta,
+          mcuName.isAcceptableOrUnknown(data['mcu_name']!, _mcuNameMeta));
+    }
+    if (data.containsKey('crop')) {
+      context.handle(
+          _cropMeta, crop.isAcceptableOrUnknown(data['crop']!, _cropMeta));
+    } else if (isInserting) {
+      context.missing(_cropMeta);
+    }
+    if (data.containsKey('crop_name')) {
+      context.handle(_cropNameMeta,
+          cropName.isAcceptableOrUnknown(data['crop_name']!, _cropNameMeta));
+    } else if (isInserting) {
+      context.missing(_cropNameMeta);
+    }
+    if (data.containsKey('adjustment_type')) {
+      context.handle(
+          _adjustmentTypeMeta,
+          adjustmentType.isAcceptableOrUnknown(
+              data['adjustment_type']!, _adjustmentTypeMeta));
+    } else if (isInserting) {
+      context.missing(_adjustmentTypeMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(_reasonMeta,
+          reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta));
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    if (data.containsKey('bags')) {
+      context.handle(
+          _bagsMeta, bags.isAcceptableOrUnknown(data['bags']!, _bagsMeta));
+    } else if (isInserting) {
+      context.missing(_bagsMeta);
+    }
+    if (data.containsKey('gross_weight')) {
+      context.handle(
+          _grossWeightMeta,
+          grossWeight.isAcceptableOrUnknown(
+              data['gross_weight']!, _grossWeightMeta));
+    } else if (isInserting) {
+      context.missing(_grossWeightMeta);
+    }
+    if (data.containsKey('packaging_weight')) {
+      context.handle(
+          _packagingWeightMeta,
+          packagingWeight.isAcceptableOrUnknown(
+              data['packaging_weight']!, _packagingWeightMeta));
+    } else if (isInserting) {
+      context.missing(_packagingWeightMeta);
+    }
+    if (data.containsKey('net_weight')) {
+      context.handle(_netWeightMeta,
+          netWeight.isAcceptableOrUnknown(data['net_weight']!, _netWeightMeta));
+    } else if (isInserting) {
+      context.missing(_netWeightMeta);
+    }
+    if (data.containsKey('moisture_content')) {
+      context.handle(
+          _moistureContentMeta,
+          moistureContent.isAcceptableOrUnknown(
+              data['moisture_content']!, _moistureContentMeta));
+    }
+    if (data.containsKey('adjusted_by')) {
+      context.handle(
+          _adjustedByMeta,
+          adjustedBy.isAcceptableOrUnknown(
+              data['adjusted_by']!, _adjustedByMeta));
+    }
+    if (data.containsKey('adjusted_by_name')) {
+      context.handle(
+          _adjustedByNameMeta,
+          adjustedByName.isAcceptableOrUnknown(
+              data['adjusted_by_name']!, _adjustedByNameMeta));
+    }
+    if (data.containsKey('adjusted_at')) {
+      context.handle(
+          _adjustedAtMeta,
+          adjustedAt.isAcceptableOrUnknown(
+              data['adjusted_at']!, _adjustedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  WarehouseStockAdjustment map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WarehouseStockAdjustment(
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      syncStatus: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_status'])!,
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      serverId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}server_id']),
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id'])!,
+      collectionCenter: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}collection_center']),
+      collectionCenterUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_uuid'])!,
+      collectionCenterName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}collection_center_name']),
+      amcos: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amcos']),
+      amcosName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}amcos_name']),
+      mcu: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}mcu']),
+      mcuName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mcu_name']),
+      crop: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}crop'])!,
+      cropName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}crop_name'])!,
+      adjustmentType: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}adjustment_type'])!,
+      reason: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reason'])!,
+      bags: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bags'])!,
+      grossWeight: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}gross_weight'])!,
+      packagingWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}packaging_weight'])!,
+      netWeight: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}net_weight'])!,
+      moistureContent: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}moisture_content'])!,
+      adjustedBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}adjusted_by']),
+      adjustedByName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}adjusted_by_name']),
+      adjustedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}adjusted_at'])!,
+    );
+  }
+
+  @override
+  $WarehouseStockAdjustmentsTable createAlias(String alias) {
+    return $WarehouseStockAdjustmentsTable(attachedDatabase, alias);
+  }
+}
+
+class WarehouseStockAdjustment extends DataClass
+    implements Insertable<WarehouseStockAdjustment> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String syncStatus;
+  final String uuid;
+  final int? serverId;
+  final String warehouseId;
+  final int? collectionCenter;
+  final String collectionCenterUuid;
+  final String? collectionCenterName;
+  final int? amcos;
+  final String? amcosName;
+  final int? mcu;
+  final String? mcuName;
+  final int crop;
+  final String cropName;
+  final String adjustmentType;
+  final String reason;
+  final int bags;
+  final double grossWeight;
+  final double packagingWeight;
+  final double netWeight;
+  final double moistureContent;
+  final int? adjustedBy;
+  final String? adjustedByName;
+  final DateTime adjustedAt;
+  const WarehouseStockAdjustment(
+      {required this.createdAt,
+      required this.updatedAt,
+      this.deletedAt,
+      required this.syncStatus,
+      required this.uuid,
+      this.serverId,
+      required this.warehouseId,
+      this.collectionCenter,
+      required this.collectionCenterUuid,
+      this.collectionCenterName,
+      this.amcos,
+      this.amcosName,
+      this.mcu,
+      this.mcuName,
+      required this.crop,
+      required this.cropName,
+      required this.adjustmentType,
+      required this.reason,
+      required this.bags,
+      required this.grossWeight,
+      required this.packagingWeight,
+      required this.netWeight,
+      required this.moistureContent,
+      this.adjustedBy,
+      this.adjustedByName,
+      required this.adjustedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['uuid'] = Variable<String>(uuid);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<int>(serverId);
+    }
+    map['warehouse_id'] = Variable<String>(warehouseId);
+    if (!nullToAbsent || collectionCenter != null) {
+      map['collection_center'] = Variable<int>(collectionCenter);
+    }
+    map['collection_center_uuid'] = Variable<String>(collectionCenterUuid);
+    if (!nullToAbsent || collectionCenterName != null) {
+      map['collection_center_name'] = Variable<String>(collectionCenterName);
+    }
+    if (!nullToAbsent || amcos != null) {
+      map['amcos'] = Variable<int>(amcos);
+    }
+    if (!nullToAbsent || amcosName != null) {
+      map['amcos_name'] = Variable<String>(amcosName);
+    }
+    if (!nullToAbsent || mcu != null) {
+      map['mcu'] = Variable<int>(mcu);
+    }
+    if (!nullToAbsent || mcuName != null) {
+      map['mcu_name'] = Variable<String>(mcuName);
+    }
+    map['crop'] = Variable<int>(crop);
+    map['crop_name'] = Variable<String>(cropName);
+    map['adjustment_type'] = Variable<String>(adjustmentType);
+    map['reason'] = Variable<String>(reason);
+    map['bags'] = Variable<int>(bags);
+    map['gross_weight'] = Variable<double>(grossWeight);
+    map['packaging_weight'] = Variable<double>(packagingWeight);
+    map['net_weight'] = Variable<double>(netWeight);
+    map['moisture_content'] = Variable<double>(moistureContent);
+    if (!nullToAbsent || adjustedBy != null) {
+      map['adjusted_by'] = Variable<int>(adjustedBy);
+    }
+    if (!nullToAbsent || adjustedByName != null) {
+      map['adjusted_by_name'] = Variable<String>(adjustedByName);
+    }
+    map['adjusted_at'] = Variable<DateTime>(adjustedAt);
+    return map;
+  }
+
+  WarehouseStockAdjustmentsCompanion toCompanion(bool nullToAbsent) {
+    return WarehouseStockAdjustmentsCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      syncStatus: Value(syncStatus),
+      uuid: Value(uuid),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      warehouseId: Value(warehouseId),
+      collectionCenter: collectionCenter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenter),
+      collectionCenterUuid: Value(collectionCenterUuid),
+      collectionCenterName: collectionCenterName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCenterName),
+      amcos:
+          amcos == null && nullToAbsent ? const Value.absent() : Value(amcos),
+      amcosName: amcosName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amcosName),
+      mcu: mcu == null && nullToAbsent ? const Value.absent() : Value(mcu),
+      mcuName: mcuName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mcuName),
+      crop: Value(crop),
+      cropName: Value(cropName),
+      adjustmentType: Value(adjustmentType),
+      reason: Value(reason),
+      bags: Value(bags),
+      grossWeight: Value(grossWeight),
+      packagingWeight: Value(packagingWeight),
+      netWeight: Value(netWeight),
+      moistureContent: Value(moistureContent),
+      adjustedBy: adjustedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(adjustedBy),
+      adjustedByName: adjustedByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(adjustedByName),
+      adjustedAt: Value(adjustedAt),
+    );
+  }
+
+  factory WarehouseStockAdjustment.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WarehouseStockAdjustment(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      serverId: serializer.fromJson<int?>(json['serverId']),
+      warehouseId: serializer.fromJson<String>(json['warehouseId']),
+      collectionCenter: serializer.fromJson<int?>(json['collectionCenter']),
+      collectionCenterUuid:
+          serializer.fromJson<String>(json['collectionCenterUuid']),
+      collectionCenterName:
+          serializer.fromJson<String?>(json['collectionCenterName']),
+      amcos: serializer.fromJson<int?>(json['amcos']),
+      amcosName: serializer.fromJson<String?>(json['amcosName']),
+      mcu: serializer.fromJson<int?>(json['mcu']),
+      mcuName: serializer.fromJson<String?>(json['mcuName']),
+      crop: serializer.fromJson<int>(json['crop']),
+      cropName: serializer.fromJson<String>(json['cropName']),
+      adjustmentType: serializer.fromJson<String>(json['adjustmentType']),
+      reason: serializer.fromJson<String>(json['reason']),
+      bags: serializer.fromJson<int>(json['bags']),
+      grossWeight: serializer.fromJson<double>(json['grossWeight']),
+      packagingWeight: serializer.fromJson<double>(json['packagingWeight']),
+      netWeight: serializer.fromJson<double>(json['netWeight']),
+      moistureContent: serializer.fromJson<double>(json['moistureContent']),
+      adjustedBy: serializer.fromJson<int?>(json['adjustedBy']),
+      adjustedByName: serializer.fromJson<String?>(json['adjustedByName']),
+      adjustedAt: serializer.fromJson<DateTime>(json['adjustedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'uuid': serializer.toJson<String>(uuid),
+      'serverId': serializer.toJson<int?>(serverId),
+      'warehouseId': serializer.toJson<String>(warehouseId),
+      'collectionCenter': serializer.toJson<int?>(collectionCenter),
+      'collectionCenterUuid': serializer.toJson<String>(collectionCenterUuid),
+      'collectionCenterName': serializer.toJson<String?>(collectionCenterName),
+      'amcos': serializer.toJson<int?>(amcos),
+      'amcosName': serializer.toJson<String?>(amcosName),
+      'mcu': serializer.toJson<int?>(mcu),
+      'mcuName': serializer.toJson<String?>(mcuName),
+      'crop': serializer.toJson<int>(crop),
+      'cropName': serializer.toJson<String>(cropName),
+      'adjustmentType': serializer.toJson<String>(adjustmentType),
+      'reason': serializer.toJson<String>(reason),
+      'bags': serializer.toJson<int>(bags),
+      'grossWeight': serializer.toJson<double>(grossWeight),
+      'packagingWeight': serializer.toJson<double>(packagingWeight),
+      'netWeight': serializer.toJson<double>(netWeight),
+      'moistureContent': serializer.toJson<double>(moistureContent),
+      'adjustedBy': serializer.toJson<int?>(adjustedBy),
+      'adjustedByName': serializer.toJson<String?>(adjustedByName),
+      'adjustedAt': serializer.toJson<DateTime>(adjustedAt),
+    };
+  }
+
+  WarehouseStockAdjustment copyWith(
+          {DateTime? createdAt,
+          DateTime? updatedAt,
+          Value<DateTime?> deletedAt = const Value.absent(),
+          String? syncStatus,
+          String? uuid,
+          Value<int?> serverId = const Value.absent(),
+          String? warehouseId,
+          Value<int?> collectionCenter = const Value.absent(),
+          String? collectionCenterUuid,
+          Value<String?> collectionCenterName = const Value.absent(),
+          Value<int?> amcos = const Value.absent(),
+          Value<String?> amcosName = const Value.absent(),
+          Value<int?> mcu = const Value.absent(),
+          Value<String?> mcuName = const Value.absent(),
+          int? crop,
+          String? cropName,
+          String? adjustmentType,
+          String? reason,
+          int? bags,
+          double? grossWeight,
+          double? packagingWeight,
+          double? netWeight,
+          double? moistureContent,
+          Value<int?> adjustedBy = const Value.absent(),
+          Value<String?> adjustedByName = const Value.absent(),
+          DateTime? adjustedAt}) =>
+      WarehouseStockAdjustment(
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        syncStatus: syncStatus ?? this.syncStatus,
+        uuid: uuid ?? this.uuid,
+        serverId: serverId.present ? serverId.value : this.serverId,
+        warehouseId: warehouseId ?? this.warehouseId,
+        collectionCenter: collectionCenter.present
+            ? collectionCenter.value
+            : this.collectionCenter,
+        collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+        collectionCenterName: collectionCenterName.present
+            ? collectionCenterName.value
+            : this.collectionCenterName,
+        amcos: amcos.present ? amcos.value : this.amcos,
+        amcosName: amcosName.present ? amcosName.value : this.amcosName,
+        mcu: mcu.present ? mcu.value : this.mcu,
+        mcuName: mcuName.present ? mcuName.value : this.mcuName,
+        crop: crop ?? this.crop,
+        cropName: cropName ?? this.cropName,
+        adjustmentType: adjustmentType ?? this.adjustmentType,
+        reason: reason ?? this.reason,
+        bags: bags ?? this.bags,
+        grossWeight: grossWeight ?? this.grossWeight,
+        packagingWeight: packagingWeight ?? this.packagingWeight,
+        netWeight: netWeight ?? this.netWeight,
+        moistureContent: moistureContent ?? this.moistureContent,
+        adjustedBy: adjustedBy.present ? adjustedBy.value : this.adjustedBy,
+        adjustedByName:
+            adjustedByName.present ? adjustedByName.value : this.adjustedByName,
+        adjustedAt: adjustedAt ?? this.adjustedAt,
+      );
+  WarehouseStockAdjustment copyWithCompanion(
+      WarehouseStockAdjustmentsCompanion data) {
+    return WarehouseStockAdjustment(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      collectionCenter: data.collectionCenter.present
+          ? data.collectionCenter.value
+          : this.collectionCenter,
+      collectionCenterUuid: data.collectionCenterUuid.present
+          ? data.collectionCenterUuid.value
+          : this.collectionCenterUuid,
+      collectionCenterName: data.collectionCenterName.present
+          ? data.collectionCenterName.value
+          : this.collectionCenterName,
+      amcos: data.amcos.present ? data.amcos.value : this.amcos,
+      amcosName: data.amcosName.present ? data.amcosName.value : this.amcosName,
+      mcu: data.mcu.present ? data.mcu.value : this.mcu,
+      mcuName: data.mcuName.present ? data.mcuName.value : this.mcuName,
+      crop: data.crop.present ? data.crop.value : this.crop,
+      cropName: data.cropName.present ? data.cropName.value : this.cropName,
+      adjustmentType: data.adjustmentType.present
+          ? data.adjustmentType.value
+          : this.adjustmentType,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      bags: data.bags.present ? data.bags.value : this.bags,
+      grossWeight:
+          data.grossWeight.present ? data.grossWeight.value : this.grossWeight,
+      packagingWeight: data.packagingWeight.present
+          ? data.packagingWeight.value
+          : this.packagingWeight,
+      netWeight: data.netWeight.present ? data.netWeight.value : this.netWeight,
+      moistureContent: data.moistureContent.present
+          ? data.moistureContent.value
+          : this.moistureContent,
+      adjustedBy:
+          data.adjustedBy.present ? data.adjustedBy.value : this.adjustedBy,
+      adjustedByName: data.adjustedByName.present
+          ? data.adjustedByName.value
+          : this.adjustedByName,
+      adjustedAt:
+          data.adjustedAt.present ? data.adjustedAt.value : this.adjustedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseStockAdjustment(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('adjustmentType: $adjustmentType, ')
+          ..write('reason: $reason, ')
+          ..write('bags: $bags, ')
+          ..write('grossWeight: $grossWeight, ')
+          ..write('packagingWeight: $packagingWeight, ')
+          ..write('netWeight: $netWeight, ')
+          ..write('moistureContent: $moistureContent, ')
+          ..write('adjustedBy: $adjustedBy, ')
+          ..write('adjustedByName: $adjustedByName, ')
+          ..write('adjustedAt: $adjustedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        createdAt,
+        updatedAt,
+        deletedAt,
+        syncStatus,
+        uuid,
+        serverId,
+        warehouseId,
+        collectionCenter,
+        collectionCenterUuid,
+        collectionCenterName,
+        amcos,
+        amcosName,
+        mcu,
+        mcuName,
+        crop,
+        cropName,
+        adjustmentType,
+        reason,
+        bags,
+        grossWeight,
+        packagingWeight,
+        netWeight,
+        moistureContent,
+        adjustedBy,
+        adjustedByName,
+        adjustedAt
+      ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WarehouseStockAdjustment &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.uuid == this.uuid &&
+          other.serverId == this.serverId &&
+          other.warehouseId == this.warehouseId &&
+          other.collectionCenter == this.collectionCenter &&
+          other.collectionCenterUuid == this.collectionCenterUuid &&
+          other.collectionCenterName == this.collectionCenterName &&
+          other.amcos == this.amcos &&
+          other.amcosName == this.amcosName &&
+          other.mcu == this.mcu &&
+          other.mcuName == this.mcuName &&
+          other.crop == this.crop &&
+          other.cropName == this.cropName &&
+          other.adjustmentType == this.adjustmentType &&
+          other.reason == this.reason &&
+          other.bags == this.bags &&
+          other.grossWeight == this.grossWeight &&
+          other.packagingWeight == this.packagingWeight &&
+          other.netWeight == this.netWeight &&
+          other.moistureContent == this.moistureContent &&
+          other.adjustedBy == this.adjustedBy &&
+          other.adjustedByName == this.adjustedByName &&
+          other.adjustedAt == this.adjustedAt);
+}
+
+class WarehouseStockAdjustmentsCompanion
+    extends UpdateCompanion<WarehouseStockAdjustment> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> syncStatus;
+  final Value<String> uuid;
+  final Value<int?> serverId;
+  final Value<String> warehouseId;
+  final Value<int?> collectionCenter;
+  final Value<String> collectionCenterUuid;
+  final Value<String?> collectionCenterName;
+  final Value<int?> amcos;
+  final Value<String?> amcosName;
+  final Value<int?> mcu;
+  final Value<String?> mcuName;
+  final Value<int> crop;
+  final Value<String> cropName;
+  final Value<String> adjustmentType;
+  final Value<String> reason;
+  final Value<int> bags;
+  final Value<double> grossWeight;
+  final Value<double> packagingWeight;
+  final Value<double> netWeight;
+  final Value<double> moistureContent;
+  final Value<int?> adjustedBy;
+  final Value<String?> adjustedByName;
+  final Value<DateTime> adjustedAt;
+  final Value<int> rowid;
+  const WarehouseStockAdjustmentsCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.collectionCenter = const Value.absent(),
+    this.collectionCenterUuid = const Value.absent(),
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    this.crop = const Value.absent(),
+    this.cropName = const Value.absent(),
+    this.adjustmentType = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.bags = const Value.absent(),
+    this.grossWeight = const Value.absent(),
+    this.packagingWeight = const Value.absent(),
+    this.netWeight = const Value.absent(),
+    this.moistureContent = const Value.absent(),
+    this.adjustedBy = const Value.absent(),
+    this.adjustedByName = const Value.absent(),
+    this.adjustedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WarehouseStockAdjustmentsCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String uuid,
+    this.serverId = const Value.absent(),
+    required String warehouseId,
+    this.collectionCenter = const Value.absent(),
+    required String collectionCenterUuid,
+    this.collectionCenterName = const Value.absent(),
+    this.amcos = const Value.absent(),
+    this.amcosName = const Value.absent(),
+    this.mcu = const Value.absent(),
+    this.mcuName = const Value.absent(),
+    required int crop,
+    required String cropName,
+    required String adjustmentType,
+    required String reason,
+    required int bags,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    this.moistureContent = const Value.absent(),
+    this.adjustedBy = const Value.absent(),
+    this.adjustedByName = const Value.absent(),
+    this.adjustedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        warehouseId = Value(warehouseId),
+        collectionCenterUuid = Value(collectionCenterUuid),
+        crop = Value(crop),
+        cropName = Value(cropName),
+        adjustmentType = Value(adjustmentType),
+        reason = Value(reason),
+        bags = Value(bags),
+        grossWeight = Value(grossWeight),
+        packagingWeight = Value(packagingWeight),
+        netWeight = Value(netWeight);
+  static Insertable<WarehouseStockAdjustment> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? uuid,
+    Expression<int>? serverId,
+    Expression<String>? warehouseId,
+    Expression<int>? collectionCenter,
+    Expression<String>? collectionCenterUuid,
+    Expression<String>? collectionCenterName,
+    Expression<int>? amcos,
+    Expression<String>? amcosName,
+    Expression<int>? mcu,
+    Expression<String>? mcuName,
+    Expression<int>? crop,
+    Expression<String>? cropName,
+    Expression<String>? adjustmentType,
+    Expression<String>? reason,
+    Expression<int>? bags,
+    Expression<double>? grossWeight,
+    Expression<double>? packagingWeight,
+    Expression<double>? netWeight,
+    Expression<double>? moistureContent,
+    Expression<int>? adjustedBy,
+    Expression<String>? adjustedByName,
+    Expression<DateTime>? adjustedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (uuid != null) 'uuid': uuid,
+      if (serverId != null) 'server_id': serverId,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (collectionCenter != null) 'collection_center': collectionCenter,
+      if (collectionCenterUuid != null)
+        'collection_center_uuid': collectionCenterUuid,
+      if (collectionCenterName != null)
+        'collection_center_name': collectionCenterName,
+      if (amcos != null) 'amcos': amcos,
+      if (amcosName != null) 'amcos_name': amcosName,
+      if (mcu != null) 'mcu': mcu,
+      if (mcuName != null) 'mcu_name': mcuName,
+      if (crop != null) 'crop': crop,
+      if (cropName != null) 'crop_name': cropName,
+      if (adjustmentType != null) 'adjustment_type': adjustmentType,
+      if (reason != null) 'reason': reason,
+      if (bags != null) 'bags': bags,
+      if (grossWeight != null) 'gross_weight': grossWeight,
+      if (packagingWeight != null) 'packaging_weight': packagingWeight,
+      if (netWeight != null) 'net_weight': netWeight,
+      if (moistureContent != null) 'moisture_content': moistureContent,
+      if (adjustedBy != null) 'adjusted_by': adjustedBy,
+      if (adjustedByName != null) 'adjusted_by_name': adjustedByName,
+      if (adjustedAt != null) 'adjusted_at': adjustedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WarehouseStockAdjustmentsCompanion copyWith(
+      {Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String>? syncStatus,
+      Value<String>? uuid,
+      Value<int?>? serverId,
+      Value<String>? warehouseId,
+      Value<int?>? collectionCenter,
+      Value<String>? collectionCenterUuid,
+      Value<String?>? collectionCenterName,
+      Value<int?>? amcos,
+      Value<String?>? amcosName,
+      Value<int?>? mcu,
+      Value<String?>? mcuName,
+      Value<int>? crop,
+      Value<String>? cropName,
+      Value<String>? adjustmentType,
+      Value<String>? reason,
+      Value<int>? bags,
+      Value<double>? grossWeight,
+      Value<double>? packagingWeight,
+      Value<double>? netWeight,
+      Value<double>? moistureContent,
+      Value<int?>? adjustedBy,
+      Value<String?>? adjustedByName,
+      Value<DateTime>? adjustedAt,
+      Value<int>? rowid}) {
+    return WarehouseStockAdjustmentsCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      uuid: uuid ?? this.uuid,
+      serverId: serverId ?? this.serverId,
+      warehouseId: warehouseId ?? this.warehouseId,
+      collectionCenter: collectionCenter ?? this.collectionCenter,
+      collectionCenterUuid: collectionCenterUuid ?? this.collectionCenterUuid,
+      collectionCenterName: collectionCenterName ?? this.collectionCenterName,
+      amcos: amcos ?? this.amcos,
+      amcosName: amcosName ?? this.amcosName,
+      mcu: mcu ?? this.mcu,
+      mcuName: mcuName ?? this.mcuName,
+      crop: crop ?? this.crop,
+      cropName: cropName ?? this.cropName,
+      adjustmentType: adjustmentType ?? this.adjustmentType,
+      reason: reason ?? this.reason,
+      bags: bags ?? this.bags,
+      grossWeight: grossWeight ?? this.grossWeight,
+      packagingWeight: packagingWeight ?? this.packagingWeight,
+      netWeight: netWeight ?? this.netWeight,
+      moistureContent: moistureContent ?? this.moistureContent,
+      adjustedBy: adjustedBy ?? this.adjustedBy,
+      adjustedByName: adjustedByName ?? this.adjustedByName,
+      adjustedAt: adjustedAt ?? this.adjustedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (collectionCenter.present) {
+      map['collection_center'] = Variable<int>(collectionCenter.value);
+    }
+    if (collectionCenterUuid.present) {
+      map['collection_center_uuid'] =
+          Variable<String>(collectionCenterUuid.value);
+    }
+    if (collectionCenterName.present) {
+      map['collection_center_name'] =
+          Variable<String>(collectionCenterName.value);
+    }
+    if (amcos.present) {
+      map['amcos'] = Variable<int>(amcos.value);
+    }
+    if (amcosName.present) {
+      map['amcos_name'] = Variable<String>(amcosName.value);
+    }
+    if (mcu.present) {
+      map['mcu'] = Variable<int>(mcu.value);
+    }
+    if (mcuName.present) {
+      map['mcu_name'] = Variable<String>(mcuName.value);
+    }
+    if (crop.present) {
+      map['crop'] = Variable<int>(crop.value);
+    }
+    if (cropName.present) {
+      map['crop_name'] = Variable<String>(cropName.value);
+    }
+    if (adjustmentType.present) {
+      map['adjustment_type'] = Variable<String>(adjustmentType.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (bags.present) {
+      map['bags'] = Variable<int>(bags.value);
+    }
+    if (grossWeight.present) {
+      map['gross_weight'] = Variable<double>(grossWeight.value);
+    }
+    if (packagingWeight.present) {
+      map['packaging_weight'] = Variable<double>(packagingWeight.value);
+    }
+    if (netWeight.present) {
+      map['net_weight'] = Variable<double>(netWeight.value);
+    }
+    if (moistureContent.present) {
+      map['moisture_content'] = Variable<double>(moistureContent.value);
+    }
+    if (adjustedBy.present) {
+      map['adjusted_by'] = Variable<int>(adjustedBy.value);
+    }
+    if (adjustedByName.present) {
+      map['adjusted_by_name'] = Variable<String>(adjustedByName.value);
+    }
+    if (adjustedAt.present) {
+      map['adjusted_at'] = Variable<DateTime>(adjustedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WarehouseStockAdjustmentsCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('uuid: $uuid, ')
+          ..write('serverId: $serverId, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('collectionCenter: $collectionCenter, ')
+          ..write('collectionCenterUuid: $collectionCenterUuid, ')
+          ..write('collectionCenterName: $collectionCenterName, ')
+          ..write('amcos: $amcos, ')
+          ..write('amcosName: $amcosName, ')
+          ..write('mcu: $mcu, ')
+          ..write('mcuName: $mcuName, ')
+          ..write('crop: $crop, ')
+          ..write('cropName: $cropName, ')
+          ..write('adjustmentType: $adjustmentType, ')
+          ..write('reason: $reason, ')
+          ..write('bags: $bags, ')
+          ..write('grossWeight: $grossWeight, ')
+          ..write('packagingWeight: $packagingWeight, ')
+          ..write('netWeight: $netWeight, ')
+          ..write('moistureContent: $moistureContent, ')
+          ..write('adjustedBy: $adjustedBy, ')
+          ..write('adjustedByName: $adjustedByName, ')
+          ..write('adjustedAt: $adjustedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncQueueTable extends SyncQueue
     with TableInfo<$SyncQueueTable, SyncQueueData> {
   @override
@@ -6066,484 +11106,6 @@ class AuditLogsCompanion extends UpdateCompanion<AuditLog> {
           ..write('metadata: $metadata, ')
           ..write('origin: $origin, ')
           ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $CropTableTable extends CropTable with TableInfo<$CropTableTable, Crop> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $CropTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _typeMeta = const VerificationMeta('type');
-  @override
-  late final GeneratedColumn<String> type = GeneratedColumn<String>(
-      'type', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _uomMeta = const VerificationMeta('uom');
-  @override
-  late final GeneratedColumn<String> uom = GeneratedColumn<String>(
-      'uom', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _packagingMeta =
-      const VerificationMeta('packaging');
-  @override
-  late final GeneratedColumn<String> packaging = GeneratedColumn<String>(
-      'packaging', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _gradingMeta =
-      const VerificationMeta('grading');
-  @override
-  late final GeneratedColumn<String> grading = GeneratedColumn<String>(
-      'grading', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _moistureContentComputationMeta =
-      const VerificationMeta('moistureContentComputation');
-  @override
-  late final GeneratedColumn<bool> moistureContentComputation =
-      GeneratedColumn<bool>('moisture_content_computation', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintIsAlways(
-              'CHECK ("moisture_content_computation" IN (0, 1))'),
-          defaultValue: const Constant(false));
-  static const VerificationMeta _maxMoisureContentMeta =
-      const VerificationMeta('maxMoisureContent');
-  @override
-  late final GeneratedColumn<double> maxMoisureContent =
-      GeneratedColumn<double>('max_moisure_content', aliasedName, true,
-          type: DriftSqlType.double, requiredDuringInsert: false);
-  static const VerificationMeta _packagingWeightMeta =
-      const VerificationMeta('packagingWeight');
-  @override
-  late final GeneratedColumn<double> packagingWeight = GeneratedColumn<double>(
-      'packaging_weight', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
-  @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        name,
-        type,
-        uom,
-        packaging,
-        grading,
-        moistureContentComputation,
-        maxMoisureContent,
-        packagingWeight
-      ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'crop_table';
-  @override
-  VerificationContext validateIntegrity(Insertable<Crop> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('type')) {
-      context.handle(
-          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
-    }
-    if (data.containsKey('uom')) {
-      context.handle(
-          _uomMeta, uom.isAcceptableOrUnknown(data['uom']!, _uomMeta));
-    }
-    if (data.containsKey('packaging')) {
-      context.handle(_packagingMeta,
-          packaging.isAcceptableOrUnknown(data['packaging']!, _packagingMeta));
-    }
-    if (data.containsKey('grading')) {
-      context.handle(_gradingMeta,
-          grading.isAcceptableOrUnknown(data['grading']!, _gradingMeta));
-    }
-    if (data.containsKey('moisture_content_computation')) {
-      context.handle(
-          _moistureContentComputationMeta,
-          moistureContentComputation.isAcceptableOrUnknown(
-              data['moisture_content_computation']!,
-              _moistureContentComputationMeta));
-    }
-    if (data.containsKey('max_moisure_content')) {
-      context.handle(
-          _maxMoisureContentMeta,
-          maxMoisureContent.isAcceptableOrUnknown(
-              data['max_moisure_content']!, _maxMoisureContentMeta));
-    }
-    if (data.containsKey('packaging_weight')) {
-      context.handle(
-          _packagingWeightMeta,
-          packagingWeight.isAcceptableOrUnknown(
-              data['packaging_weight']!, _packagingWeightMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Crop map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Crop(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      type: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}type']),
-      uom: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uom']),
-      packaging: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}packaging']),
-      grading: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}grading']),
-      moistureContentComputation: attachedDatabase.typeMapping.read(
-          DriftSqlType.bool,
-          data['${effectivePrefix}moisture_content_computation'])!,
-      maxMoisureContent: attachedDatabase.typeMapping.read(
-          DriftSqlType.double, data['${effectivePrefix}max_moisure_content']),
-      packagingWeight: attachedDatabase.typeMapping.read(
-          DriftSqlType.double, data['${effectivePrefix}packaging_weight']),
-    );
-  }
-
-  @override
-  $CropTableTable createAlias(String alias) {
-    return $CropTableTable(attachedDatabase, alias);
-  }
-}
-
-class Crop extends DataClass implements Insertable<Crop> {
-  final int id;
-  final String name;
-  final String? type;
-  final String? uom;
-  final String? packaging;
-  final String? grading;
-  final bool moistureContentComputation;
-  final double? maxMoisureContent;
-  final double? packagingWeight;
-  const Crop(
-      {required this.id,
-      required this.name,
-      this.type,
-      this.uom,
-      this.packaging,
-      this.grading,
-      required this.moistureContentComputation,
-      this.maxMoisureContent,
-      this.packagingWeight});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    if (!nullToAbsent || type != null) {
-      map['type'] = Variable<String>(type);
-    }
-    if (!nullToAbsent || uom != null) {
-      map['uom'] = Variable<String>(uom);
-    }
-    if (!nullToAbsent || packaging != null) {
-      map['packaging'] = Variable<String>(packaging);
-    }
-    if (!nullToAbsent || grading != null) {
-      map['grading'] = Variable<String>(grading);
-    }
-    map['moisture_content_computation'] =
-        Variable<bool>(moistureContentComputation);
-    if (!nullToAbsent || maxMoisureContent != null) {
-      map['max_moisure_content'] = Variable<double>(maxMoisureContent);
-    }
-    if (!nullToAbsent || packagingWeight != null) {
-      map['packaging_weight'] = Variable<double>(packagingWeight);
-    }
-    return map;
-  }
-
-  CropTableCompanion toCompanion(bool nullToAbsent) {
-    return CropTableCompanion(
-      id: Value(id),
-      name: Value(name),
-      type: type == null && nullToAbsent ? const Value.absent() : Value(type),
-      uom: uom == null && nullToAbsent ? const Value.absent() : Value(uom),
-      packaging: packaging == null && nullToAbsent
-          ? const Value.absent()
-          : Value(packaging),
-      grading: grading == null && nullToAbsent
-          ? const Value.absent()
-          : Value(grading),
-      moistureContentComputation: Value(moistureContentComputation),
-      maxMoisureContent: maxMoisureContent == null && nullToAbsent
-          ? const Value.absent()
-          : Value(maxMoisureContent),
-      packagingWeight: packagingWeight == null && nullToAbsent
-          ? const Value.absent()
-          : Value(packagingWeight),
-    );
-  }
-
-  factory Crop.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Crop(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      type: serializer.fromJson<String?>(json['type']),
-      uom: serializer.fromJson<String?>(json['uom']),
-      packaging: serializer.fromJson<String?>(json['packaging']),
-      grading: serializer.fromJson<String?>(json['grading']),
-      moistureContentComputation:
-          serializer.fromJson<bool>(json['moistureContentComputation']),
-      maxMoisureContent:
-          serializer.fromJson<double?>(json['maxMoisureContent']),
-      packagingWeight: serializer.fromJson<double?>(json['packagingWeight']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'type': serializer.toJson<String?>(type),
-      'uom': serializer.toJson<String?>(uom),
-      'packaging': serializer.toJson<String?>(packaging),
-      'grading': serializer.toJson<String?>(grading),
-      'moistureContentComputation':
-          serializer.toJson<bool>(moistureContentComputation),
-      'maxMoisureContent': serializer.toJson<double?>(maxMoisureContent),
-      'packagingWeight': serializer.toJson<double?>(packagingWeight),
-    };
-  }
-
-  Crop copyWith(
-          {int? id,
-          String? name,
-          Value<String?> type = const Value.absent(),
-          Value<String?> uom = const Value.absent(),
-          Value<String?> packaging = const Value.absent(),
-          Value<String?> grading = const Value.absent(),
-          bool? moistureContentComputation,
-          Value<double?> maxMoisureContent = const Value.absent(),
-          Value<double?> packagingWeight = const Value.absent()}) =>
-      Crop(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        type: type.present ? type.value : this.type,
-        uom: uom.present ? uom.value : this.uom,
-        packaging: packaging.present ? packaging.value : this.packaging,
-        grading: grading.present ? grading.value : this.grading,
-        moistureContentComputation:
-            moistureContentComputation ?? this.moistureContentComputation,
-        maxMoisureContent: maxMoisureContent.present
-            ? maxMoisureContent.value
-            : this.maxMoisureContent,
-        packagingWeight: packagingWeight.present
-            ? packagingWeight.value
-            : this.packagingWeight,
-      );
-  Crop copyWithCompanion(CropTableCompanion data) {
-    return Crop(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      type: data.type.present ? data.type.value : this.type,
-      uom: data.uom.present ? data.uom.value : this.uom,
-      packaging: data.packaging.present ? data.packaging.value : this.packaging,
-      grading: data.grading.present ? data.grading.value : this.grading,
-      moistureContentComputation: data.moistureContentComputation.present
-          ? data.moistureContentComputation.value
-          : this.moistureContentComputation,
-      maxMoisureContent: data.maxMoisureContent.present
-          ? data.maxMoisureContent.value
-          : this.maxMoisureContent,
-      packagingWeight: data.packagingWeight.present
-          ? data.packagingWeight.value
-          : this.packagingWeight,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Crop(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('type: $type, ')
-          ..write('uom: $uom, ')
-          ..write('packaging: $packaging, ')
-          ..write('grading: $grading, ')
-          ..write('moistureContentComputation: $moistureContentComputation, ')
-          ..write('maxMoisureContent: $maxMoisureContent, ')
-          ..write('packagingWeight: $packagingWeight')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, type, uom, packaging, grading,
-      moistureContentComputation, maxMoisureContent, packagingWeight);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Crop &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.type == this.type &&
-          other.uom == this.uom &&
-          other.packaging == this.packaging &&
-          other.grading == this.grading &&
-          other.moistureContentComputation == this.moistureContentComputation &&
-          other.maxMoisureContent == this.maxMoisureContent &&
-          other.packagingWeight == this.packagingWeight);
-}
-
-class CropTableCompanion extends UpdateCompanion<Crop> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<String?> type;
-  final Value<String?> uom;
-  final Value<String?> packaging;
-  final Value<String?> grading;
-  final Value<bool> moistureContentComputation;
-  final Value<double?> maxMoisureContent;
-  final Value<double?> packagingWeight;
-  const CropTableCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.type = const Value.absent(),
-    this.uom = const Value.absent(),
-    this.packaging = const Value.absent(),
-    this.grading = const Value.absent(),
-    this.moistureContentComputation = const Value.absent(),
-    this.maxMoisureContent = const Value.absent(),
-    this.packagingWeight = const Value.absent(),
-  });
-  CropTableCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-    this.type = const Value.absent(),
-    this.uom = const Value.absent(),
-    this.packaging = const Value.absent(),
-    this.grading = const Value.absent(),
-    this.moistureContentComputation = const Value.absent(),
-    this.maxMoisureContent = const Value.absent(),
-    this.packagingWeight = const Value.absent(),
-  }) : name = Value(name);
-  static Insertable<Crop> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<String>? type,
-    Expression<String>? uom,
-    Expression<String>? packaging,
-    Expression<String>? grading,
-    Expression<bool>? moistureContentComputation,
-    Expression<double>? maxMoisureContent,
-    Expression<double>? packagingWeight,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (type != null) 'type': type,
-      if (uom != null) 'uom': uom,
-      if (packaging != null) 'packaging': packaging,
-      if (grading != null) 'grading': grading,
-      if (moistureContentComputation != null)
-        'moisture_content_computation': moistureContentComputation,
-      if (maxMoisureContent != null) 'max_moisure_content': maxMoisureContent,
-      if (packagingWeight != null) 'packaging_weight': packagingWeight,
-    });
-  }
-
-  CropTableCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? name,
-      Value<String?>? type,
-      Value<String?>? uom,
-      Value<String?>? packaging,
-      Value<String?>? grading,
-      Value<bool>? moistureContentComputation,
-      Value<double?>? maxMoisureContent,
-      Value<double?>? packagingWeight}) {
-    return CropTableCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      type: type ?? this.type,
-      uom: uom ?? this.uom,
-      packaging: packaging ?? this.packaging,
-      grading: grading ?? this.grading,
-      moistureContentComputation:
-          moistureContentComputation ?? this.moistureContentComputation,
-      maxMoisureContent: maxMoisureContent ?? this.maxMoisureContent,
-      packagingWeight: packagingWeight ?? this.packagingWeight,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (type.present) {
-      map['type'] = Variable<String>(type.value);
-    }
-    if (uom.present) {
-      map['uom'] = Variable<String>(uom.value);
-    }
-    if (packaging.present) {
-      map['packaging'] = Variable<String>(packaging.value);
-    }
-    if (grading.present) {
-      map['grading'] = Variable<String>(grading.value);
-    }
-    if (moistureContentComputation.present) {
-      map['moisture_content_computation'] =
-          Variable<bool>(moistureContentComputation.value);
-    }
-    if (maxMoisureContent.present) {
-      map['max_moisure_content'] = Variable<double>(maxMoisureContent.value);
-    }
-    if (packagingWeight.present) {
-      map['packaging_weight'] = Variable<double>(packagingWeight.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CropTableCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('type: $type, ')
-          ..write('uom: $uom, ')
-          ..write('packaging: $packaging, ')
-          ..write('grading: $grading, ')
-          ..write('moistureContentComputation: $moistureContentComputation, ')
-          ..write('maxMoisureContent: $maxMoisureContent, ')
-          ..write('packagingWeight: $packagingWeight')
           ..write(')'))
         .toString();
   }
@@ -11299,9 +15861,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WarehousesTable warehouses = $WarehousesTable(this);
   late final $InventoryItemsTable inventoryItems = $InventoryItemsTable(this);
   late final $StockMovementsTable stockMovements = $StockMovementsTable(this);
+  late final $CropTableTable cropTable = $CropTableTable(this);
+  late final $WarehouseInventoryItemsTable warehouseInventoryItems =
+      $WarehouseInventoryItemsTable(this);
+  late final $WarehouseDispatchesTable warehouseDispatches =
+      $WarehouseDispatchesTable(this);
+  late final $WarehouseStockCountsTable warehouseStockCounts =
+      $WarehouseStockCountsTable(this);
+  late final $WarehouseStockAdjustmentsTable warehouseStockAdjustments =
+      $WarehouseStockAdjustmentsTable(this);
   late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   late final $AuditLogsTable auditLogs = $AuditLogsTable(this);
-  late final $CropTableTable cropTable = $CropTableTable(this);
   late final $FarmersTable farmers = $FarmersTable(this);
   late final $FarmerDependantsTable farmerDependants =
       $FarmerDependantsTable(this);
@@ -11313,6 +15883,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $FarmerHarvestBagsTable(this);
   late final WorkerDao workerDao = WorkerDao(this as AppDatabase);
   late final WarehouseDao warehouseDao = WarehouseDao(this as AppDatabase);
+  late final WarehouseOperationsDao warehouseOperationsDao =
+      WarehouseOperationsDao(this as AppDatabase);
   late final InventoryDao inventoryDao = InventoryDao(this as AppDatabase);
   late final SyncQueueDao syncQueueDao = SyncQueueDao(this as AppDatabase);
   late final AuditLogDao auditLogDao = AuditLogDao(this as AppDatabase);
@@ -11338,9 +15910,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         warehouses,
         inventoryItems,
         stockMovements,
+        cropTable,
+        warehouseInventoryItems,
+        warehouseDispatches,
+        warehouseStockCounts,
+        warehouseStockAdjustments,
         syncQueue,
         auditLogs,
-        cropTable,
         farmers,
         farmerDependants,
         measurementUnits,
@@ -14451,6 +19027,80 @@ final class $$WarehousesTableReferences
         manager.$state.copyWith(prefetchedData: cache));
   }
 
+  static MultiTypedResultKey<$WarehouseInventoryItemsTable,
+      List<WarehouseInventory>> _warehouseInventoryItemsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.warehouseInventoryItems,
+          aliasName: $_aliasNameGenerator(
+              db.warehouses.id, db.warehouseInventoryItems.warehouseId));
+
+  $$WarehouseInventoryItemsTableProcessedTableManager
+      get warehouseInventoryItemsRefs {
+    final manager = $$WarehouseInventoryItemsTableTableManager(
+            $_db, $_db.warehouseInventoryItems)
+        .filter((f) => f.warehouseId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_warehouseInventoryItemsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$WarehouseDispatchesTable, List<WarehouseDispatch>>
+      _warehouseDispatchesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.warehouseDispatches,
+              aliasName: $_aliasNameGenerator(
+                  db.warehouses.id, db.warehouseDispatches.warehouseId));
+
+  $$WarehouseDispatchesTableProcessedTableManager get warehouseDispatchesRefs {
+    final manager = $$WarehouseDispatchesTableTableManager(
+            $_db, $_db.warehouseDispatches)
+        .filter((f) => f.warehouseId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_warehouseDispatchesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$WarehouseStockCountsTable,
+      List<WarehouseStockCount>> _warehouseStockCountsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.warehouseStockCounts,
+          aliasName: $_aliasNameGenerator(
+              db.warehouses.id, db.warehouseStockCounts.warehouseId));
+
+  $$WarehouseStockCountsTableProcessedTableManager
+      get warehouseStockCountsRefs {
+    final manager = $$WarehouseStockCountsTableTableManager(
+            $_db, $_db.warehouseStockCounts)
+        .filter((f) => f.warehouseId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_warehouseStockCountsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$WarehouseStockAdjustmentsTable,
+      List<WarehouseStockAdjustment>> _warehouseStockAdjustmentsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.warehouseStockAdjustments,
+          aliasName: $_aliasNameGenerator(
+              db.warehouses.id, db.warehouseStockAdjustments.warehouseId));
+
+  $$WarehouseStockAdjustmentsTableProcessedTableManager
+      get warehouseStockAdjustmentsRefs {
+    final manager = $$WarehouseStockAdjustmentsTableTableManager(
+            $_db, $_db.warehouseStockAdjustments)
+        .filter((f) => f.warehouseId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult
+        .readTableOrNull(_warehouseStockAdjustmentsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
   static MultiTypedResultKey<$AuditLogsTable, List<AuditLog>>
       _auditLogsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
           db.auditLogs,
@@ -14633,6 +19283,96 @@ class $$WarehousesTableFilterComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseInventoryItemsRefs(
+      Expression<bool> Function($$WarehouseInventoryItemsTableFilterComposer f)
+          f) {
+    final $$WarehouseInventoryItemsTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseInventoryItems,
+            getReferencedColumn: (t) => t.warehouseId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseInventoryItemsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.warehouseInventoryItems,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseDispatchesRefs(
+      Expression<bool> Function($$WarehouseDispatchesTableFilterComposer f) f) {
+    final $$WarehouseDispatchesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.warehouseDispatches,
+        getReferencedColumn: (t) => t.warehouseId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehouseDispatchesTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouseDispatches,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseStockCountsRefs(
+      Expression<bool> Function($$WarehouseStockCountsTableFilterComposer f)
+          f) {
+    final $$WarehouseStockCountsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.warehouseStockCounts,
+        getReferencedColumn: (t) => t.warehouseId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehouseStockCountsTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouseStockCounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseStockAdjustmentsRefs(
+      Expression<bool> Function(
+              $$WarehouseStockAdjustmentsTableFilterComposer f)
+          f) {
+    final $$WarehouseStockAdjustmentsTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseStockAdjustments,
+            getReferencedColumn: (t) => t.warehouseId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseStockAdjustmentsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.warehouseStockAdjustments,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
     return f(composer);
   }
 
@@ -14925,6 +19665,99 @@ class $$WarehousesTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> warehouseInventoryItemsRefs<T extends Object>(
+      Expression<T> Function($$WarehouseInventoryItemsTableAnnotationComposer a)
+          f) {
+    final $$WarehouseInventoryItemsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseInventoryItems,
+            getReferencedColumn: (t) => t.warehouseId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseInventoryItemsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseInventoryItems,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> warehouseDispatchesRefs<T extends Object>(
+      Expression<T> Function($$WarehouseDispatchesTableAnnotationComposer a)
+          f) {
+    final $$WarehouseDispatchesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseDispatches,
+            getReferencedColumn: (t) => t.warehouseId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseDispatchesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseDispatches,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> warehouseStockCountsRefs<T extends Object>(
+      Expression<T> Function($$WarehouseStockCountsTableAnnotationComposer a)
+          f) {
+    final $$WarehouseStockCountsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseStockCounts,
+            getReferencedColumn: (t) => t.warehouseId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseStockCountsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseStockCounts,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> warehouseStockAdjustmentsRefs<T extends Object>(
+      Expression<T> Function(
+              $$WarehouseStockAdjustmentsTableAnnotationComposer a)
+          f) {
+    final $$WarehouseStockAdjustmentsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseStockAdjustments,
+            getReferencedColumn: (t) => t.warehouseId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseStockAdjustmentsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseStockAdjustments,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
   Expression<T> auditLogsRefs<T extends Object>(
       Expression<T> Function($$AuditLogsTableAnnotationComposer a) f) {
     final $$AuditLogsTableAnnotationComposer composer = $composerBuilder(
@@ -14985,6 +19818,10 @@ class $$WarehousesTableTableManager extends RootTableManager<
         bool inventoryItemsRefs,
         bool movementsAtWarehouse,
         bool relatedMovements,
+        bool warehouseInventoryItemsRefs,
+        bool warehouseDispatchesRefs,
+        bool warehouseStockCountsRefs,
+        bool warehouseStockAdjustmentsRefs,
         bool auditLogsRefs,
         bool farmerHarvestsRefs})> {
   $$WarehousesTableTableManager(_$AppDatabase db, $WarehousesTable table)
@@ -15085,6 +19922,10 @@ class $$WarehousesTableTableManager extends RootTableManager<
               inventoryItemsRefs = false,
               movementsAtWarehouse = false,
               relatedMovements = false,
+              warehouseInventoryItemsRefs = false,
+              warehouseDispatchesRefs = false,
+              warehouseStockCountsRefs = false,
+              warehouseStockAdjustmentsRefs = false,
               auditLogsRefs = false,
               farmerHarvestsRefs = false}) {
             return PrefetchHooks(
@@ -15093,6 +19934,10 @@ class $$WarehousesTableTableManager extends RootTableManager<
                 if (inventoryItemsRefs) db.inventoryItems,
                 if (movementsAtWarehouse) db.stockMovements,
                 if (relatedMovements) db.stockMovements,
+                if (warehouseInventoryItemsRefs) db.warehouseInventoryItems,
+                if (warehouseDispatchesRefs) db.warehouseDispatches,
+                if (warehouseStockCountsRefs) db.warehouseStockCounts,
+                if (warehouseStockAdjustmentsRefs) db.warehouseStockAdjustments,
                 if (auditLogsRefs) db.auditLogs,
                 if (farmerHarvestsRefs) db.farmerHarvests
               ],
@@ -15173,6 +20018,58 @@ class $$WarehousesTableTableManager extends RootTableManager<
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.relatedWarehouseId == item.id),
                         typedResults: items),
+                  if (warehouseInventoryItemsRefs)
+                    await $_getPrefetchedData<Warehouse, $WarehousesTable,
+                            WarehouseInventory>(
+                        currentTable: table,
+                        referencedTable: $$WarehousesTableReferences
+                            ._warehouseInventoryItemsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WarehousesTableReferences(db, table, p0)
+                                .warehouseInventoryItemsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.warehouseId == item.id),
+                        typedResults: items),
+                  if (warehouseDispatchesRefs)
+                    await $_getPrefetchedData<Warehouse, $WarehousesTable,
+                            WarehouseDispatch>(
+                        currentTable: table,
+                        referencedTable: $$WarehousesTableReferences
+                            ._warehouseDispatchesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WarehousesTableReferences(db, table, p0)
+                                .warehouseDispatchesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.warehouseId == item.id),
+                        typedResults: items),
+                  if (warehouseStockCountsRefs)
+                    await $_getPrefetchedData<Warehouse, $WarehousesTable,
+                            WarehouseStockCount>(
+                        currentTable: table,
+                        referencedTable: $$WarehousesTableReferences
+                            ._warehouseStockCountsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WarehousesTableReferences(db, table, p0)
+                                .warehouseStockCountsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.warehouseId == item.id),
+                        typedResults: items),
+                  if (warehouseStockAdjustmentsRefs)
+                    await $_getPrefetchedData<Warehouse, $WarehousesTable,
+                            WarehouseStockAdjustment>(
+                        currentTable: table,
+                        referencedTable: $$WarehousesTableReferences
+                            ._warehouseStockAdjustmentsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WarehousesTableReferences(db, table, p0)
+                                .warehouseStockAdjustmentsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.warehouseId == item.id),
+                        typedResults: items),
                   if (auditLogsRefs)
                     await $_getPrefetchedData<Warehouse, $WarehousesTable,
                             AuditLog>(
@@ -15223,6 +20120,10 @@ typedef $$WarehousesTableProcessedTableManager = ProcessedTableManager<
         bool inventoryItemsRefs,
         bool movementsAtWarehouse,
         bool relatedMovements,
+        bool warehouseInventoryItemsRefs,
+        bool warehouseDispatchesRefs,
+        bool warehouseStockCountsRefs,
+        bool warehouseStockAdjustmentsRefs,
         bool auditLogsRefs,
         bool farmerHarvestsRefs})>;
 typedef $$InventoryItemsTableCreateCompanionBuilder = InventoryItemsCompanion
@@ -16360,6 +21261,3520 @@ typedef $$StockMovementsTableProcessedTableManager = ProcessedTableManager<
         bool warehouseId,
         bool recordedById,
         bool relatedWarehouseId})>;
+typedef $$CropTableTableCreateCompanionBuilder = CropTableCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<String?> type,
+  Value<String?> uom,
+  Value<String?> packaging,
+  Value<String?> grading,
+  Value<bool> moistureContentComputation,
+  Value<double?> maxMoisureContent,
+  Value<double?> packagingWeight,
+});
+typedef $$CropTableTableUpdateCompanionBuilder = CropTableCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String?> type,
+  Value<String?> uom,
+  Value<String?> packaging,
+  Value<String?> grading,
+  Value<bool> moistureContentComputation,
+  Value<double?> maxMoisureContent,
+  Value<double?> packagingWeight,
+});
+
+final class $$CropTableTableReferences
+    extends BaseReferences<_$AppDatabase, $CropTableTable, Crop> {
+  $$CropTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WarehouseInventoryItemsTable,
+      List<WarehouseInventory>> _warehouseInventoryItemsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.warehouseInventoryItems,
+          aliasName: $_aliasNameGenerator(
+              db.cropTable.id, db.warehouseInventoryItems.crop));
+
+  $$WarehouseInventoryItemsTableProcessedTableManager
+      get warehouseInventoryItemsRefs {
+    final manager = $$WarehouseInventoryItemsTableTableManager(
+            $_db, $_db.warehouseInventoryItems)
+        .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_warehouseInventoryItemsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$WarehouseDispatchesTable, List<WarehouseDispatch>>
+      _warehouseDispatchesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.warehouseDispatches,
+              aliasName: $_aliasNameGenerator(
+                  db.cropTable.id, db.warehouseDispatches.crop));
+
+  $$WarehouseDispatchesTableProcessedTableManager get warehouseDispatchesRefs {
+    final manager =
+        $$WarehouseDispatchesTableTableManager($_db, $_db.warehouseDispatches)
+            .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_warehouseDispatchesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$WarehouseStockCountsTable,
+      List<WarehouseStockCount>> _warehouseStockCountsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.warehouseStockCounts,
+          aliasName: $_aliasNameGenerator(
+              db.cropTable.id, db.warehouseStockCounts.crop));
+
+  $$WarehouseStockCountsTableProcessedTableManager
+      get warehouseStockCountsRefs {
+    final manager =
+        $$WarehouseStockCountsTableTableManager($_db, $_db.warehouseStockCounts)
+            .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_warehouseStockCountsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$WarehouseStockAdjustmentsTable,
+      List<WarehouseStockAdjustment>> _warehouseStockAdjustmentsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.warehouseStockAdjustments,
+          aliasName: $_aliasNameGenerator(
+              db.cropTable.id, db.warehouseStockAdjustments.crop));
+
+  $$WarehouseStockAdjustmentsTableProcessedTableManager
+      get warehouseStockAdjustmentsRefs {
+    final manager = $$WarehouseStockAdjustmentsTableTableManager(
+            $_db, $_db.warehouseStockAdjustments)
+        .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult
+        .readTableOrNull(_warehouseStockAdjustmentsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$FarmersTable, List<Farmer>> _mainCropFarmersTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.farmers,
+          aliasName:
+              $_aliasNameGenerator(db.cropTable.id, db.farmers.mainCrop));
+
+  $$FarmersTableProcessedTableManager get mainCropFarmers {
+    final manager = $$FarmersTableTableManager($_db, $_db.farmers)
+        .filter((f) => f.mainCrop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_mainCropFarmersTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$FarmersTable, List<Farmer>>
+      _secondaryCropFarmersTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.farmers,
+              aliasName: $_aliasNameGenerator(
+                  db.cropTable.id, db.farmers.secondaryCrop));
+
+  $$FarmersTableProcessedTableManager get secondaryCropFarmers {
+    final manager = $$FarmersTableTableManager($_db, $_db.farmers)
+        .filter((f) => f.secondaryCrop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_secondaryCropFarmersTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$CropGradesTable, List<CropGrade>>
+      _cropGradesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.cropGrades,
+          aliasName: $_aliasNameGenerator(db.cropTable.id, db.cropGrades.crop));
+
+  $$CropGradesTableProcessedTableManager get cropGradesRefs {
+    final manager = $$CropGradesTableTableManager($_db, $_db.cropGrades)
+        .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_cropGradesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$FarmerHarvestsTable, List<FarmerHarvest>>
+      _farmerHarvestsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.farmerHarvests,
+              aliasName: $_aliasNameGenerator(
+                  db.cropTable.id, db.farmerHarvests.crop));
+
+  $$FarmerHarvestsTableProcessedTableManager get farmerHarvestsRefs {
+    final manager = $$FarmerHarvestsTableTableManager($_db, $_db.farmerHarvests)
+        .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_farmerHarvestsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$CropTableTableFilterComposer
+    extends Composer<_$AppDatabase, $CropTableTable> {
+  $$CropTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uom => $composableBuilder(
+      column: $table.uom, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get packaging => $composableBuilder(
+      column: $table.packaging, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get grading => $composableBuilder(
+      column: $table.grading, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get moistureContentComputation => $composableBuilder(
+      column: $table.moistureContentComputation,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get maxMoisureContent => $composableBuilder(
+      column: $table.maxMoisureContent,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get packagingWeight => $composableBuilder(
+      column: $table.packagingWeight,
+      builder: (column) => ColumnFilters(column));
+
+  Expression<bool> warehouseInventoryItemsRefs(
+      Expression<bool> Function($$WarehouseInventoryItemsTableFilterComposer f)
+          f) {
+    final $$WarehouseInventoryItemsTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseInventoryItems,
+            getReferencedColumn: (t) => t.crop,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseInventoryItemsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.warehouseInventoryItems,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseDispatchesRefs(
+      Expression<bool> Function($$WarehouseDispatchesTableFilterComposer f) f) {
+    final $$WarehouseDispatchesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.warehouseDispatches,
+        getReferencedColumn: (t) => t.crop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehouseDispatchesTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouseDispatches,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseStockCountsRefs(
+      Expression<bool> Function($$WarehouseStockCountsTableFilterComposer f)
+          f) {
+    final $$WarehouseStockCountsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.warehouseStockCounts,
+        getReferencedColumn: (t) => t.crop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehouseStockCountsTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouseStockCounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> warehouseStockAdjustmentsRefs(
+      Expression<bool> Function(
+              $$WarehouseStockAdjustmentsTableFilterComposer f)
+          f) {
+    final $$WarehouseStockAdjustmentsTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseStockAdjustments,
+            getReferencedColumn: (t) => t.crop,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseStockAdjustmentsTableFilterComposer(
+                  $db: $db,
+                  $table: $db.warehouseStockAdjustments,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<bool> mainCropFarmers(
+      Expression<bool> Function($$FarmersTableFilterComposer f) f) {
+    final $$FarmersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.farmers,
+        getReferencedColumn: (t) => t.mainCrop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FarmersTableFilterComposer(
+              $db: $db,
+              $table: $db.farmers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> secondaryCropFarmers(
+      Expression<bool> Function($$FarmersTableFilterComposer f) f) {
+    final $$FarmersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.farmers,
+        getReferencedColumn: (t) => t.secondaryCrop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FarmersTableFilterComposer(
+              $db: $db,
+              $table: $db.farmers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> cropGradesRefs(
+      Expression<bool> Function($$CropGradesTableFilterComposer f) f) {
+    final $$CropGradesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.cropGrades,
+        getReferencedColumn: (t) => t.crop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropGradesTableFilterComposer(
+              $db: $db,
+              $table: $db.cropGrades,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> farmerHarvestsRefs(
+      Expression<bool> Function($$FarmerHarvestsTableFilterComposer f) f) {
+    final $$FarmerHarvestsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.farmerHarvests,
+        getReferencedColumn: (t) => t.crop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FarmerHarvestsTableFilterComposer(
+              $db: $db,
+              $table: $db.farmerHarvests,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CropTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $CropTableTable> {
+  $$CropTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uom => $composableBuilder(
+      column: $table.uom, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get packaging => $composableBuilder(
+      column: $table.packaging, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get grading => $composableBuilder(
+      column: $table.grading, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get moistureContentComputation => $composableBuilder(
+      column: $table.moistureContentComputation,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get maxMoisureContent => $composableBuilder(
+      column: $table.maxMoisureContent,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get packagingWeight => $composableBuilder(
+      column: $table.packagingWeight,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$CropTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CropTableTable> {
+  $$CropTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get uom =>
+      $composableBuilder(column: $table.uom, builder: (column) => column);
+
+  GeneratedColumn<String> get packaging =>
+      $composableBuilder(column: $table.packaging, builder: (column) => column);
+
+  GeneratedColumn<String> get grading =>
+      $composableBuilder(column: $table.grading, builder: (column) => column);
+
+  GeneratedColumn<bool> get moistureContentComputation => $composableBuilder(
+      column: $table.moistureContentComputation, builder: (column) => column);
+
+  GeneratedColumn<double> get maxMoisureContent => $composableBuilder(
+      column: $table.maxMoisureContent, builder: (column) => column);
+
+  GeneratedColumn<double> get packagingWeight => $composableBuilder(
+      column: $table.packagingWeight, builder: (column) => column);
+
+  Expression<T> warehouseInventoryItemsRefs<T extends Object>(
+      Expression<T> Function($$WarehouseInventoryItemsTableAnnotationComposer a)
+          f) {
+    final $$WarehouseInventoryItemsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseInventoryItems,
+            getReferencedColumn: (t) => t.crop,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseInventoryItemsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseInventoryItems,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> warehouseDispatchesRefs<T extends Object>(
+      Expression<T> Function($$WarehouseDispatchesTableAnnotationComposer a)
+          f) {
+    final $$WarehouseDispatchesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseDispatches,
+            getReferencedColumn: (t) => t.crop,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseDispatchesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseDispatches,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> warehouseStockCountsRefs<T extends Object>(
+      Expression<T> Function($$WarehouseStockCountsTableAnnotationComposer a)
+          f) {
+    final $$WarehouseStockCountsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseStockCounts,
+            getReferencedColumn: (t) => t.crop,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseStockCountsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseStockCounts,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> warehouseStockAdjustmentsRefs<T extends Object>(
+      Expression<T> Function(
+              $$WarehouseStockAdjustmentsTableAnnotationComposer a)
+          f) {
+    final $$WarehouseStockAdjustmentsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.warehouseStockAdjustments,
+            getReferencedColumn: (t) => t.crop,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$WarehouseStockAdjustmentsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.warehouseStockAdjustments,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> mainCropFarmers<T extends Object>(
+      Expression<T> Function($$FarmersTableAnnotationComposer a) f) {
+    final $$FarmersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.farmers,
+        getReferencedColumn: (t) => t.mainCrop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FarmersTableAnnotationComposer(
+              $db: $db,
+              $table: $db.farmers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> secondaryCropFarmers<T extends Object>(
+      Expression<T> Function($$FarmersTableAnnotationComposer a) f) {
+    final $$FarmersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.farmers,
+        getReferencedColumn: (t) => t.secondaryCrop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FarmersTableAnnotationComposer(
+              $db: $db,
+              $table: $db.farmers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> cropGradesRefs<T extends Object>(
+      Expression<T> Function($$CropGradesTableAnnotationComposer a) f) {
+    final $$CropGradesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.cropGrades,
+        getReferencedColumn: (t) => t.crop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropGradesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cropGrades,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> farmerHarvestsRefs<T extends Object>(
+      Expression<T> Function($$FarmerHarvestsTableAnnotationComposer a) f) {
+    final $$FarmerHarvestsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.farmerHarvests,
+        getReferencedColumn: (t) => t.crop,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FarmerHarvestsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.farmerHarvests,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CropTableTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CropTableTable,
+    Crop,
+    $$CropTableTableFilterComposer,
+    $$CropTableTableOrderingComposer,
+    $$CropTableTableAnnotationComposer,
+    $$CropTableTableCreateCompanionBuilder,
+    $$CropTableTableUpdateCompanionBuilder,
+    (Crop, $$CropTableTableReferences),
+    Crop,
+    PrefetchHooks Function(
+        {bool warehouseInventoryItemsRefs,
+        bool warehouseDispatchesRefs,
+        bool warehouseStockCountsRefs,
+        bool warehouseStockAdjustmentsRefs,
+        bool mainCropFarmers,
+        bool secondaryCropFarmers,
+        bool cropGradesRefs,
+        bool farmerHarvestsRefs})> {
+  $$CropTableTableTableManager(_$AppDatabase db, $CropTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CropTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CropTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CropTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> type = const Value.absent(),
+            Value<String?> uom = const Value.absent(),
+            Value<String?> packaging = const Value.absent(),
+            Value<String?> grading = const Value.absent(),
+            Value<bool> moistureContentComputation = const Value.absent(),
+            Value<double?> maxMoisureContent = const Value.absent(),
+            Value<double?> packagingWeight = const Value.absent(),
+          }) =>
+              CropTableCompanion(
+            id: id,
+            name: name,
+            type: type,
+            uom: uom,
+            packaging: packaging,
+            grading: grading,
+            moistureContentComputation: moistureContentComputation,
+            maxMoisureContent: maxMoisureContent,
+            packagingWeight: packagingWeight,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<String?> type = const Value.absent(),
+            Value<String?> uom = const Value.absent(),
+            Value<String?> packaging = const Value.absent(),
+            Value<String?> grading = const Value.absent(),
+            Value<bool> moistureContentComputation = const Value.absent(),
+            Value<double?> maxMoisureContent = const Value.absent(),
+            Value<double?> packagingWeight = const Value.absent(),
+          }) =>
+              CropTableCompanion.insert(
+            id: id,
+            name: name,
+            type: type,
+            uom: uom,
+            packaging: packaging,
+            grading: grading,
+            moistureContentComputation: moistureContentComputation,
+            maxMoisureContent: maxMoisureContent,
+            packagingWeight: packagingWeight,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CropTableTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {warehouseInventoryItemsRefs = false,
+              warehouseDispatchesRefs = false,
+              warehouseStockCountsRefs = false,
+              warehouseStockAdjustmentsRefs = false,
+              mainCropFarmers = false,
+              secondaryCropFarmers = false,
+              cropGradesRefs = false,
+              farmerHarvestsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (warehouseInventoryItemsRefs) db.warehouseInventoryItems,
+                if (warehouseDispatchesRefs) db.warehouseDispatches,
+                if (warehouseStockCountsRefs) db.warehouseStockCounts,
+                if (warehouseStockAdjustmentsRefs) db.warehouseStockAdjustments,
+                if (mainCropFarmers) db.farmers,
+                if (secondaryCropFarmers) db.farmers,
+                if (cropGradesRefs) db.cropGrades,
+                if (farmerHarvestsRefs) db.farmerHarvests
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (warehouseInventoryItemsRefs)
+                    await $_getPrefetchedData<Crop, $CropTableTable,
+                            WarehouseInventory>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._warehouseInventoryItemsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .warehouseInventoryItemsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.crop == item.id),
+                        typedResults: items),
+                  if (warehouseDispatchesRefs)
+                    await $_getPrefetchedData<Crop, $CropTableTable,
+                            WarehouseDispatch>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._warehouseDispatchesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .warehouseDispatchesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.crop == item.id),
+                        typedResults: items),
+                  if (warehouseStockCountsRefs)
+                    await $_getPrefetchedData<Crop, $CropTableTable,
+                            WarehouseStockCount>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._warehouseStockCountsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .warehouseStockCountsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.crop == item.id),
+                        typedResults: items),
+                  if (warehouseStockAdjustmentsRefs)
+                    await $_getPrefetchedData<Crop, $CropTableTable,
+                            WarehouseStockAdjustment>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._warehouseStockAdjustmentsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .warehouseStockAdjustmentsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.crop == item.id),
+                        typedResults: items),
+                  if (mainCropFarmers)
+                    await $_getPrefetchedData<Crop, $CropTableTable, Farmer>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._mainCropFarmersTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .mainCropFarmers,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.mainCrop == item.id),
+                        typedResults: items),
+                  if (secondaryCropFarmers)
+                    await $_getPrefetchedData<Crop, $CropTableTable, Farmer>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._secondaryCropFarmersTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .secondaryCropFarmers,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.secondaryCrop == item.id),
+                        typedResults: items),
+                  if (cropGradesRefs)
+                    await $_getPrefetchedData<Crop, $CropTableTable, CropGrade>(
+                        currentTable: table,
+                        referencedTable:
+                            $$CropTableTableReferences._cropGradesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .cropGradesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.crop == item.id),
+                        typedResults: items),
+                  if (farmerHarvestsRefs)
+                    await $_getPrefetchedData<Crop, $CropTableTable,
+                            FarmerHarvest>(
+                        currentTable: table,
+                        referencedTable: $$CropTableTableReferences
+                            ._farmerHarvestsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CropTableTableReferences(db, table, p0)
+                                .farmerHarvestsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.crop == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CropTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CropTableTable,
+    Crop,
+    $$CropTableTableFilterComposer,
+    $$CropTableTableOrderingComposer,
+    $$CropTableTableAnnotationComposer,
+    $$CropTableTableCreateCompanionBuilder,
+    $$CropTableTableUpdateCompanionBuilder,
+    (Crop, $$CropTableTableReferences),
+    Crop,
+    PrefetchHooks Function(
+        {bool warehouseInventoryItemsRefs,
+        bool warehouseDispatchesRefs,
+        bool warehouseStockCountsRefs,
+        bool warehouseStockAdjustmentsRefs,
+        bool mainCropFarmers,
+        bool secondaryCropFarmers,
+        bool cropGradesRefs,
+        bool farmerHarvestsRefs})>;
+typedef $$WarehouseInventoryItemsTableCreateCompanionBuilder
+    = WarehouseInventoryItemsCompanion Function({
+  required String uuid,
+  Value<int?> serverId,
+  required String warehouseId,
+  Value<int?> collectionCenter,
+  required String collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  required int crop,
+  required String cropName,
+  Value<int> totalBags,
+  Value<double> totalGrossWeight,
+  Value<double> totalPackagingWeight,
+  Value<double> totalNetWeight,
+  Value<DateTime?> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int> rowid,
+});
+typedef $$WarehouseInventoryItemsTableUpdateCompanionBuilder
+    = WarehouseInventoryItemsCompanion Function({
+  Value<String> uuid,
+  Value<int?> serverId,
+  Value<String> warehouseId,
+  Value<int?> collectionCenter,
+  Value<String> collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  Value<int> crop,
+  Value<String> cropName,
+  Value<int> totalBags,
+  Value<double> totalGrossWeight,
+  Value<double> totalPackagingWeight,
+  Value<double> totalNetWeight,
+  Value<DateTime?> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int> rowid,
+});
+
+final class $$WarehouseInventoryItemsTableReferences extends BaseReferences<
+    _$AppDatabase, $WarehouseInventoryItemsTable, WarehouseInventory> {
+  $$WarehouseInventoryItemsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $WarehousesTable _warehouseIdTable(_$AppDatabase db) =>
+      db.warehouses.createAlias($_aliasNameGenerator(
+          db.warehouseInventoryItems.warehouseId, db.warehouses.id));
+
+  $$WarehousesTableProcessedTableManager get warehouseId {
+    final $_column = $_itemColumn<String>('warehouse_id')!;
+
+    final manager = $$WarehousesTableTableManager($_db, $_db.warehouses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_warehouseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $CropTableTable _cropTable(_$AppDatabase db) =>
+      db.cropTable.createAlias($_aliasNameGenerator(
+          db.warehouseInventoryItems.crop, db.cropTable.id));
+
+  $$CropTableTableProcessedTableManager get crop {
+    final $_column = $_itemColumn<int>('crop')!;
+
+    final manager = $$CropTableTableTableManager($_db, $_db.cropTable)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_cropTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$WarehouseInventoryItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $WarehouseInventoryItemsTable> {
+  $$WarehouseInventoryItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalBags => $composableBuilder(
+      column: $table.totalBags, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalGrossWeight => $composableBuilder(
+      column: $table.totalGrossWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalPackagingWeight => $composableBuilder(
+      column: $table.totalPackagingWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalNetWeight => $composableBuilder(
+      column: $table.totalNetWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$WarehousesTableFilterComposer get warehouseId {
+    final $$WarehousesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableFilterComposer get crop {
+    final $$CropTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableFilterComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseInventoryItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WarehouseInventoryItemsTable> {
+  $$WarehouseInventoryItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalBags => $composableBuilder(
+      column: $table.totalBags, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalGrossWeight => $composableBuilder(
+      column: $table.totalGrossWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalPackagingWeight => $composableBuilder(
+      column: $table.totalPackagingWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalNetWeight => $composableBuilder(
+      column: $table.totalNetWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$WarehousesTableOrderingComposer get warehouseId {
+    final $$WarehousesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableOrderingComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableOrderingComposer get crop {
+    final $$CropTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseInventoryItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WarehouseInventoryItemsTable> {
+  $$WarehouseInventoryItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName, builder: (column) => column);
+
+  GeneratedColumn<int> get amcos =>
+      $composableBuilder(column: $table.amcos, builder: (column) => column);
+
+  GeneratedColumn<String> get amcosName =>
+      $composableBuilder(column: $table.amcosName, builder: (column) => column);
+
+  GeneratedColumn<int> get mcu =>
+      $composableBuilder(column: $table.mcu, builder: (column) => column);
+
+  GeneratedColumn<String> get mcuName =>
+      $composableBuilder(column: $table.mcuName, builder: (column) => column);
+
+  GeneratedColumn<String> get cropName =>
+      $composableBuilder(column: $table.cropName, builder: (column) => column);
+
+  GeneratedColumn<int> get totalBags =>
+      $composableBuilder(column: $table.totalBags, builder: (column) => column);
+
+  GeneratedColumn<double> get totalGrossWeight => $composableBuilder(
+      column: $table.totalGrossWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get totalPackagingWeight => $composableBuilder(
+      column: $table.totalPackagingWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get totalNetWeight => $composableBuilder(
+      column: $table.totalNetWeight, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$WarehousesTableAnnotationComposer get warehouseId {
+    final $$WarehousesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableAnnotationComposer get crop {
+    final $$CropTableTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseInventoryItemsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WarehouseInventoryItemsTable,
+    WarehouseInventory,
+    $$WarehouseInventoryItemsTableFilterComposer,
+    $$WarehouseInventoryItemsTableOrderingComposer,
+    $$WarehouseInventoryItemsTableAnnotationComposer,
+    $$WarehouseInventoryItemsTableCreateCompanionBuilder,
+    $$WarehouseInventoryItemsTableUpdateCompanionBuilder,
+    (WarehouseInventory, $$WarehouseInventoryItemsTableReferences),
+    WarehouseInventory,
+    PrefetchHooks Function({bool warehouseId, bool crop})> {
+  $$WarehouseInventoryItemsTableTableManager(
+      _$AppDatabase db, $WarehouseInventoryItemsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WarehouseInventoryItemsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WarehouseInventoryItemsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WarehouseInventoryItemsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> uuid = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
+            Value<String> warehouseId = const Value.absent(),
+            Value<int?> collectionCenter = const Value.absent(),
+            Value<String> collectionCenterUuid = const Value.absent(),
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            Value<int> crop = const Value.absent(),
+            Value<String> cropName = const Value.absent(),
+            Value<int> totalBags = const Value.absent(),
+            Value<double> totalGrossWeight = const Value.absent(),
+            Value<double> totalPackagingWeight = const Value.absent(),
+            Value<double> totalNetWeight = const Value.absent(),
+            Value<DateTime?> createdAt = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseInventoryItemsCompanion(
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            totalBags: totalBags,
+            totalGrossWeight: totalGrossWeight,
+            totalPackagingWeight: totalPackagingWeight,
+            totalNetWeight: totalNetWeight,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String uuid,
+            Value<int?> serverId = const Value.absent(),
+            required String warehouseId,
+            Value<int?> collectionCenter = const Value.absent(),
+            required String collectionCenterUuid,
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            required int crop,
+            required String cropName,
+            Value<int> totalBags = const Value.absent(),
+            Value<double> totalGrossWeight = const Value.absent(),
+            Value<double> totalPackagingWeight = const Value.absent(),
+            Value<double> totalNetWeight = const Value.absent(),
+            Value<DateTime?> createdAt = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseInventoryItemsCompanion.insert(
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            totalBags: totalBags,
+            totalGrossWeight: totalGrossWeight,
+            totalPackagingWeight: totalPackagingWeight,
+            totalNetWeight: totalNetWeight,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$WarehouseInventoryItemsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({warehouseId = false, crop = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (warehouseId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.warehouseId,
+                    referencedTable: $$WarehouseInventoryItemsTableReferences
+                        ._warehouseIdTable(db),
+                    referencedColumn: $$WarehouseInventoryItemsTableReferences
+                        ._warehouseIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (crop) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.crop,
+                    referencedTable:
+                        $$WarehouseInventoryItemsTableReferences._cropTable(db),
+                    referencedColumn: $$WarehouseInventoryItemsTableReferences
+                        ._cropTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$WarehouseInventoryItemsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $WarehouseInventoryItemsTable,
+        WarehouseInventory,
+        $$WarehouseInventoryItemsTableFilterComposer,
+        $$WarehouseInventoryItemsTableOrderingComposer,
+        $$WarehouseInventoryItemsTableAnnotationComposer,
+        $$WarehouseInventoryItemsTableCreateCompanionBuilder,
+        $$WarehouseInventoryItemsTableUpdateCompanionBuilder,
+        (WarehouseInventory, $$WarehouseInventoryItemsTableReferences),
+        WarehouseInventory,
+        PrefetchHooks Function({bool warehouseId, bool crop})>;
+typedef $$WarehouseDispatchesTableCreateCompanionBuilder
+    = WarehouseDispatchesCompanion Function({
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncStatus,
+  required String uuid,
+  Value<int?> serverId,
+  required String warehouseId,
+  Value<int?> collectionCenter,
+  required String collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  required int crop,
+  required String cropName,
+  required String recipientType,
+  required String recipientName,
+  Value<String?> recipientPhone,
+  required int totalBags,
+  required double totalGrossWeight,
+  required double totalPackagingWeight,
+  required double totalNetWeight,
+  Value<double> moistureContent,
+  Value<int?> dispatchedBy,
+  Value<String?> dispatchedByName,
+  Value<DateTime> dispatchedAt,
+  Value<int> rowid,
+});
+typedef $$WarehouseDispatchesTableUpdateCompanionBuilder
+    = WarehouseDispatchesCompanion Function({
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncStatus,
+  Value<String> uuid,
+  Value<int?> serverId,
+  Value<String> warehouseId,
+  Value<int?> collectionCenter,
+  Value<String> collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  Value<int> crop,
+  Value<String> cropName,
+  Value<String> recipientType,
+  Value<String> recipientName,
+  Value<String?> recipientPhone,
+  Value<int> totalBags,
+  Value<double> totalGrossWeight,
+  Value<double> totalPackagingWeight,
+  Value<double> totalNetWeight,
+  Value<double> moistureContent,
+  Value<int?> dispatchedBy,
+  Value<String?> dispatchedByName,
+  Value<DateTime> dispatchedAt,
+  Value<int> rowid,
+});
+
+final class $$WarehouseDispatchesTableReferences extends BaseReferences<
+    _$AppDatabase, $WarehouseDispatchesTable, WarehouseDispatch> {
+  $$WarehouseDispatchesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $WarehousesTable _warehouseIdTable(_$AppDatabase db) =>
+      db.warehouses.createAlias($_aliasNameGenerator(
+          db.warehouseDispatches.warehouseId, db.warehouses.id));
+
+  $$WarehousesTableProcessedTableManager get warehouseId {
+    final $_column = $_itemColumn<String>('warehouse_id')!;
+
+    final manager = $$WarehousesTableTableManager($_db, $_db.warehouses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_warehouseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $CropTableTable _cropTable(_$AppDatabase db) =>
+      db.cropTable.createAlias(
+          $_aliasNameGenerator(db.warehouseDispatches.crop, db.cropTable.id));
+
+  $$CropTableTableProcessedTableManager get crop {
+    final $_column = $_itemColumn<int>('crop')!;
+
+    final manager = $$CropTableTableTableManager($_db, $_db.cropTable)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_cropTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$WarehouseDispatchesTableFilterComposer
+    extends Composer<_$AppDatabase, $WarehouseDispatchesTable> {
+  $$WarehouseDispatchesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recipientType => $composableBuilder(
+      column: $table.recipientType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recipientName => $composableBuilder(
+      column: $table.recipientName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recipientPhone => $composableBuilder(
+      column: $table.recipientPhone,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalBags => $composableBuilder(
+      column: $table.totalBags, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalGrossWeight => $composableBuilder(
+      column: $table.totalGrossWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalPackagingWeight => $composableBuilder(
+      column: $table.totalPackagingWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalNetWeight => $composableBuilder(
+      column: $table.totalNetWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get dispatchedBy => $composableBuilder(
+      column: $table.dispatchedBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get dispatchedByName => $composableBuilder(
+      column: $table.dispatchedByName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dispatchedAt => $composableBuilder(
+      column: $table.dispatchedAt, builder: (column) => ColumnFilters(column));
+
+  $$WarehousesTableFilterComposer get warehouseId {
+    final $$WarehousesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableFilterComposer get crop {
+    final $$CropTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableFilterComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseDispatchesTableOrderingComposer
+    extends Composer<_$AppDatabase, $WarehouseDispatchesTable> {
+  $$WarehouseDispatchesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recipientType => $composableBuilder(
+      column: $table.recipientType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recipientName => $composableBuilder(
+      column: $table.recipientName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recipientPhone => $composableBuilder(
+      column: $table.recipientPhone,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalBags => $composableBuilder(
+      column: $table.totalBags, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalGrossWeight => $composableBuilder(
+      column: $table.totalGrossWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalPackagingWeight => $composableBuilder(
+      column: $table.totalPackagingWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalNetWeight => $composableBuilder(
+      column: $table.totalNetWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get dispatchedBy => $composableBuilder(
+      column: $table.dispatchedBy,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get dispatchedByName => $composableBuilder(
+      column: $table.dispatchedByName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dispatchedAt => $composableBuilder(
+      column: $table.dispatchedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  $$WarehousesTableOrderingComposer get warehouseId {
+    final $$WarehousesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableOrderingComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableOrderingComposer get crop {
+    final $$CropTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseDispatchesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WarehouseDispatchesTable> {
+  $$WarehouseDispatchesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName, builder: (column) => column);
+
+  GeneratedColumn<int> get amcos =>
+      $composableBuilder(column: $table.amcos, builder: (column) => column);
+
+  GeneratedColumn<String> get amcosName =>
+      $composableBuilder(column: $table.amcosName, builder: (column) => column);
+
+  GeneratedColumn<int> get mcu =>
+      $composableBuilder(column: $table.mcu, builder: (column) => column);
+
+  GeneratedColumn<String> get mcuName =>
+      $composableBuilder(column: $table.mcuName, builder: (column) => column);
+
+  GeneratedColumn<String> get cropName =>
+      $composableBuilder(column: $table.cropName, builder: (column) => column);
+
+  GeneratedColumn<String> get recipientType => $composableBuilder(
+      column: $table.recipientType, builder: (column) => column);
+
+  GeneratedColumn<String> get recipientName => $composableBuilder(
+      column: $table.recipientName, builder: (column) => column);
+
+  GeneratedColumn<String> get recipientPhone => $composableBuilder(
+      column: $table.recipientPhone, builder: (column) => column);
+
+  GeneratedColumn<int> get totalBags =>
+      $composableBuilder(column: $table.totalBags, builder: (column) => column);
+
+  GeneratedColumn<double> get totalGrossWeight => $composableBuilder(
+      column: $table.totalGrossWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get totalPackagingWeight => $composableBuilder(
+      column: $table.totalPackagingWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get totalNetWeight => $composableBuilder(
+      column: $table.totalNetWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent, builder: (column) => column);
+
+  GeneratedColumn<int> get dispatchedBy => $composableBuilder(
+      column: $table.dispatchedBy, builder: (column) => column);
+
+  GeneratedColumn<String> get dispatchedByName => $composableBuilder(
+      column: $table.dispatchedByName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dispatchedAt => $composableBuilder(
+      column: $table.dispatchedAt, builder: (column) => column);
+
+  $$WarehousesTableAnnotationComposer get warehouseId {
+    final $$WarehousesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableAnnotationComposer get crop {
+    final $$CropTableTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseDispatchesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WarehouseDispatchesTable,
+    WarehouseDispatch,
+    $$WarehouseDispatchesTableFilterComposer,
+    $$WarehouseDispatchesTableOrderingComposer,
+    $$WarehouseDispatchesTableAnnotationComposer,
+    $$WarehouseDispatchesTableCreateCompanionBuilder,
+    $$WarehouseDispatchesTableUpdateCompanionBuilder,
+    (WarehouseDispatch, $$WarehouseDispatchesTableReferences),
+    WarehouseDispatch,
+    PrefetchHooks Function({bool warehouseId, bool crop})> {
+  $$WarehouseDispatchesTableTableManager(
+      _$AppDatabase db, $WarehouseDispatchesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WarehouseDispatchesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WarehouseDispatchesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WarehouseDispatchesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
+            Value<String> warehouseId = const Value.absent(),
+            Value<int?> collectionCenter = const Value.absent(),
+            Value<String> collectionCenterUuid = const Value.absent(),
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            Value<int> crop = const Value.absent(),
+            Value<String> cropName = const Value.absent(),
+            Value<String> recipientType = const Value.absent(),
+            Value<String> recipientName = const Value.absent(),
+            Value<String?> recipientPhone = const Value.absent(),
+            Value<int> totalBags = const Value.absent(),
+            Value<double> totalGrossWeight = const Value.absent(),
+            Value<double> totalPackagingWeight = const Value.absent(),
+            Value<double> totalNetWeight = const Value.absent(),
+            Value<double> moistureContent = const Value.absent(),
+            Value<int?> dispatchedBy = const Value.absent(),
+            Value<String?> dispatchedByName = const Value.absent(),
+            Value<DateTime> dispatchedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseDispatchesCompanion(
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            syncStatus: syncStatus,
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            recipientType: recipientType,
+            recipientName: recipientName,
+            recipientPhone: recipientPhone,
+            totalBags: totalBags,
+            totalGrossWeight: totalGrossWeight,
+            totalPackagingWeight: totalPackagingWeight,
+            totalNetWeight: totalNetWeight,
+            moistureContent: moistureContent,
+            dispatchedBy: dispatchedBy,
+            dispatchedByName: dispatchedByName,
+            dispatchedAt: dispatchedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            required String uuid,
+            Value<int?> serverId = const Value.absent(),
+            required String warehouseId,
+            Value<int?> collectionCenter = const Value.absent(),
+            required String collectionCenterUuid,
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            required int crop,
+            required String cropName,
+            required String recipientType,
+            required String recipientName,
+            Value<String?> recipientPhone = const Value.absent(),
+            required int totalBags,
+            required double totalGrossWeight,
+            required double totalPackagingWeight,
+            required double totalNetWeight,
+            Value<double> moistureContent = const Value.absent(),
+            Value<int?> dispatchedBy = const Value.absent(),
+            Value<String?> dispatchedByName = const Value.absent(),
+            Value<DateTime> dispatchedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseDispatchesCompanion.insert(
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            syncStatus: syncStatus,
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            recipientType: recipientType,
+            recipientName: recipientName,
+            recipientPhone: recipientPhone,
+            totalBags: totalBags,
+            totalGrossWeight: totalGrossWeight,
+            totalPackagingWeight: totalPackagingWeight,
+            totalNetWeight: totalNetWeight,
+            moistureContent: moistureContent,
+            dispatchedBy: dispatchedBy,
+            dispatchedByName: dispatchedByName,
+            dispatchedAt: dispatchedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$WarehouseDispatchesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({warehouseId = false, crop = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (warehouseId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.warehouseId,
+                    referencedTable: $$WarehouseDispatchesTableReferences
+                        ._warehouseIdTable(db),
+                    referencedColumn: $$WarehouseDispatchesTableReferences
+                        ._warehouseIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (crop) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.crop,
+                    referencedTable:
+                        $$WarehouseDispatchesTableReferences._cropTable(db),
+                    referencedColumn:
+                        $$WarehouseDispatchesTableReferences._cropTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$WarehouseDispatchesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $WarehouseDispatchesTable,
+    WarehouseDispatch,
+    $$WarehouseDispatchesTableFilterComposer,
+    $$WarehouseDispatchesTableOrderingComposer,
+    $$WarehouseDispatchesTableAnnotationComposer,
+    $$WarehouseDispatchesTableCreateCompanionBuilder,
+    $$WarehouseDispatchesTableUpdateCompanionBuilder,
+    (WarehouseDispatch, $$WarehouseDispatchesTableReferences),
+    WarehouseDispatch,
+    PrefetchHooks Function({bool warehouseId, bool crop})>;
+typedef $$WarehouseStockCountsTableCreateCompanionBuilder
+    = WarehouseStockCountsCompanion Function({
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncStatus,
+  required String uuid,
+  Value<int?> serverId,
+  required String warehouseId,
+  Value<int?> collectionCenter,
+  required String collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  required int crop,
+  required String cropName,
+  Value<int> expectedBags,
+  Value<double> expectedNetWeight,
+  required int countedBags,
+  required double countedGrossWeight,
+  required double countedPackagingWeight,
+  required double countedNetWeight,
+  Value<double> moistureContent,
+  Value<int?> countedBy,
+  Value<String?> countedByName,
+  Value<DateTime> countedAt,
+  Value<int> rowid,
+});
+typedef $$WarehouseStockCountsTableUpdateCompanionBuilder
+    = WarehouseStockCountsCompanion Function({
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncStatus,
+  Value<String> uuid,
+  Value<int?> serverId,
+  Value<String> warehouseId,
+  Value<int?> collectionCenter,
+  Value<String> collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  Value<int> crop,
+  Value<String> cropName,
+  Value<int> expectedBags,
+  Value<double> expectedNetWeight,
+  Value<int> countedBags,
+  Value<double> countedGrossWeight,
+  Value<double> countedPackagingWeight,
+  Value<double> countedNetWeight,
+  Value<double> moistureContent,
+  Value<int?> countedBy,
+  Value<String?> countedByName,
+  Value<DateTime> countedAt,
+  Value<int> rowid,
+});
+
+final class $$WarehouseStockCountsTableReferences extends BaseReferences<
+    _$AppDatabase, $WarehouseStockCountsTable, WarehouseStockCount> {
+  $$WarehouseStockCountsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $WarehousesTable _warehouseIdTable(_$AppDatabase db) =>
+      db.warehouses.createAlias($_aliasNameGenerator(
+          db.warehouseStockCounts.warehouseId, db.warehouses.id));
+
+  $$WarehousesTableProcessedTableManager get warehouseId {
+    final $_column = $_itemColumn<String>('warehouse_id')!;
+
+    final manager = $$WarehousesTableTableManager($_db, $_db.warehouses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_warehouseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $CropTableTable _cropTable(_$AppDatabase db) =>
+      db.cropTable.createAlias(
+          $_aliasNameGenerator(db.warehouseStockCounts.crop, db.cropTable.id));
+
+  $$CropTableTableProcessedTableManager get crop {
+    final $_column = $_itemColumn<int>('crop')!;
+
+    final manager = $$CropTableTableTableManager($_db, $_db.cropTable)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_cropTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$WarehouseStockCountsTableFilterComposer
+    extends Composer<_$AppDatabase, $WarehouseStockCountsTable> {
+  $$WarehouseStockCountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get expectedBags => $composableBuilder(
+      column: $table.expectedBags, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get expectedNetWeight => $composableBuilder(
+      column: $table.expectedNetWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get countedBags => $composableBuilder(
+      column: $table.countedBags, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get countedGrossWeight => $composableBuilder(
+      column: $table.countedGrossWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get countedPackagingWeight => $composableBuilder(
+      column: $table.countedPackagingWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get countedNetWeight => $composableBuilder(
+      column: $table.countedNetWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get countedBy => $composableBuilder(
+      column: $table.countedBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get countedByName => $composableBuilder(
+      column: $table.countedByName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get countedAt => $composableBuilder(
+      column: $table.countedAt, builder: (column) => ColumnFilters(column));
+
+  $$WarehousesTableFilterComposer get warehouseId {
+    final $$WarehousesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableFilterComposer get crop {
+    final $$CropTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableFilterComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseStockCountsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WarehouseStockCountsTable> {
+  $$WarehouseStockCountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get expectedBags => $composableBuilder(
+      column: $table.expectedBags,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get expectedNetWeight => $composableBuilder(
+      column: $table.expectedNetWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get countedBags => $composableBuilder(
+      column: $table.countedBags, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get countedGrossWeight => $composableBuilder(
+      column: $table.countedGrossWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get countedPackagingWeight => $composableBuilder(
+      column: $table.countedPackagingWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get countedNetWeight => $composableBuilder(
+      column: $table.countedNetWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get countedBy => $composableBuilder(
+      column: $table.countedBy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get countedByName => $composableBuilder(
+      column: $table.countedByName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get countedAt => $composableBuilder(
+      column: $table.countedAt, builder: (column) => ColumnOrderings(column));
+
+  $$WarehousesTableOrderingComposer get warehouseId {
+    final $$WarehousesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableOrderingComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableOrderingComposer get crop {
+    final $$CropTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseStockCountsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WarehouseStockCountsTable> {
+  $$WarehouseStockCountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName, builder: (column) => column);
+
+  GeneratedColumn<int> get amcos =>
+      $composableBuilder(column: $table.amcos, builder: (column) => column);
+
+  GeneratedColumn<String> get amcosName =>
+      $composableBuilder(column: $table.amcosName, builder: (column) => column);
+
+  GeneratedColumn<int> get mcu =>
+      $composableBuilder(column: $table.mcu, builder: (column) => column);
+
+  GeneratedColumn<String> get mcuName =>
+      $composableBuilder(column: $table.mcuName, builder: (column) => column);
+
+  GeneratedColumn<String> get cropName =>
+      $composableBuilder(column: $table.cropName, builder: (column) => column);
+
+  GeneratedColumn<int> get expectedBags => $composableBuilder(
+      column: $table.expectedBags, builder: (column) => column);
+
+  GeneratedColumn<double> get expectedNetWeight => $composableBuilder(
+      column: $table.expectedNetWeight, builder: (column) => column);
+
+  GeneratedColumn<int> get countedBags => $composableBuilder(
+      column: $table.countedBags, builder: (column) => column);
+
+  GeneratedColumn<double> get countedGrossWeight => $composableBuilder(
+      column: $table.countedGrossWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get countedPackagingWeight => $composableBuilder(
+      column: $table.countedPackagingWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get countedNetWeight => $composableBuilder(
+      column: $table.countedNetWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent, builder: (column) => column);
+
+  GeneratedColumn<int> get countedBy =>
+      $composableBuilder(column: $table.countedBy, builder: (column) => column);
+
+  GeneratedColumn<String> get countedByName => $composableBuilder(
+      column: $table.countedByName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get countedAt =>
+      $composableBuilder(column: $table.countedAt, builder: (column) => column);
+
+  $$WarehousesTableAnnotationComposer get warehouseId {
+    final $$WarehousesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableAnnotationComposer get crop {
+    final $$CropTableTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseStockCountsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WarehouseStockCountsTable,
+    WarehouseStockCount,
+    $$WarehouseStockCountsTableFilterComposer,
+    $$WarehouseStockCountsTableOrderingComposer,
+    $$WarehouseStockCountsTableAnnotationComposer,
+    $$WarehouseStockCountsTableCreateCompanionBuilder,
+    $$WarehouseStockCountsTableUpdateCompanionBuilder,
+    (WarehouseStockCount, $$WarehouseStockCountsTableReferences),
+    WarehouseStockCount,
+    PrefetchHooks Function({bool warehouseId, bool crop})> {
+  $$WarehouseStockCountsTableTableManager(
+      _$AppDatabase db, $WarehouseStockCountsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WarehouseStockCountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WarehouseStockCountsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WarehouseStockCountsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
+            Value<String> warehouseId = const Value.absent(),
+            Value<int?> collectionCenter = const Value.absent(),
+            Value<String> collectionCenterUuid = const Value.absent(),
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            Value<int> crop = const Value.absent(),
+            Value<String> cropName = const Value.absent(),
+            Value<int> expectedBags = const Value.absent(),
+            Value<double> expectedNetWeight = const Value.absent(),
+            Value<int> countedBags = const Value.absent(),
+            Value<double> countedGrossWeight = const Value.absent(),
+            Value<double> countedPackagingWeight = const Value.absent(),
+            Value<double> countedNetWeight = const Value.absent(),
+            Value<double> moistureContent = const Value.absent(),
+            Value<int?> countedBy = const Value.absent(),
+            Value<String?> countedByName = const Value.absent(),
+            Value<DateTime> countedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseStockCountsCompanion(
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            syncStatus: syncStatus,
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            expectedBags: expectedBags,
+            expectedNetWeight: expectedNetWeight,
+            countedBags: countedBags,
+            countedGrossWeight: countedGrossWeight,
+            countedPackagingWeight: countedPackagingWeight,
+            countedNetWeight: countedNetWeight,
+            moistureContent: moistureContent,
+            countedBy: countedBy,
+            countedByName: countedByName,
+            countedAt: countedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            required String uuid,
+            Value<int?> serverId = const Value.absent(),
+            required String warehouseId,
+            Value<int?> collectionCenter = const Value.absent(),
+            required String collectionCenterUuid,
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            required int crop,
+            required String cropName,
+            Value<int> expectedBags = const Value.absent(),
+            Value<double> expectedNetWeight = const Value.absent(),
+            required int countedBags,
+            required double countedGrossWeight,
+            required double countedPackagingWeight,
+            required double countedNetWeight,
+            Value<double> moistureContent = const Value.absent(),
+            Value<int?> countedBy = const Value.absent(),
+            Value<String?> countedByName = const Value.absent(),
+            Value<DateTime> countedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseStockCountsCompanion.insert(
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            syncStatus: syncStatus,
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            expectedBags: expectedBags,
+            expectedNetWeight: expectedNetWeight,
+            countedBags: countedBags,
+            countedGrossWeight: countedGrossWeight,
+            countedPackagingWeight: countedPackagingWeight,
+            countedNetWeight: countedNetWeight,
+            moistureContent: moistureContent,
+            countedBy: countedBy,
+            countedByName: countedByName,
+            countedAt: countedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$WarehouseStockCountsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({warehouseId = false, crop = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (warehouseId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.warehouseId,
+                    referencedTable: $$WarehouseStockCountsTableReferences
+                        ._warehouseIdTable(db),
+                    referencedColumn: $$WarehouseStockCountsTableReferences
+                        ._warehouseIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (crop) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.crop,
+                    referencedTable:
+                        $$WarehouseStockCountsTableReferences._cropTable(db),
+                    referencedColumn:
+                        $$WarehouseStockCountsTableReferences._cropTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$WarehouseStockCountsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $WarehouseStockCountsTable,
+        WarehouseStockCount,
+        $$WarehouseStockCountsTableFilterComposer,
+        $$WarehouseStockCountsTableOrderingComposer,
+        $$WarehouseStockCountsTableAnnotationComposer,
+        $$WarehouseStockCountsTableCreateCompanionBuilder,
+        $$WarehouseStockCountsTableUpdateCompanionBuilder,
+        (WarehouseStockCount, $$WarehouseStockCountsTableReferences),
+        WarehouseStockCount,
+        PrefetchHooks Function({bool warehouseId, bool crop})>;
+typedef $$WarehouseStockAdjustmentsTableCreateCompanionBuilder
+    = WarehouseStockAdjustmentsCompanion Function({
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncStatus,
+  required String uuid,
+  Value<int?> serverId,
+  required String warehouseId,
+  Value<int?> collectionCenter,
+  required String collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  required int crop,
+  required String cropName,
+  required String adjustmentType,
+  required String reason,
+  required int bags,
+  required double grossWeight,
+  required double packagingWeight,
+  required double netWeight,
+  Value<double> moistureContent,
+  Value<int?> adjustedBy,
+  Value<String?> adjustedByName,
+  Value<DateTime> adjustedAt,
+  Value<int> rowid,
+});
+typedef $$WarehouseStockAdjustmentsTableUpdateCompanionBuilder
+    = WarehouseStockAdjustmentsCompanion Function({
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncStatus,
+  Value<String> uuid,
+  Value<int?> serverId,
+  Value<String> warehouseId,
+  Value<int?> collectionCenter,
+  Value<String> collectionCenterUuid,
+  Value<String?> collectionCenterName,
+  Value<int?> amcos,
+  Value<String?> amcosName,
+  Value<int?> mcu,
+  Value<String?> mcuName,
+  Value<int> crop,
+  Value<String> cropName,
+  Value<String> adjustmentType,
+  Value<String> reason,
+  Value<int> bags,
+  Value<double> grossWeight,
+  Value<double> packagingWeight,
+  Value<double> netWeight,
+  Value<double> moistureContent,
+  Value<int?> adjustedBy,
+  Value<String?> adjustedByName,
+  Value<DateTime> adjustedAt,
+  Value<int> rowid,
+});
+
+final class $$WarehouseStockAdjustmentsTableReferences extends BaseReferences<
+    _$AppDatabase, $WarehouseStockAdjustmentsTable, WarehouseStockAdjustment> {
+  $$WarehouseStockAdjustmentsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $WarehousesTable _warehouseIdTable(_$AppDatabase db) =>
+      db.warehouses.createAlias($_aliasNameGenerator(
+          db.warehouseStockAdjustments.warehouseId, db.warehouses.id));
+
+  $$WarehousesTableProcessedTableManager get warehouseId {
+    final $_column = $_itemColumn<String>('warehouse_id')!;
+
+    final manager = $$WarehousesTableTableManager($_db, $_db.warehouses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_warehouseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $CropTableTable _cropTable(_$AppDatabase db) =>
+      db.cropTable.createAlias($_aliasNameGenerator(
+          db.warehouseStockAdjustments.crop, db.cropTable.id));
+
+  $$CropTableTableProcessedTableManager get crop {
+    final $_column = $_itemColumn<int>('crop')!;
+
+    final manager = $$CropTableTableTableManager($_db, $_db.cropTable)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_cropTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$WarehouseStockAdjustmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $WarehouseStockAdjustmentsTable> {
+  $$WarehouseStockAdjustmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get adjustmentType => $composableBuilder(
+      column: $table.adjustmentType,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get bags => $composableBuilder(
+      column: $table.bags, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get grossWeight => $composableBuilder(
+      column: $table.grossWeight, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get packagingWeight => $composableBuilder(
+      column: $table.packagingWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get netWeight => $composableBuilder(
+      column: $table.netWeight, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get adjustedBy => $composableBuilder(
+      column: $table.adjustedBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get adjustedByName => $composableBuilder(
+      column: $table.adjustedByName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get adjustedAt => $composableBuilder(
+      column: $table.adjustedAt, builder: (column) => ColumnFilters(column));
+
+  $$WarehousesTableFilterComposer get warehouseId {
+    final $$WarehousesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableFilterComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableFilterComposer get crop {
+    final $$CropTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableFilterComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseStockAdjustmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WarehouseStockAdjustmentsTable> {
+  $$WarehouseStockAdjustmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get serverId => $composableBuilder(
+      column: $table.serverId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amcos => $composableBuilder(
+      column: $table.amcos, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amcosName => $composableBuilder(
+      column: $table.amcosName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get mcu => $composableBuilder(
+      column: $table.mcu, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mcuName => $composableBuilder(
+      column: $table.mcuName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cropName => $composableBuilder(
+      column: $table.cropName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get adjustmentType => $composableBuilder(
+      column: $table.adjustmentType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+      column: $table.reason, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get bags => $composableBuilder(
+      column: $table.bags, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get grossWeight => $composableBuilder(
+      column: $table.grossWeight, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get packagingWeight => $composableBuilder(
+      column: $table.packagingWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get netWeight => $composableBuilder(
+      column: $table.netWeight, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get adjustedBy => $composableBuilder(
+      column: $table.adjustedBy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get adjustedByName => $composableBuilder(
+      column: $table.adjustedByName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get adjustedAt => $composableBuilder(
+      column: $table.adjustedAt, builder: (column) => ColumnOrderings(column));
+
+  $$WarehousesTableOrderingComposer get warehouseId {
+    final $$WarehousesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableOrderingComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableOrderingComposer get crop {
+    final $$CropTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseStockAdjustmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WarehouseStockAdjustmentsTable> {
+  $$WarehouseStockAdjustmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+      column: $table.syncStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<int> get collectionCenter => $composableBuilder(
+      column: $table.collectionCenter, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterUuid => $composableBuilder(
+      column: $table.collectionCenterUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionCenterName => $composableBuilder(
+      column: $table.collectionCenterName, builder: (column) => column);
+
+  GeneratedColumn<int> get amcos =>
+      $composableBuilder(column: $table.amcos, builder: (column) => column);
+
+  GeneratedColumn<String> get amcosName =>
+      $composableBuilder(column: $table.amcosName, builder: (column) => column);
+
+  GeneratedColumn<int> get mcu =>
+      $composableBuilder(column: $table.mcu, builder: (column) => column);
+
+  GeneratedColumn<String> get mcuName =>
+      $composableBuilder(column: $table.mcuName, builder: (column) => column);
+
+  GeneratedColumn<String> get cropName =>
+      $composableBuilder(column: $table.cropName, builder: (column) => column);
+
+  GeneratedColumn<String> get adjustmentType => $composableBuilder(
+      column: $table.adjustmentType, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<int> get bags =>
+      $composableBuilder(column: $table.bags, builder: (column) => column);
+
+  GeneratedColumn<double> get grossWeight => $composableBuilder(
+      column: $table.grossWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get packagingWeight => $composableBuilder(
+      column: $table.packagingWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get netWeight =>
+      $composableBuilder(column: $table.netWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get moistureContent => $composableBuilder(
+      column: $table.moistureContent, builder: (column) => column);
+
+  GeneratedColumn<int> get adjustedBy => $composableBuilder(
+      column: $table.adjustedBy, builder: (column) => column);
+
+  GeneratedColumn<String> get adjustedByName => $composableBuilder(
+      column: $table.adjustedByName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get adjustedAt => $composableBuilder(
+      column: $table.adjustedAt, builder: (column) => column);
+
+  $$WarehousesTableAnnotationComposer get warehouseId {
+    final $$WarehousesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.warehouseId,
+        referencedTable: $db.warehouses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WarehousesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.warehouses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$CropTableTableAnnotationComposer get crop {
+    final $$CropTableTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.crop,
+        referencedTable: $db.cropTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CropTableTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cropTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$WarehouseStockAdjustmentsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WarehouseStockAdjustmentsTable,
+    WarehouseStockAdjustment,
+    $$WarehouseStockAdjustmentsTableFilterComposer,
+    $$WarehouseStockAdjustmentsTableOrderingComposer,
+    $$WarehouseStockAdjustmentsTableAnnotationComposer,
+    $$WarehouseStockAdjustmentsTableCreateCompanionBuilder,
+    $$WarehouseStockAdjustmentsTableUpdateCompanionBuilder,
+    (WarehouseStockAdjustment, $$WarehouseStockAdjustmentsTableReferences),
+    WarehouseStockAdjustment,
+    PrefetchHooks Function({bool warehouseId, bool crop})> {
+  $$WarehouseStockAdjustmentsTableTableManager(
+      _$AppDatabase db, $WarehouseStockAdjustmentsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WarehouseStockAdjustmentsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WarehouseStockAdjustmentsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WarehouseStockAdjustmentsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            Value<String> uuid = const Value.absent(),
+            Value<int?> serverId = const Value.absent(),
+            Value<String> warehouseId = const Value.absent(),
+            Value<int?> collectionCenter = const Value.absent(),
+            Value<String> collectionCenterUuid = const Value.absent(),
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            Value<int> crop = const Value.absent(),
+            Value<String> cropName = const Value.absent(),
+            Value<String> adjustmentType = const Value.absent(),
+            Value<String> reason = const Value.absent(),
+            Value<int> bags = const Value.absent(),
+            Value<double> grossWeight = const Value.absent(),
+            Value<double> packagingWeight = const Value.absent(),
+            Value<double> netWeight = const Value.absent(),
+            Value<double> moistureContent = const Value.absent(),
+            Value<int?> adjustedBy = const Value.absent(),
+            Value<String?> adjustedByName = const Value.absent(),
+            Value<DateTime> adjustedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseStockAdjustmentsCompanion(
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            syncStatus: syncStatus,
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            adjustmentType: adjustmentType,
+            reason: reason,
+            bags: bags,
+            grossWeight: grossWeight,
+            packagingWeight: packagingWeight,
+            netWeight: netWeight,
+            moistureContent: moistureContent,
+            adjustedBy: adjustedBy,
+            adjustedByName: adjustedByName,
+            adjustedAt: adjustedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> syncStatus = const Value.absent(),
+            required String uuid,
+            Value<int?> serverId = const Value.absent(),
+            required String warehouseId,
+            Value<int?> collectionCenter = const Value.absent(),
+            required String collectionCenterUuid,
+            Value<String?> collectionCenterName = const Value.absent(),
+            Value<int?> amcos = const Value.absent(),
+            Value<String?> amcosName = const Value.absent(),
+            Value<int?> mcu = const Value.absent(),
+            Value<String?> mcuName = const Value.absent(),
+            required int crop,
+            required String cropName,
+            required String adjustmentType,
+            required String reason,
+            required int bags,
+            required double grossWeight,
+            required double packagingWeight,
+            required double netWeight,
+            Value<double> moistureContent = const Value.absent(),
+            Value<int?> adjustedBy = const Value.absent(),
+            Value<String?> adjustedByName = const Value.absent(),
+            Value<DateTime> adjustedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              WarehouseStockAdjustmentsCompanion.insert(
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            syncStatus: syncStatus,
+            uuid: uuid,
+            serverId: serverId,
+            warehouseId: warehouseId,
+            collectionCenter: collectionCenter,
+            collectionCenterUuid: collectionCenterUuid,
+            collectionCenterName: collectionCenterName,
+            amcos: amcos,
+            amcosName: amcosName,
+            mcu: mcu,
+            mcuName: mcuName,
+            crop: crop,
+            cropName: cropName,
+            adjustmentType: adjustmentType,
+            reason: reason,
+            bags: bags,
+            grossWeight: grossWeight,
+            packagingWeight: packagingWeight,
+            netWeight: netWeight,
+            moistureContent: moistureContent,
+            adjustedBy: adjustedBy,
+            adjustedByName: adjustedByName,
+            adjustedAt: adjustedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$WarehouseStockAdjustmentsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({warehouseId = false, crop = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (warehouseId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.warehouseId,
+                    referencedTable: $$WarehouseStockAdjustmentsTableReferences
+                        ._warehouseIdTable(db),
+                    referencedColumn: $$WarehouseStockAdjustmentsTableReferences
+                        ._warehouseIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (crop) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.crop,
+                    referencedTable: $$WarehouseStockAdjustmentsTableReferences
+                        ._cropTable(db),
+                    referencedColumn: $$WarehouseStockAdjustmentsTableReferences
+                        ._cropTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$WarehouseStockAdjustmentsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $WarehouseStockAdjustmentsTable,
+        WarehouseStockAdjustment,
+        $$WarehouseStockAdjustmentsTableFilterComposer,
+        $$WarehouseStockAdjustmentsTableOrderingComposer,
+        $$WarehouseStockAdjustmentsTableAnnotationComposer,
+        $$WarehouseStockAdjustmentsTableCreateCompanionBuilder,
+        $$WarehouseStockAdjustmentsTableUpdateCompanionBuilder,
+        (WarehouseStockAdjustment, $$WarehouseStockAdjustmentsTableReferences),
+        WarehouseStockAdjustment,
+        PrefetchHooks Function({bool warehouseId, bool crop})>;
 typedef $$SyncQueueTableCreateCompanionBuilder = SyncQueueCompanion Function({
   Value<int> id,
   required String entityType,
@@ -17009,543 +25424,6 @@ typedef $$AuditLogsTableProcessedTableManager = ProcessedTableManager<
     (AuditLog, $$AuditLogsTableReferences),
     AuditLog,
     PrefetchHooks Function({bool userId, bool warehouseId})>;
-typedef $$CropTableTableCreateCompanionBuilder = CropTableCompanion Function({
-  Value<int> id,
-  required String name,
-  Value<String?> type,
-  Value<String?> uom,
-  Value<String?> packaging,
-  Value<String?> grading,
-  Value<bool> moistureContentComputation,
-  Value<double?> maxMoisureContent,
-  Value<double?> packagingWeight,
-});
-typedef $$CropTableTableUpdateCompanionBuilder = CropTableCompanion Function({
-  Value<int> id,
-  Value<String> name,
-  Value<String?> type,
-  Value<String?> uom,
-  Value<String?> packaging,
-  Value<String?> grading,
-  Value<bool> moistureContentComputation,
-  Value<double?> maxMoisureContent,
-  Value<double?> packagingWeight,
-});
-
-final class $$CropTableTableReferences
-    extends BaseReferences<_$AppDatabase, $CropTableTable, Crop> {
-  $$CropTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$FarmersTable, List<Farmer>> _mainCropFarmersTable(
-          _$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(db.farmers,
-          aliasName:
-              $_aliasNameGenerator(db.cropTable.id, db.farmers.mainCrop));
-
-  $$FarmersTableProcessedTableManager get mainCropFarmers {
-    final manager = $$FarmersTableTableManager($_db, $_db.farmers)
-        .filter((f) => f.mainCrop.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_mainCropFarmersTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-
-  static MultiTypedResultKey<$FarmersTable, List<Farmer>>
-      _secondaryCropFarmersTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.farmers,
-              aliasName: $_aliasNameGenerator(
-                  db.cropTable.id, db.farmers.secondaryCrop));
-
-  $$FarmersTableProcessedTableManager get secondaryCropFarmers {
-    final manager = $$FarmersTableTableManager($_db, $_db.farmers)
-        .filter((f) => f.secondaryCrop.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache =
-        $_typedResult.readTableOrNull(_secondaryCropFarmersTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-
-  static MultiTypedResultKey<$CropGradesTable, List<CropGrade>>
-      _cropGradesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.cropGrades,
-          aliasName: $_aliasNameGenerator(db.cropTable.id, db.cropGrades.crop));
-
-  $$CropGradesTableProcessedTableManager get cropGradesRefs {
-    final manager = $$CropGradesTableTableManager($_db, $_db.cropGrades)
-        .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_cropGradesRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-
-  static MultiTypedResultKey<$FarmerHarvestsTable, List<FarmerHarvest>>
-      _farmerHarvestsRefsTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.farmerHarvests,
-              aliasName: $_aliasNameGenerator(
-                  db.cropTable.id, db.farmerHarvests.crop));
-
-  $$FarmerHarvestsTableProcessedTableManager get farmerHarvestsRefs {
-    final manager = $$FarmerHarvestsTableTableManager($_db, $_db.farmerHarvests)
-        .filter((f) => f.crop.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_farmerHarvestsRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-}
-
-class $$CropTableTableFilterComposer
-    extends Composer<_$AppDatabase, $CropTableTable> {
-  $$CropTableTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get uom => $composableBuilder(
-      column: $table.uom, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get packaging => $composableBuilder(
-      column: $table.packaging, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get grading => $composableBuilder(
-      column: $table.grading, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get moistureContentComputation => $composableBuilder(
-      column: $table.moistureContentComputation,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get maxMoisureContent => $composableBuilder(
-      column: $table.maxMoisureContent,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get packagingWeight => $composableBuilder(
-      column: $table.packagingWeight,
-      builder: (column) => ColumnFilters(column));
-
-  Expression<bool> mainCropFarmers(
-      Expression<bool> Function($$FarmersTableFilterComposer f) f) {
-    final $$FarmersTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.farmers,
-        getReferencedColumn: (t) => t.mainCrop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$FarmersTableFilterComposer(
-              $db: $db,
-              $table: $db.farmers,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<bool> secondaryCropFarmers(
-      Expression<bool> Function($$FarmersTableFilterComposer f) f) {
-    final $$FarmersTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.farmers,
-        getReferencedColumn: (t) => t.secondaryCrop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$FarmersTableFilterComposer(
-              $db: $db,
-              $table: $db.farmers,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<bool> cropGradesRefs(
-      Expression<bool> Function($$CropGradesTableFilterComposer f) f) {
-    final $$CropGradesTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.cropGrades,
-        getReferencedColumn: (t) => t.crop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$CropGradesTableFilterComposer(
-              $db: $db,
-              $table: $db.cropGrades,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<bool> farmerHarvestsRefs(
-      Expression<bool> Function($$FarmerHarvestsTableFilterComposer f) f) {
-    final $$FarmerHarvestsTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.farmerHarvests,
-        getReferencedColumn: (t) => t.crop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$FarmerHarvestsTableFilterComposer(
-              $db: $db,
-              $table: $db.farmerHarvests,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-}
-
-class $$CropTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $CropTableTable> {
-  $$CropTableTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get uom => $composableBuilder(
-      column: $table.uom, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get packaging => $composableBuilder(
-      column: $table.packaging, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get grading => $composableBuilder(
-      column: $table.grading, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get moistureContentComputation => $composableBuilder(
-      column: $table.moistureContentComputation,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get maxMoisureContent => $composableBuilder(
-      column: $table.maxMoisureContent,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get packagingWeight => $composableBuilder(
-      column: $table.packagingWeight,
-      builder: (column) => ColumnOrderings(column));
-}
-
-class $$CropTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CropTableTable> {
-  $$CropTableTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
-
-  GeneratedColumn<String> get uom =>
-      $composableBuilder(column: $table.uom, builder: (column) => column);
-
-  GeneratedColumn<String> get packaging =>
-      $composableBuilder(column: $table.packaging, builder: (column) => column);
-
-  GeneratedColumn<String> get grading =>
-      $composableBuilder(column: $table.grading, builder: (column) => column);
-
-  GeneratedColumn<bool> get moistureContentComputation => $composableBuilder(
-      column: $table.moistureContentComputation, builder: (column) => column);
-
-  GeneratedColumn<double> get maxMoisureContent => $composableBuilder(
-      column: $table.maxMoisureContent, builder: (column) => column);
-
-  GeneratedColumn<double> get packagingWeight => $composableBuilder(
-      column: $table.packagingWeight, builder: (column) => column);
-
-  Expression<T> mainCropFarmers<T extends Object>(
-      Expression<T> Function($$FarmersTableAnnotationComposer a) f) {
-    final $$FarmersTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.farmers,
-        getReferencedColumn: (t) => t.mainCrop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$FarmersTableAnnotationComposer(
-              $db: $db,
-              $table: $db.farmers,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<T> secondaryCropFarmers<T extends Object>(
-      Expression<T> Function($$FarmersTableAnnotationComposer a) f) {
-    final $$FarmersTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.farmers,
-        getReferencedColumn: (t) => t.secondaryCrop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$FarmersTableAnnotationComposer(
-              $db: $db,
-              $table: $db.farmers,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<T> cropGradesRefs<T extends Object>(
-      Expression<T> Function($$CropGradesTableAnnotationComposer a) f) {
-    final $$CropGradesTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.cropGrades,
-        getReferencedColumn: (t) => t.crop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$CropGradesTableAnnotationComposer(
-              $db: $db,
-              $table: $db.cropGrades,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-
-  Expression<T> farmerHarvestsRefs<T extends Object>(
-      Expression<T> Function($$FarmerHarvestsTableAnnotationComposer a) f) {
-    final $$FarmerHarvestsTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.farmerHarvests,
-        getReferencedColumn: (t) => t.crop,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$FarmerHarvestsTableAnnotationComposer(
-              $db: $db,
-              $table: $db.farmerHarvests,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-}
-
-class $$CropTableTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $CropTableTable,
-    Crop,
-    $$CropTableTableFilterComposer,
-    $$CropTableTableOrderingComposer,
-    $$CropTableTableAnnotationComposer,
-    $$CropTableTableCreateCompanionBuilder,
-    $$CropTableTableUpdateCompanionBuilder,
-    (Crop, $$CropTableTableReferences),
-    Crop,
-    PrefetchHooks Function(
-        {bool mainCropFarmers,
-        bool secondaryCropFarmers,
-        bool cropGradesRefs,
-        bool farmerHarvestsRefs})> {
-  $$CropTableTableTableManager(_$AppDatabase db, $CropTableTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$CropTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CropTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$CropTableTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<String?> type = const Value.absent(),
-            Value<String?> uom = const Value.absent(),
-            Value<String?> packaging = const Value.absent(),
-            Value<String?> grading = const Value.absent(),
-            Value<bool> moistureContentComputation = const Value.absent(),
-            Value<double?> maxMoisureContent = const Value.absent(),
-            Value<double?> packagingWeight = const Value.absent(),
-          }) =>
-              CropTableCompanion(
-            id: id,
-            name: name,
-            type: type,
-            uom: uom,
-            packaging: packaging,
-            grading: grading,
-            moistureContentComputation: moistureContentComputation,
-            maxMoisureContent: maxMoisureContent,
-            packagingWeight: packagingWeight,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-            Value<String?> type = const Value.absent(),
-            Value<String?> uom = const Value.absent(),
-            Value<String?> packaging = const Value.absent(),
-            Value<String?> grading = const Value.absent(),
-            Value<bool> moistureContentComputation = const Value.absent(),
-            Value<double?> maxMoisureContent = const Value.absent(),
-            Value<double?> packagingWeight = const Value.absent(),
-          }) =>
-              CropTableCompanion.insert(
-            id: id,
-            name: name,
-            type: type,
-            uom: uom,
-            packaging: packaging,
-            grading: grading,
-            moistureContentComputation: moistureContentComputation,
-            maxMoisureContent: maxMoisureContent,
-            packagingWeight: packagingWeight,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    $$CropTableTableReferences(db, table, e)
-                  ))
-              .toList(),
-          prefetchHooksCallback: (
-              {mainCropFarmers = false,
-              secondaryCropFarmers = false,
-              cropGradesRefs = false,
-              farmerHarvestsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (mainCropFarmers) db.farmers,
-                if (secondaryCropFarmers) db.farmers,
-                if (cropGradesRefs) db.cropGrades,
-                if (farmerHarvestsRefs) db.farmerHarvests
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (mainCropFarmers)
-                    await $_getPrefetchedData<Crop, $CropTableTable, Farmer>(
-                        currentTable: table,
-                        referencedTable: $$CropTableTableReferences
-                            ._mainCropFarmersTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$CropTableTableReferences(db, table, p0)
-                                .mainCropFarmers,
-                        referencedItemsForCurrentItem: (item,
-                                referencedItems) =>
-                            referencedItems.where((e) => e.mainCrop == item.id),
-                        typedResults: items),
-                  if (secondaryCropFarmers)
-                    await $_getPrefetchedData<Crop, $CropTableTable, Farmer>(
-                        currentTable: table,
-                        referencedTable: $$CropTableTableReferences
-                            ._secondaryCropFarmersTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$CropTableTableReferences(db, table, p0)
-                                .secondaryCropFarmers,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) => referencedItems
-                                .where((e) => e.secondaryCrop == item.id),
-                        typedResults: items),
-                  if (cropGradesRefs)
-                    await $_getPrefetchedData<Crop, $CropTableTable, CropGrade>(
-                        currentTable: table,
-                        referencedTable:
-                            $$CropTableTableReferences._cropGradesRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$CropTableTableReferences(db, table, p0)
-                                .cropGradesRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) =>
-                                referencedItems.where((e) => e.crop == item.id),
-                        typedResults: items),
-                  if (farmerHarvestsRefs)
-                    await $_getPrefetchedData<Crop, $CropTableTable,
-                            FarmerHarvest>(
-                        currentTable: table,
-                        referencedTable: $$CropTableTableReferences
-                            ._farmerHarvestsRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$CropTableTableReferences(db, table, p0)
-                                .farmerHarvestsRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) =>
-                                referencedItems.where((e) => e.crop == item.id),
-                        typedResults: items)
-                ];
-              },
-            );
-          },
-        ));
-}
-
-typedef $$CropTableTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $CropTableTable,
-    Crop,
-    $$CropTableTableFilterComposer,
-    $$CropTableTableOrderingComposer,
-    $$CropTableTableAnnotationComposer,
-    $$CropTableTableCreateCompanionBuilder,
-    $$CropTableTableUpdateCompanionBuilder,
-    (Crop, $$CropTableTableReferences),
-    Crop,
-    PrefetchHooks Function(
-        {bool mainCropFarmers,
-        bool secondaryCropFarmers,
-        bool cropGradesRefs,
-        bool farmerHarvestsRefs})>;
 typedef $$FarmersTableCreateCompanionBuilder = FarmersCompanion Function({
   Value<int> id,
   Value<int?> serverId,
@@ -21194,12 +29072,22 @@ class $AppDatabaseManager {
       $$InventoryItemsTableTableManager(_db, _db.inventoryItems);
   $$StockMovementsTableTableManager get stockMovements =>
       $$StockMovementsTableTableManager(_db, _db.stockMovements);
+  $$CropTableTableTableManager get cropTable =>
+      $$CropTableTableTableManager(_db, _db.cropTable);
+  $$WarehouseInventoryItemsTableTableManager get warehouseInventoryItems =>
+      $$WarehouseInventoryItemsTableTableManager(
+          _db, _db.warehouseInventoryItems);
+  $$WarehouseDispatchesTableTableManager get warehouseDispatches =>
+      $$WarehouseDispatchesTableTableManager(_db, _db.warehouseDispatches);
+  $$WarehouseStockCountsTableTableManager get warehouseStockCounts =>
+      $$WarehouseStockCountsTableTableManager(_db, _db.warehouseStockCounts);
+  $$WarehouseStockAdjustmentsTableTableManager get warehouseStockAdjustments =>
+      $$WarehouseStockAdjustmentsTableTableManager(
+          _db, _db.warehouseStockAdjustments);
   $$SyncQueueTableTableManager get syncQueue =>
       $$SyncQueueTableTableManager(_db, _db.syncQueue);
   $$AuditLogsTableTableManager get auditLogs =>
       $$AuditLogsTableTableManager(_db, _db.auditLogs);
-  $$CropTableTableTableManager get cropTable =>
-      $$CropTableTableTableManager(_db, _db.cropTable);
   $$FarmersTableTableManager get farmers =>
       $$FarmersTableTableManager(_db, _db.farmers);
   $$FarmerDependantsTableTableManager get farmerDependants =>

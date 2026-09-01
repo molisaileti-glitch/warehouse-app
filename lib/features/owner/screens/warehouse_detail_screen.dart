@@ -23,15 +23,14 @@ class WarehouseDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final warehouseAsync = ref.watch(warehouseByIdProvider(warehouseId));
-    final itemsAsync = ref.watch(inventoryItemsProvider(warehouseId));
-    final lowStockAsync = ref.watch(lowStockProvider(warehouseId));
+    final inventoryAsync = ref.watch(warehouseInventoryProvider(warehouseId));
     final workersAsync = ref.watch(_warehouseWorkersProvider(warehouseId));
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         leading: GestureDetector(
-          child: Icon(Icons.arrow_back),
+          child: const Icon(Icons.arrow_back),
           onTap: () => context.pop(),
         ),
         title: warehouseAsync.maybeWhen(
@@ -125,16 +124,22 @@ class WarehouseDetailScreen extends ConsumerWidget {
                       Expanded(
                           child: StatCard(
                               label: l10n.totalItems,
-                              value: '${itemsAsync.valueOrNull?.length ?? 0}',
+                              value:
+                                  '${inventoryAsync.valueOrNull?.length ?? 0}',
                               icon: Icons.inventory_2_rounded,
                               color: AppColors.primary)),
                       const SizedBox(width: 10),
                       Expanded(
                           child: StatCard(
-                              label: l10n.lowStock,
-                              value:
-                                  '${lowStockAsync.valueOrNull?.length ?? 0}',
-                              icon: Icons.warning_rounded,
+                              label: 'Bags',
+                              value: _formatNumber(
+                                (inventoryAsync.valueOrNull ?? const [])
+                                    .fold<double>(
+                                  0,
+                                  (sum, item) => sum + item.totalBags,
+                                ),
+                              ),
+                              icon: Icons.shopping_bag_rounded,
                               color: AppColors.warning)),
                       const SizedBox(width: 10),
                       Expanded(
@@ -150,13 +155,13 @@ class WarehouseDetailScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: SectionHeader(title: l10n.inventory),
               ),
-              itemsAsync.when(
+              inventoryAsync.when(
                 data: (items) {
                   final preview = items.take(5).toList();
                   if (preview.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Text(l10n.noInventoryItems,
                             style: const TextStyle(
                                 color: AppColors.textSecondary)),
@@ -167,7 +172,7 @@ class WarehouseDetailScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
-                        (_, i) => _ItemRow(item: preview[i]),
+                        (_, i) => _InventoryTotalRow(item: preview[i]),
                         childCount: preview.length,
                       ),
                     ),
@@ -184,9 +189,10 @@ class WarehouseDetailScreen extends ConsumerWidget {
                   if (workers.isEmpty) {
                     return SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: Text(l10n.noAssignedWorkers,
-                            style: TextStyle(color: AppColors.textSecondary)),
+                            style: const TextStyle(
+                                color: AppColors.textSecondary)),
                       ),
                     );
                   }
@@ -201,8 +207,8 @@ class WarehouseDetailScreen extends ConsumerWidget {
                                 horizontal: 14, vertical: 10),
                             child: Row(children: [
                               CircleAvatar(
-                                backgroundColor:
-                                    AppColors.workerColor.withOpacity(0.12),
+                                backgroundColor: AppColors.workerColor
+                                    .withValues(alpha: 0.12),
                                 child: const Icon(Icons.person_rounded,
                                     color: AppColors.workerColor, size: 18),
                               ),
@@ -226,8 +232,9 @@ class WarehouseDetailScreen extends ConsumerWidget {
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: w.isActive
-                                      ? AppColors.success.withOpacity(0.1)
-                                      : AppColors.textMuted.withOpacity(0.1),
+                                      ? AppColors.success.withValues(alpha: 0.1)
+                                      : AppColors.textMuted
+                                          .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
@@ -269,8 +276,9 @@ class WarehouseDetailScreen extends ConsumerWidget {
                         await ref
                             .read(warehouseRepoProvider)
                             .deleteWarehouse(warehouseId);
-                        if (context.mounted)
+                        if (context.mounted) {
                           context.go(AppRoutes.ownerWarehouses);
+                        }
                       }
                     },
                   ),
@@ -296,52 +304,92 @@ class WarehouseDetailScreen extends ConsumerWidget {
   }
 }
 
-class _ItemRow extends StatelessWidget {
-  final InventoryItem item;
-  const _ItemRow({required this.item});
+class _InventoryTotalRow extends StatelessWidget {
+  final WarehouseInventory item;
+  const _InventoryTotalRow({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    final isLow = item.quantityOnHand <= item.reorderLevel;
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.inventory_2_rounded,
-              size: 18, color: AppColors.textMuted),
-          const SizedBox(width: 10),
-          Expanded(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(item.name,
+              const Icon(Icons.inventory_2_rounded,
+                  size: 18, color: AppColors.textMuted),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item.cropName,
                   style: const TextStyle(
-                      fontWeight: FontWeight.w500, fontSize: 14)),
-              if (item.category != null)
-                Text(item.category!,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.textMuted)),
-            ],
-          )),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
+                      fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+              ),
               Text(
-                  '${item.quantityOnHand.toStringAsFixed(item.quantityOnHand % 1 == 0 ? 0 : 1)} ${item.unit}',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: isLow ? AppColors.error : AppColors.textPrimary)),
-              if (isLow)
-                Text(AppLocalizations.of(context)!.lowStock,
-                    style:
-                        const TextStyle(fontSize: 10, color: AppColors.error)),
+                '${_formatNumber(item.totalBags)} bags',
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            children: [
+              _MiniMetric(
+                label: l10n.grossWeight,
+                value: '${_formatNumber(item.totalGrossWeight)} kg',
+              ),
+              _MiniMetric(
+                label: l10n.packagingWeightKg,
+                value: '${_formatNumber(item.totalPackagingWeight)} kg',
+              ),
+              _MiniMetric(
+                label: l10n.netWeight,
+                value: '${_formatNumber(item.totalNetWeight)} kg',
+              ),
             ],
           ),
         ],
       ),
     );
   }
+}
+
+class _MiniMetric extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MiniMetric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatNumber(num value) {
+  if (value % 1 == 0) return value.toStringAsFixed(0);
+  return value.toStringAsFixed(1);
 }
 
 class _EditWarehouseSheet extends ConsumerStatefulWidget {

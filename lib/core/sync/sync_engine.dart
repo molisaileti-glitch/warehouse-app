@@ -8,6 +8,8 @@ import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/enums/sync_status.dart';
 import 'package:warehouse_app/core/network/api_client.dart';
 import 'package:warehouse_app/core/providers/auth_provider.dart';
+import 'package:warehouse_app/core/providers/repository_providers.dart'
+    as repository_providers;
 import 'package:warehouse_app/features/additional.data/amcos/presentation/providers/amcos_providers.dart';
 import 'package:warehouse_app/features/additional.data/crop/presentation/providers/crop_providers.dart';
 import 'package:warehouse_app/features/additional.data/location/presentation/providers/location_providers.dart';
@@ -28,6 +30,9 @@ const _syncableEntityTypes = <String>{
   'farmers',
   'farmerDependants',
   'farmerHarvests',
+  'dispatches',
+  'stockCounts',
+  'stockAdjustments',
 };
 
 class SyncManager {
@@ -35,6 +40,7 @@ class SyncManager {
   final SyncQueueDao _syncDao;
   final WarehouseDao _warehouseDao;
   final InventoryDao _inventoryDao;
+  final WarehouseOperationsDao _warehouseOperationsDao;
   final AuditLogDao _auditDao;
   final HarvestDao _harvestDao;
   final FarmerDao _farmerDao;
@@ -47,6 +53,7 @@ class SyncManager {
     required SyncQueueDao syncDao,
     required WarehouseDao warehouseDao,
     required InventoryDao inventoryDao,
+    required WarehouseOperationsDao warehouseOperationsDao,
     required AuditLogDao auditDao,
     required HarvestDao harvestDao,
     required FarmerDao farmerDao,
@@ -57,13 +64,13 @@ class SyncManager {
         _syncDao = syncDao,
         _warehouseDao = warehouseDao,
         _inventoryDao = inventoryDao,
+        _warehouseOperationsDao = warehouseOperationsDao,
         _auditDao = auditDao,
         _harvestDao = harvestDao,
         _farmerDao = farmerDao,
         _amcosDao = amcosDao,
         _roleStrategy = roleStrategy,
         _currentMcuId = currentMcuId;
-        
 
   Future<SyncResult> sync() async {
     var pushed = 0;
@@ -253,15 +260,17 @@ class SyncManager {
 
     // Case 1: UUID duplicate — server says "Farmer with uuid X already exist".
     // Fetch the existing farmer by UUID and mark it synced locally.
-    if (status == 400 && message.contains('uuid') && message.contains('already exist')) {
+    if (status == 400 &&
+        message.contains('uuid') &&
+        message.contains('already exist')) {
       try {
         final amcosId = _int(payload['amcos']);
         if (amcosId == null || amcosId <= 0) return false;
         final response = await _dio.get('/farmers/amcos/$amcosId');
         final rows = _asList(response.data);
-        final matched = rows
-            .cast<Map<String, dynamic>?>()
-            .firstWhere((r) => r?['uuid']?.toString() == uuid, orElse: () => null);
+        final matched = rows.cast<Map<String, dynamic>?>().firstWhere(
+            (r) => r?['uuid']?.toString() == uuid,
+            orElse: () => null);
         if (matched == null) return false;
         matched['uuid'] ??= uuid;
         final model = FarmerModel.fromJson(matched);
@@ -440,8 +449,7 @@ class SyncManager {
 
     // Negative ID → locally-created AMCOS. Look it up by local integer ID.
     final amcos = await _amcosDao.getAmcosById(amcosId);
-    final serverId =
-        amcosId < 0 ? amcos?.serverId : amcos?.serverId ?? amcosId;
+    final serverId = amcosId < 0 ? amcos?.serverId : amcos?.serverId ?? amcosId;
     if (serverId == null || serverId <= 0) {
       throw StateError('AMCOS (id=$amcosId) has not been synced yet.');
     }
@@ -604,8 +612,8 @@ class SyncManager {
       return value.map((key, item) {
         final textKey = key.toString();
         final normalized = textKey.toLowerCase();
-        final shouldRedact = normalized.contains('password') ||
-            normalized.contains('token');
+        final shouldRedact =
+            normalized.contains('password') || normalized.contains('token');
         return MapEntry(
           textKey,
           shouldRedact ? '<redacted>' : _redactForLog(item),
@@ -658,6 +666,15 @@ class SyncManager {
       case 'stockMovements':
         await _inventoryDao.markMovementSynced(entityId);
         break;
+      case 'dispatches':
+        await _warehouseOperationsDao.markDispatchSynced(entityId);
+        break;
+      case 'stockCounts':
+        await _warehouseOperationsDao.markStockCountSynced(entityId);
+        break;
+      case 'stockAdjustments':
+        await _warehouseOperationsDao.markStockAdjustmentSynced(entityId);
+        break;
       case 'auditLogs':
         await _auditDao.markLogSynced(entityId);
         break;
@@ -677,6 +694,15 @@ class SyncManager {
         break;
       case 'inventoryItems':
         await _inventoryDao.markItemConflict(entityId);
+        break;
+      case 'dispatches':
+        await _warehouseOperationsDao.markDispatchConflict(entityId);
+        break;
+      case 'stockCounts':
+        await _warehouseOperationsDao.markStockCountConflict(entityId);
+        break;
+      case 'stockAdjustments':
+        await _warehouseOperationsDao.markStockAdjustmentConflict(entityId);
         break;
       case 'farmerHarvests':
         await _harvestDao.markHarvestConflict(entityId);
@@ -718,6 +744,9 @@ class SyncManager {
     if (type == 'amcos') return '/amcos';
     if (type == 'farmers') return '/farmers';
     if (type == 'farmerHarvests') return '/farmer-harvests';
+    if (type == 'dispatches') return '/dispatches';
+    if (type == 'stockCounts') return '/stock-counts';
+    if (type == 'stockAdjustments') return '/stock-adjustments';
     return '/${_typeToPath(type)}/';
   }
 
@@ -731,6 +760,9 @@ class SyncManager {
         'farmers' => 'farmers',
         'farmerDependants' => 'farmer-dependants',
         'farmerHarvests' => 'farmer-harvests',
+        'dispatches' => 'dispatches',
+        'stockCounts' => 'stock-counts',
+        'stockAdjustments' => 'stock-adjustments',
         _ => type,
       };
 }
@@ -769,11 +801,17 @@ class OwnerSyncStrategy implements SyncRoleStrategy {
         await _ref.read(farmerRepoProvider).pullFromServer(amcosIds: amcosIds);
     // Fix G: pull dependants for every synced farmer.
     final allFarmers = await _ref.read(farmerDaoProvider).getAllFarmers();
-    count +=
-        await _ref.read(farmerRepoProvider).pullDependantsForFarmers(allFarmers);
+    count += await _ref
+        .read(farmerRepoProvider)
+        .pullDependantsForFarmers(allFarmers);
     count += await _ref
         .read(harvestRepositoryProvider)
         .pullFromServer(amcosIds: amcosIds);
+    count += await _ref
+        .read(repository_providers.warehouseOperationsRepoProvider)
+        .pullForMcu(
+          mcuId,
+        );
     return count;
   }
 
@@ -859,11 +897,19 @@ class WorkerSyncStrategy implements SyncRoleStrategy {
         await _ref.read(farmerRepoProvider).pullFromServer(amcosIds: amcosIds);
     // Fix G: pull dependants for every synced farmer.
     final allFarmers = await _ref.read(farmerDaoProvider).getAllFarmers();
-    count +=
-        await _ref.read(farmerRepoProvider).pullDependantsForFarmers(allFarmers);
+    count += await _ref
+        .read(farmerRepoProvider)
+        .pullDependantsForFarmers(allFarmers);
     count += await _ref
         .read(harvestRepositoryProvider)
         .pullFromCollectionCenter(collectionCenterId: collectionCenterId);
+    final warehouse =
+        await _ref.read(warehouseDaoProvider).getWarehouseById(warehouseId);
+    if (warehouse != null) {
+      count += await _ref
+          .read(repository_providers.warehouseOperationsRepoProvider)
+          .pullForCollectionCenter(warehouse: warehouse);
+    }
     return count;
   }
 
@@ -922,6 +968,7 @@ final syncManagerProvider = Provider<SyncManager>((ref) {
     syncDao: ref.watch(syncQueueDaoProvider),
     warehouseDao: ref.watch(warehouseDaoProvider),
     inventoryDao: ref.watch(inventoryDaoProvider),
+    warehouseOperationsDao: ref.watch(warehouseOperationsDaoProvider),
     auditDao: ref.watch(auditLogDaoProvider),
     harvestDao: ref.watch(harvestDaoProvider),
     farmerDao: ref.watch(farmerDaoProvider),

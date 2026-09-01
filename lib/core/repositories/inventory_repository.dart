@@ -74,8 +74,8 @@ class InventoryRepository {
       operation: 'create',
       payload: jsonEncode(_itemToJson(companion)),
     ));
-    await _log('inventory.create', warehouseId: warehouseId,
-        meta: {'item_id': id, 'name': name});
+    await _log('inventory.create',
+        warehouseId: warehouseId, meta: {'item_id': id, 'name': name});
     return (await _dao.getItemById(id))!;
   }
 
@@ -97,8 +97,10 @@ class InventoryRepository {
       sku: sku != null ? Value(sku) : const Value.absent(),
       category: category != null ? Value(category) : const Value.absent(),
       unit: unit != null ? Value(unit) : const Value.absent(),
-      reorderLevel: reorderLevel != null ? Value(reorderLevel) : const Value.absent(),
-      description: description != null ? Value(description) : const Value.absent(),
+      reorderLevel:
+          reorderLevel != null ? Value(reorderLevel) : const Value.absent(),
+      description:
+          description != null ? Value(description) : const Value.absent(),
       syncStatus: const Value('pending'),
       updatedAt: Value(DateTime.now()),
     );
@@ -109,7 +111,8 @@ class InventoryRepository {
       operation: 'update',
       payload: jsonEncode({'id': id, ...?_partialItemJson(companion)}),
     ));
-    await _log('inventory.update', warehouseId: item.warehouseId, meta: {'item_id': id});
+    await _log('inventory.update',
+        warehouseId: item.warehouseId, meta: {'item_id': id});
   }
 
   Future<void> deleteItem(String id) async {
@@ -122,7 +125,8 @@ class InventoryRepository {
       operation: 'delete',
       payload: jsonEncode({'id': id}),
     ));
-    await _log('inventory.delete', warehouseId: item.warehouseId, meta: {'item_id': id});
+    await _log('inventory.delete',
+        warehouseId: item.warehouseId, meta: {'item_id': id});
   }
 
   // ── Stock movements ───────────────────────────────────────────────────────
@@ -195,10 +199,16 @@ class InventoryRepository {
       entityType: 'stockMovements',
       entityId: movId,
       operation: 'create',
-      payload: jsonEncode({'id': movId, 'type': 'transfer_out', 'item_id': itemId,
-        'quantity': quantity, 'target_warehouse': targetWarehouseId}),
+      payload: jsonEncode({
+        'id': movId,
+        'type': 'transfer_out',
+        'item_id': itemId,
+        'quantity': quantity,
+        'target_warehouse': targetWarehouseId
+      }),
     ));
-    await _log('stock.transfer', warehouseId: item.warehouseId,
+    await _log('stock.transfer',
+        warehouseId: item.warehouseId,
         meta: {'item_id': itemId, 'qty': quantity, 'to': targetWarehouseId});
   }
 
@@ -232,10 +242,16 @@ class InventoryRepository {
       entityType: 'stockMovements',
       entityId: movId,
       operation: 'create',
-      payload: jsonEncode({'id': movId, 'item_id': itemId, 'type': movementType,
-        'quantity': quantity, 'quantity_before': item.quantityOnHand}),
+      payload: jsonEncode({
+        'id': movId,
+        'item_id': itemId,
+        'type': movementType,
+        'quantity': quantity,
+        'quantity_before': item.quantityOnHand
+      }),
     ));
-    await _log('stock.$movementType', warehouseId: item.warehouseId,
+    await _log('stock.$movementType',
+        warehouseId: item.warehouseId,
         meta: {'item_id': itemId, 'qty': quantity});
   }
 
@@ -243,8 +259,10 @@ class InventoryRepository {
 
   Future<void> pullFromServer(String warehouseId, {DateTime? since}) async {
     try {
-      final params = {'warehouse_id': warehouseId,
-        if (since != null) 'updated_since': since.toIso8601String()};
+      final params = {
+        'warehouse_id': warehouseId,
+        if (since != null) 'updated_since': since.toIso8601String()
+      };
       final res = await _dio.get('/inventory/', queryParameters: params);
       for (final json in (res.data as List).cast<Map<String, dynamic>>()) {
         await _dao.upsertItem(_itemFromJson(json));
@@ -252,9 +270,8 @@ class InventoryRepository {
     } on DioException {/* offline */}
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  Future<void> _log(String action, {required String warehouseId, Map<String, dynamic>? meta}) {
+  Future<void> _log(String action,
+      {required String warehouseId, Map<String, dynamic>? meta}) {
     return _auditDao.insertLog(AuditLogsCompanion.insert(
       id: newUuid(),
       userId: _currentUserId,
@@ -266,23 +283,31 @@ class InventoryRepository {
   }
 
   Map<String, dynamic> _itemToJson(InventoryItemsCompanion c) => {
-    'id': c.id.value, 'warehouse_id': c.warehouseId.value, 'name': c.name.value,
-    if (c.sku.present) 'sku': c.sku.value, if (c.category.present) 'category': c.category.value,
-    if (c.unit.present) 'unit': c.unit.value, if (c.reorderLevel.present) 'reorder_level': c.reorderLevel.value,
-  };
+        'id': c.id.value,
+        'warehouse_id': c.warehouseId.value,
+        'name': c.name.value,
+        if (c.sku.present) 'sku': c.sku.value,
+        if (c.category.present) 'category': c.category.value,
+        if (c.unit.present) 'unit': c.unit.value,
+        if (c.reorderLevel.present) 'reorder_level': c.reorderLevel.value,
+      };
 
   Map<String, dynamic>? _partialItemJson(InventoryItemsCompanion c) => {
-    if (c.name.present) 'name': c.name.value, if (c.sku.present) 'sku': c.sku.value,
-    if (c.category.present) 'category': c.category.value,
-  };
+        if (c.name.present) 'name': c.name.value,
+        if (c.sku.present) 'sku': c.sku.value,
+        if (c.category.present) 'category': c.category.value,
+      };
 
   InventoryItemsCompanion _itemFromJson(Map<String, dynamic> json) {
     return InventoryItemsCompanion.insert(
-      id: json['id'] as String, warehouseId: json['warehouse_id'] as String,
-      name: json['name'] as String, sku: Value(json['sku'] as String?),
+      id: json['id'] as String,
+      warehouseId: json['warehouse_id'] as String,
+      name: json['name'] as String,
+      sku: Value(json['sku'] as String?),
       category: Value(json['category'] as String?),
       unit: Value(json['unit'] as String? ?? 'pcs'),
-      quantityOnHand: Value((json['quantity_on_hand'] as num?)?.toDouble() ?? 0),
+      quantityOnHand:
+          Value((json['quantity_on_hand'] as num?)?.toDouble() ?? 0),
       reorderLevel: Value((json['reorder_level'] as num?)?.toDouble() ?? 0),
       syncStatus: const Value('synced'),
     );

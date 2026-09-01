@@ -9,7 +9,11 @@ import '../app_database.dart';
 
 part 'inventory_dao.g.dart';
 
-@DriftAccessor(tables: [InventoryItems, StockMovements])
+@DriftAccessor(tables: [
+  InventoryItems,
+  StockMovements,
+  SyncQueue,
+])
 class InventoryDao extends DatabaseAccessor<AppDatabase>
     with _$InventoryDaoMixin {
   InventoryDao(super.db);
@@ -130,8 +134,12 @@ class InventoryDao extends DatabaseAccessor<AppDatabase>
     return (select(stockMovements)
           ..where((m) {
             var expr = m.warehouseId.equals(warehouseId);
-            if (from != null) expr = expr & m.createdAt.isBiggerOrEqualValue(from);
-            if (to != null) expr = expr & m.createdAt.isSmallerOrEqualValue(to);
+            if (from != null) {
+              expr = expr & m.createdAt.isBiggerOrEqualValue(from);
+            }
+            if (to != null) {
+              expr = expr & m.createdAt.isSmallerOrEqualValue(to);
+            }
             return expr;
           })
           ..orderBy([(m) => OrderingTerm.desc(m.createdAt)]))

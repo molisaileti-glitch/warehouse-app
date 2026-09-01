@@ -11,6 +11,7 @@ export 'package:warehouse_app/features/worker/presentation/providers/worker_prov
 export 'package:warehouse_app/features/farmer/presentation/providers/farmer_providers.dart';
 export 'package:warehouse_app/features/additional.data/crop/presentation/providers/crop_providers.dart';
 export 'package:warehouse_app/features/harvest/presentation/providers/harvest_providers.dart';
+export 'package:warehouse_app/features/warehouse_operations/presentation/providers/warehouse_operations_providers.dart';
 
 final inventoryRepoProvider = Provider<InventoryRepository>((ref) {
   final userId = ref.watch(currentUserIdProvider);
@@ -26,11 +27,13 @@ final inventoryRepoProvider = Provider<InventoryRepository>((ref) {
 
 final inventoryItemsProvider =
     StreamProvider.family<List<InventoryItem>, String>(
-  (ref, warehouseId) => ref.watch(inventoryRepoProvider).watchItems(warehouseId),
+  (ref, warehouseId) =>
+      ref.watch(inventoryRepoProvider).watchItems(warehouseId),
 );
 
 final lowStockProvider = StreamProvider.family<List<InventoryItem>, String>(
-  (ref, warehouseId) => ref.watch(inventoryRepoProvider).watchLowStock(warehouseId),
+  (ref, warehouseId) =>
+      ref.watch(inventoryRepoProvider).watchLowStock(warehouseId),
 );
 
 final stockMovementsProvider =

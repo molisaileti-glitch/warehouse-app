@@ -60,7 +60,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
           ..orderBy([
             // Priority order: lower number = pushed first.
             (q) => OrderingTerm.asc(
-              const CustomExpression<int>('''
+                  const CustomExpression<int>('''
                 CASE entity_type
                   WHEN 'amcos'            THEN 1
                   WHEN 'warehouses'       THEN 2
@@ -68,9 +68,12 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
                   WHEN 'farmers'          THEN 4
                   WHEN 'farmerDependants' THEN 5
                   WHEN 'farmerHarvests'   THEN 6
+                  WHEN 'stockAdjustments' THEN 7
+                  WHEN 'dispatches'       THEN 7
+                  WHEN 'stockCounts'      THEN 7
                   ELSE                        99
                 END'''),
-            ),
+                ),
             (q) => OrderingTerm.asc(q.createdAt),
             (q) => OrderingTerm.asc(q.id),
           ])
