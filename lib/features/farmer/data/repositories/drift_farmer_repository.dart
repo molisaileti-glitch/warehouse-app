@@ -222,21 +222,35 @@ class DriftFarmerRepository implements FarmerRepository {
     var count = 0;
     for (final farmer in farmers) {
       final serverId = farmer.serverId;
-      if (serverId == null || serverId <= 0) continue; // not synced yet
+      final farmerUuid = farmer.uuid?.trim();
+      if (farmerUuid == null || farmerUuid.isEmpty) continue;
+      var pulledForFarmer = 0;
+      final path = '/farmer-dependants/$farmerUuid';
       try {
-        final response = await _dio.get('/farmer-dependants/$serverId');
+        final response = await _dio.get(path);
         final rows = _asList(response.data);
+        developer.log(
+          '[FarmerSync] dependants path=$path status=${response.statusCode} '
+          'rows=${rows.length} data=${_previewForLog(response.data)}',
+          name: 'sync.farmer',
+        );
         for (final row in rows) {
           final model = FarmerDependantModel.fromJson(
             row,
             fallbackFarmerId: farmer.id,
             farmerUuid: farmer.uuid,
           );
+          final localId = model.id > 0
+              ? model.id
+              : _localRowId(
+                  model.uuid ??
+                      '${farmer.id}-${model.firstName}-${model.lastName}',
+                );
           // Dependants pulled from server are already synced — upsert preserves
           // any locally-created rows that may already exist.
           await _dao.upsertDependant(
             FarmerDependantsCompanion(
-              id: Value(model.id),
+              id: Value(localId),
               farmerId: Value(farmer.id), // use local FK, not server FK
               uuid: Value(model.uuid),
               syncStatus: const Value('synced'),
@@ -254,9 +268,22 @@ class DriftFarmerRepository implements FarmerRepository {
             ),
           );
           count++;
+          pulledForFarmer++;
         }
-      } on DioException {
+      } on DioException catch (e) {
+        developer.log(
+          '[FarmerSync] dependants path=$path failed '
+          'status=${e.response?.statusCode} data=${_previewForLog(e.response?.data)}',
+          name: 'sync.farmer',
+        );
         // Offline or endpoint not found — dependants are already in local DB.
+      }
+      if (pulledForFarmer == 0) {
+        developer.log(
+          '[FarmerSync] no dependants for farmer '
+          'local=${farmer.id} server=$serverId uuid=$farmerUuid',
+          name: 'sync.farmer',
+        );
       }
     }
     developer.log(
@@ -286,6 +313,12 @@ class DriftFarmerRepository implements FarmerRepository {
         : data;
     if (raw is! List) return const [];
     return raw.whereType<Map>().map((row) => _asMap(row)).toList();
+  }
+
+  String _previewForLog(Object? data) {
+    final text = data.toString();
+    if (text.length <= 700) return text;
+    return '${text.substring(0, 700)}...';
   }
 
   Future<void> _ensureCropReference(int cropId) async {

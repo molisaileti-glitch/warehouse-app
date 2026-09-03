@@ -11,7 +11,7 @@ import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 
-String buildWarehouseGpsLocation({
+String buildWarehouseGpsLocation({ 
   String? regionName,
   String? districtName,
   String? wardName,

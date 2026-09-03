@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/repository_providers.dart';
+import '../../../core/sync/sync_engine.dart';
 import '../../../l10n/app_localizations.dart';
 
 // ── AppCard ───────────────────────────────────────────────────────────────────
@@ -678,8 +679,8 @@ class PendingSyncFloatingBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 280),
+    return SizedBox(
+      width: MediaQuery.sizeOf(context).width - 32,
       child: Material(
         color: AppColors.cardBg,
         elevation: 5,
@@ -732,6 +733,162 @@ class PendingSyncFloatingBanner extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+Future<void> runSyncWithProgressDialog(
+    BuildContext context, WidgetRef ref) async {
+  if (ref.read(syncNotifierProvider).isSyncing) return;
+
+  var dialogOpen = true;
+  final dialogFuture = showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black54,
+    builder: (_) => const _SyncProgressDialog(),
+  ).whenComplete(() => dialogOpen = false);
+
+  await Future<void>.delayed(const Duration(milliseconds: 80));
+  try {
+    await ref.read(syncNotifierProvider.notifier).runSync();
+  } finally {
+    if (context.mounted && dialogOpen) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+  await dialogFuture;
+
+  if (!context.mounted) return;
+  final state = ref.read(syncNotifierProvider);
+  if (state.isDone) {
+    final l10n = AppLocalizations.of(context)!;
+    await showSuccessDialog(
+      context,
+      title: 'Sync complete',
+      description: l10n.syncedSummary(
+        state.pushed.toString(),
+        state.pulled.toString(),
+      ),
+    );
+  }
+}
+
+class _SyncProgressDialog extends ConsumerWidget {
+  const _SyncProgressDialog();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(syncNotifierProvider);
+    final totalSteps = state.totalSteps <= 0 ? 1 : state.totalSteps;
+    final currentStep = state.currentStep.clamp(0, totalSteps).toInt();
+    final progress = state.progressFraction;
+    final percent = (progress * 100).round();
+    final message = state.progressMessage.trim().isEmpty
+        ? 'Syncing data'
+        : state.progressMessage;
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+      contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                height: 72,
+                width: 72,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: SizedBox(
+                  height: 54,
+                  width: 54,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 6,
+                        color: AppColors.success,
+                        backgroundColor:
+                            AppColors.success.withValues(alpha: 0.12),
+                      ),
+                      Text(
+                        '$percent%',
+                        style: const TextStyle(
+                          color: AppColors.success,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Data Sync',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      message,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 15,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 26),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 12,
+              color: AppColors.success,
+              backgroundColor: AppColors.success.withValues(alpha: 0.12),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Text(
+                'Step $currentStep/$totalSteps',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+              const Spacer(),
+              Text(
+                '$percent%',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Syncing $totalSteps steps. Please keep the app open.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ],
       ),
     );
   }

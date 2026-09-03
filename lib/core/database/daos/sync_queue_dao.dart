@@ -69,8 +69,8 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
                   WHEN 'farmerDependants' THEN 5
                   WHEN 'farmerHarvests'   THEN 6
                   WHEN 'stockAdjustments' THEN 7
-                  WHEN 'dispatches'       THEN 7
-                  WHEN 'stockCounts'      THEN 7
+                  WHEN 'dispatches'       THEN 8
+                  WHEN 'stockCounts'      THEN 9
                   ELSE                        99
                 END'''),
                 ),

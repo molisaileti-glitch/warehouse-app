@@ -26,7 +26,10 @@ final _workerPendingSyncCountProvider = StreamProvider<int>((ref) {
             .where((entry) =>
                 entry.entityType == 'farmers' ||
                 entry.entityType == 'farmerDependants' ||
-                entry.entityType == 'farmerHarvests')
+                entry.entityType == 'farmerHarvests' ||
+                entry.entityType == 'dispatches' ||
+                entry.entityType == 'stockCounts' ||
+                entry.entityType == 'stockAdjustments')
             .length,
       );
 });
@@ -60,13 +63,7 @@ class WorkerDashboardScreen extends ConsumerWidget {
 
     ref.listen<SyncState>(syncNotifierProvider, (previous, next) {
       if (previous?.isSyncing != true) return;
-      if (next.isDone) {
-        showTopToast(
-          context,
-          l10n.syncedSummary(next.pushed.toString(), next.pulled.toString()),
-          AppColors.success,
-        );
-      } else if (next.hasErrors) {
+      if (next.hasErrors) {
         showTopToast(
           context,
           next.error!,
@@ -77,6 +74,7 @@ class WorkerDashboardScreen extends ConsumerWidget {
     });
 
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         title: Text(l10n.myTasks),
         actions: [
@@ -101,7 +99,7 @@ class WorkerDashboardScreen extends ConsumerWidget {
             heroTag: 'worker_dashboard_sync',
             onPressed: syncState.isSyncing
                 ? null
-                : () => ref.read(syncNotifierProvider.notifier).runSync(),
+                : () => runSyncWithProgressDialog(context, ref),
             icon: syncState.isSyncing
                 ? const SizedBox(
                     width: 18,

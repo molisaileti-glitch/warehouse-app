@@ -63,6 +63,16 @@ class DriftWarehouseOperationsRepository
     final eventTime = dispatchedAt ?? now;
     final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
     final userId = int.tryParse(_currentUserId);
+    await _validateStockDecrease(
+      warehouse: warehouse,
+      crop: crop,
+      bags: totalBags,
+      grossWeight: totalGrossWeight,
+      packagingWeight: totalPackagingWeight,
+      netWeight: totalNetWeight,
+      partialFullBagMessage:
+          'Dispatch uses full bags. If stock weight has changed, perform a stock adjustment first, then dispatch.',
+    );
 
     await _dao.insertDispatchWithQueue(
       dispatch: WarehouseDispatchesCompanion.insert(
@@ -214,6 +224,16 @@ class DriftWarehouseOperationsRepository
     final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
     final userId = int.tryParse(_currentUserId);
     final normalizedType = adjustmentType.toUpperCase();
+    if (normalizedType == StockAdjustmentType.decrease) {
+      await _validateStockDecrease(
+        warehouse: warehouse,
+        crop: crop,
+        bags: bags,
+        grossWeight: grossWeight,
+        packagingWeight: packagingWeight,
+        netWeight: netWeight,
+      );
+    }
 
     await _dao.insertStockAdjustmentWithQueue(
       adjustment: WarehouseStockAdjustmentsCompanion.insert(
@@ -438,6 +458,50 @@ class DriftWarehouseOperationsRepository
         updatedAt: Value(timestamp),
       ),
     );
+  }
+
+  Future<void> _validateStockDecrease({
+    required Warehouse warehouse,
+    required Crop crop,
+    required int bags,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    String? partialFullBagMessage,
+  }) async {
+    final current = await _dao.getInventoryByCrop(
+      warehouseId: warehouse.id,
+      cropId: crop.id,
+    );
+    if (current == null || current.totalBags <= 0) {
+      throw StateError('No stock available for this crop.');
+    }
+    if (bags > current.totalBags) {
+      throw StateError(
+        'Cannot remove $bags bags. Only ${current.totalBags} bags are available.',
+      );
+    }
+    if (_greaterThan(grossWeight, current.totalGrossWeight)) {
+      throw StateError('Gross weight cannot exceed available stock.');
+    }
+    if (_greaterThan(packagingWeight, current.totalPackagingWeight)) {
+      throw StateError('Packaging weight cannot exceed available stock.');
+    }
+    if (_greaterThan(netWeight, current.totalNetWeight)) {
+      throw StateError('Net weight cannot exceed available stock.');
+    }
+
+    final removesAllBags = bags == current.totalBags;
+    if (!removesAllBags) return;
+
+    if (!_nearlyEqual(grossWeight, current.totalGrossWeight) ||
+        !_nearlyEqual(packagingWeight, current.totalPackagingWeight) ||
+        !_nearlyEqual(netWeight, current.totalNetWeight)) {
+      throw StateError(
+        partialFullBagMessage ??
+            'Removing all bags must remove the full recorded stock for this crop.',
+      );
+    }
   }
 
   Future<List<({Map<String, dynamic> json, String warehouseId})>>
@@ -669,8 +733,18 @@ class DriftWarehouseOperationsRepository
 
   double _nonNegative(double value) => value < 0 ? 0 : value;
 
+  bool _greaterThan(num value, num limit) {
+    return value > limit + _weightToleranceKg;
+  }
+
+  bool _nearlyEqual(num left, num right) {
+    return (left - right).abs() <= _weightToleranceKg;
+  }
+
   DateTime? _date(Object? value) {
     if (value is DateTime) return value;
     return DateTime.tryParse(value?.toString() ?? '');
   }
 }
+
+const double _weightToleranceKg = 0.01;

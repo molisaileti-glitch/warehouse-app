@@ -72,28 +72,41 @@ class SyncManager {
         _roleStrategy = roleStrategy,
         _currentMcuId = currentMcuId;
 
-  Future<SyncResult> sync() async {
+  Future<SyncResult> sync(
+      {void Function(SyncProgress progress)? onProgress}) async {
     var pushed = 0;
     var pulled = 0;
     final errors = <String>[];
+
+    void progress(int step, String message) {
+      onProgress?.call(
+        SyncProgress(currentStep: step, totalSteps: 5, message: message),
+      );
+    }
+
+    progress(1, 'Preparing local queue');
 
     // Recover any entries that were wrongly stuck in 'conflict' by a prior
     // version of the sync logic that treated 400/422 as permanent conflicts.
     await _syncDao.resetConflictsToPending();
 
     try {
+      progress(2, 'Uploading pending records');
       pushed = await _push();
     } catch (e) {
       errors.add('Push failed: $e');
     }
 
     try {
+      progress(3, 'Downloading latest records');
       pulled = await _roleStrategy.pull(await _getLastSyncTime());
+      progress(4, 'Saving sync checkpoint');
       await _saveLastSyncTime(DateTime.now());
     } catch (e) {
       errors.add('Pull failed: $e');
     }
 
+    progress(5, 'Finishing sync');
     await _syncDao.purgeSync();
     return SyncResult(pushed: pushed, pulled: pulled, errors: errors);
   }
@@ -469,11 +482,22 @@ class SyncManager {
     if (farmerUuid == null || farmerUuid.isEmpty) {
       throw StateError('Dependant has no farmer UUID.');
     }
+    final dependantUuid = payload['uuid']?.toString();
+    if (dependantUuid == null || dependantUuid.isEmpty) {
+      throw StateError('Dependant has no UUID.');
+    }
     // The endpoint path param is the farmer UUID (not the integer server ID).
     // Ensure the farmer is synced so the server can resolve the UUID.
     await _farmerServerId(farmerUuid); // throws if farmer not synced yet
-    payload.remove('uuid');
-    await _dio.post('/farmer-dependants/$farmerUuid', data: [payload]);
+    final response = await _dio.post(
+      '/farmer-dependants/$farmerUuid',
+      data: [payload],
+    );
+    developer.log(
+      '[FarmerDependantSync] create farmerUuid=$farmerUuid '
+      'uuid=$dependantUuid response=${_logPreview(response.data)}',
+      name: 'sync.farmer',
+    );
   }
 
   Future<void> _resolveHarvestFarmer(Map<String, dynamic> payload) async {
@@ -738,6 +762,12 @@ class SyncManager {
     }
   }
 
+  String _logPreview(Object? data) {
+    final text = data.toString();
+    if (text.length <= 700) return text;
+    return '${text.substring(0, 700)}...';
+  }
+
   String _entityCollectionPath(String type) {
     if (type == 'users') return '/users';
     if (type == 'warehouses') return '/collection-centers';
@@ -956,6 +986,23 @@ class SyncResult {
   });
 }
 
+class SyncProgress {
+  final int currentStep;
+  final int totalSteps;
+  final String message;
+
+  const SyncProgress({
+    required this.currentStep,
+    required this.totalSteps,
+    required this.message,
+  });
+
+  double get fraction {
+    if (totalSteps <= 0) return 0;
+    return (currentStep / totalSteps).clamp(0, 1).toDouble();
+  }
+}
+
 final syncManagerProvider = Provider<SyncManager>((ref) {
   final role = ref.watch(currentRoleProvider) ?? UserRole.worker;
   final strategy = switch (role) {
@@ -986,8 +1033,20 @@ class SyncNotifier extends StateNotifier<SyncState> {
 
   Future<void> runSync() async {
     if (state.isSyncing) return;
-    state = const SyncState.syncing();
-    final result = await _manager.sync();
+    state = const SyncState.syncing(
+      currentStep: 1,
+      totalSteps: 5,
+      progressMessage: 'Preparing local queue',
+    );
+    final result = await _manager.sync(
+      onProgress: (progress) {
+        state = SyncState.syncing(
+          currentStep: progress.currentStep,
+          totalSteps: progress.totalSteps,
+          progressMessage: progress.message,
+        );
+      },
+    );
     state = result.hasErrors
         ? SyncState.error(result.errors.first)
         : SyncState.done(pushed: result.pushed, pulled: result.pulled);
@@ -1000,6 +1059,9 @@ class SyncState {
   final String? error;
   final int pushed;
   final int pulled;
+  final int currentStep;
+  final int totalSteps;
+  final String progressMessage;
 
   const SyncState({
     this.isSyncing = false,
@@ -1007,14 +1069,30 @@ class SyncState {
     this.error,
     this.pushed = 0,
     this.pulled = 0,
+    this.currentStep = 0,
+    this.totalSteps = 5,
+    this.progressMessage = '',
   });
 
   const SyncState.idle() : this();
-  const SyncState.syncing() : this(isSyncing: true);
+  const SyncState.syncing({
+    int currentStep = 0,
+    int totalSteps = 5,
+    String progressMessage = 'Syncing data',
+  }) : this(
+          isSyncing: true,
+          currentStep: currentStep,
+          totalSteps: totalSteps,
+          progressMessage: progressMessage,
+        );
   factory SyncState.done({required int pushed, required int pulled}) =>
       SyncState(isDone: true, pushed: pushed, pulled: pulled);
   factory SyncState.error(String error) => SyncState(error: error);
   bool get hasErrors => error != null;
+  double get progressFraction {
+    if (totalSteps <= 0) return 0;
+    return (currentStep / totalSteps).clamp(0, 1).toDouble();
+  }
 }
 
 final syncNotifierProvider = StateNotifierProvider<SyncNotifier, SyncState>(

@@ -99,13 +99,19 @@ final _pendingSyncsProvider =
           if (workerFlow) {
             return entry.entityType == 'farmers' ||
                 entry.entityType == 'farmerDependants' ||
-                entry.entityType == 'farmerHarvests';
+                entry.entityType == 'farmerHarvests' ||
+                entry.entityType == 'dispatches' ||
+                entry.entityType == 'stockCounts' ||
+                entry.entityType == 'stockAdjustments';
           }
           return entry.entityType == 'warehouses' ||
               entry.entityType == 'users' ||
               entry.entityType == 'farmers' ||
               entry.entityType == 'farmerDependants' ||
-              entry.entityType == 'farmerHarvests';
+              entry.entityType == 'farmerHarvests' ||
+              entry.entityType == 'dispatches' ||
+              entry.entityType == 'stockCounts' ||
+              entry.entityType == 'stockAdjustments';
         }).toList(),
       );
 });
@@ -212,6 +218,24 @@ _SyncDetails _syncDetails(SyncQueueData entry, AppLocalizations l10n) {
             l10n.harvestRecord,
         icon: Icons.grass_rounded,
         color: AppColors.success,
+      ),
+    'dispatches' => _SyncDetails(
+        title: '$operation Dispatch',
+        subtitle: _stringValue(payload, 'recipientName') ?? entry.entityId,
+        icon: Icons.local_shipping_outlined,
+        color: AppColors.warning,
+      ),
+    'stockCounts' => _SyncDetails(
+        title: '$operation Stock Count',
+        subtitle: _stringValue(payload, 'countedAt') ?? entry.entityId,
+        icon: Icons.fact_check_outlined,
+        color: AppColors.info,
+      ),
+    'stockAdjustments' => _SyncDetails(
+        title: '$operation Stock Adjustment',
+        subtitle: _stringValue(payload, 'reason') ?? entry.entityId,
+        icon: Icons.tune_rounded,
+        color: AppColors.warning,
       ),
     _ => _SyncDetails(
         title: l10n.operationRecord(operation, entry.entityType),

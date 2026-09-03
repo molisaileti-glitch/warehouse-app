@@ -31,7 +31,10 @@ final _ownerPendingSyncCountProvider = StreamProvider<int>((ref) {
                 entry.entityType == 'users' ||
                 entry.entityType == 'farmers' ||
                 entry.entityType == 'farmerDependants' ||
-                entry.entityType == 'farmerHarvests')
+                entry.entityType == 'farmerHarvests' ||
+                entry.entityType == 'dispatches' ||
+                entry.entityType == 'stockCounts' ||
+                entry.entityType == 'stockAdjustments')
             .length,
       );
 });
@@ -66,19 +69,10 @@ class OwnerDashboardScreen extends ConsumerWidget {
     final workers = workersAsync.valueOrNull ?? const <User>[];
     final farmers = farmersAsync.valueOrNull ?? const <Farmer>[];
 
-    ref.listen<SyncState>(syncNotifierProvider, (previous, next) {
-      if (previous?.isSyncing == true && next.isDone) {
-        showTopToast(
-          context,
-          l10n.syncedSummary(next.pushed.toString(), next.pulled.toString()),
-          AppColors.success,
-        );
-      }
-    });
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       drawer: const OwnerDrawer(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         title: const SizedBox.shrink(),
         actions: [
@@ -99,7 +93,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
             heroTag: 'owner_dashboard_sync',
             onPressed: syncState.isSyncing
                 ? null
-                : () => ref.read(syncNotifierProvider.notifier).runSync(),
+                : () => runSyncWithProgressDialog(context, ref),
             icon: syncState.isSyncing
                 ? const SizedBox(
                     width: 18,
