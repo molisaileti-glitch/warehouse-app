@@ -18,7 +18,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/components/app_feedback.dart';
-import '../../../core/components/input_field.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/auth_provider.dart';
@@ -212,22 +211,27 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedWarehouseId == null || _selectedWarehouseId!.isEmpty) {
+      setState(() {
+        _error = l10n.selectWarehouse;
+      });
+      return;
+    }
     // ── Derive amcos + mcu from local DB ─────────────────────────────────────
     final warehouseDao = ref.read(warehouseDaoProvider);
-    final warehouse = _selectedWarehouseId == null
-        ? null
-        : await warehouseDao.getWarehouseById(_selectedWarehouseId!);
+    final warehouse =
+        await warehouseDao.getWarehouseById(_selectedWarehouseId!);
     if (!mounted) return;
 
-    if (_selectedWarehouseId != null && warehouse == null) {
+    if (warehouse == null) {
       setState(() {
         _error = l10n.selectedWarehouseNotFound;
       });
       return;
     }
 
-    final amcosId = warehouse?.amcos;
-    if (warehouse != null && amcosId == null) {
+    final amcosId = warehouse.amcos;
+    if (amcosId == null) {
       setState(() {
         _error = l10n.warehouseMissingAmcos(warehouse.name);
       });
@@ -247,12 +251,10 @@ class _AddWorkerSheetState extends ConsumerState<_AddWorkerSheet> {
     final confirmed = await showCreationConfirmDialog(
       context,
       title: l10n.createWorker,
-      description: warehouse == null
-          ? 'Create an account for ${_nameCtrl.text.trim()}?'
-          : l10n.createWorkerConfirm(
-              _nameCtrl.text.trim(),
-              warehouse.name,
-            ),
+      description: l10n.createWorkerConfirm(
+        _nameCtrl.text.trim(),
+        warehouse.name,
+      ),
       confirmLabel: l10n.create,
     );
     if (!confirmed) return;
@@ -516,7 +518,7 @@ class _FormView extends StatelessWidget {
               initialValue: selectedWarehouseId,
               isExpanded: true,
               decoration: InputDecoration(
-                labelText: optionalLabel(l10n.assignToWarehouse),
+                labelText: l10n.assignToWarehouse,
                 prefixIcon: const Icon(Icons.warehouse_rounded),
                 helperText: l10n.amcosDerivedFromWarehouse,
                 helperStyle: const TextStyle(
@@ -543,6 +545,8 @@ class _FormView extends StatelessWidget {
                       ))
                   .toList(),
               onChanged: onWarehouseChanged,
+              validator: (value) =>
+                  value == null || value.isEmpty ? l10n.selectWarehouse : null,
             ),
             const SizedBox(height: 28),
 

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/secure_token_storage.dart';
 import 'auth_interceptor.dart';
+import 'connectivity_interceptor.dart';
 
 const _baseUrl = String.fromEnvironment(
   'API_BASE_URL',
@@ -30,6 +31,7 @@ class ApiClient {
     );
 
     dio.interceptors.addAll([
+      ConnectivityInterceptor(),
       AuthInterceptor(dio: dio, storage: storage, onRefresh: onRefresh),
       LogInterceptor(
         requestBody: false, // set true during dev only

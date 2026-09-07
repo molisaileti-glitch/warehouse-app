@@ -304,6 +304,9 @@ class AuthRepository {
         if (value != null) return value.toString();
       }
     }
+    if (e.response == null && e.message != null && e.message!.isNotEmpty) {
+      return e.message!;
+    }
     return switch (e.response?.statusCode) {
       400 => 'errorInvalidDetails',
       401 => 'errorIncorrectCredentials',

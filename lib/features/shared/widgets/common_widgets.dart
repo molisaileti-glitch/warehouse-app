@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/repository_providers.dart';
+import '../../../core/network/connectivity_interceptor.dart';
 import '../../../core/sync/sync_engine.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -741,6 +743,19 @@ class PendingSyncFloatingBanner extends StatelessWidget {
 Future<void> runSyncWithProgressDialog(
     BuildContext context, WidgetRef ref) async {
   if (ref.read(syncNotifierProvider).isSyncing) return;
+
+  final results = await Connectivity().checkConnectivity();
+  final hasNetwork = results.any((result) => result != ConnectivityResult.none);
+  if (!hasNetwork) {
+    if (!context.mounted) return;
+    await showErrorDialog(
+      context,
+      title: 'No internet connection',
+      description: ConnectivityInterceptor.noConnectionMessage,
+    );
+    return;
+  }
+  if (!context.mounted) return;
 
   var dialogOpen = true;
   final dialogFuture = showDialog<void>(
