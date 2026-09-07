@@ -54,9 +54,9 @@ class _FarmerRegistrationScreenState
   final _sharesCtrl = TextEditingController();
 
   String _sex = kFarmerSexValues.first;
-  String _idType = 'NIN';
-  String _memberType = kFarmerMemberTypes.first;
-  String _maritalStatus = kFarmerMaritalStatuses.first;
+  String? _idType;
+  String? _memberType;
+  String? _maritalStatus;
   Crop? _mainCrop;
   Crop? _secondaryCrop;
   Amcos? _selectedAmcos;
@@ -228,10 +228,17 @@ class _FarmerRegistrationScreenState
             labelText: optionalLabel(l10n.idType),
             icon: Icons.badge_outlined,
             value: _idType,
-            items: kFarmerIdTypes
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                .toList(),
-            onChanged: (value) => setState(() => _idType = value!),
+            hintText: 'Select ID type',
+            items: [
+              const DropdownMenuItem(value: '', child: Text('Not selected')),
+              ...kFarmerIdTypes
+                  .map(
+                    (item) => DropdownMenuItem(value: item, child: Text(item)),
+                  )
+                  .toList(),
+            ],
+            onChanged: (value) =>
+                setState(() => _idType = _optionalDropdownValue(value)),
           ),
           const SizedBox(height: 14),
           AppTextFormField(
@@ -322,26 +329,36 @@ class _FarmerRegistrationScreenState
             labelText: optionalLabel(l10n.memberType),
             icon: Icons.groups_outlined,
             value: _memberType,
-            items: kFarmerMemberTypes
-                .map((item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(localizedReferenceValue(l10n, item)),
-                    ))
-                .toList(),
-            onChanged: (value) => setState(() => _memberType = value!),
+            hintText: 'Select member type',
+            items: [
+              const DropdownMenuItem(value: '', child: Text('Not selected')),
+              ...kFarmerMemberTypes
+                  .map((item) => DropdownMenuItem(
+                        value: item,
+                        child: Text(localizedReferenceValue(l10n, item)),
+                      ))
+                  .toList(),
+            ],
+            onChanged: (value) =>
+                setState(() => _memberType = _optionalDropdownValue(value)),
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
             labelText: optionalLabel(l10n.maritalStatus),
             icon: Icons.favorite_border_rounded,
             value: _maritalStatus,
-            items: kFarmerMaritalStatuses
-                .map((item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(localizedReferenceValue(l10n, item)),
-                    ))
-                .toList(),
-            onChanged: (value) => setState(() => _maritalStatus = value!),
+            hintText: 'Select marital status',
+            items: [
+              const DropdownMenuItem(value: '', child: Text('Not selected')),
+              ...kFarmerMaritalStatuses
+                  .map((item) => DropdownMenuItem(
+                        value: item,
+                        child: Text(localizedReferenceValue(l10n, item)),
+                      ))
+                  .toList(),
+            ],
+            onChanged: (value) =>
+                setState(() => _maritalStatus = _optionalDropdownValue(value)),
           ),
           const SizedBox(height: 14),
           AppTextFormField(
@@ -435,7 +452,7 @@ class _FarmerRegistrationScreenState
         _reviewHeader(l10n.receiptFarmer),
         _reviewRow(l10n.name, _fullName),
         _reviewRow(l10n.sex, localizedReferenceValue(l10n, _sex)),
-        _reviewRow(l10n.idType, _idType),
+        _reviewRow(l10n.idType, _idType ?? '-'),
         _reviewRow(l10n.idNumber, _idNumberCtrl.text),
         _reviewRow(l10n.dateOfBirth, _dobCtrl.text),
         _reviewRow(l10n.phone, _phoneCtrl.text),
@@ -444,11 +461,11 @@ class _FarmerRegistrationScreenState
         _reviewRow(l10n.amcos, _selectedAmcos?.name ?? ''),
         _reviewRow(
           l10n.memberType,
-          localizedReferenceValue(l10n, _memberType),
+          _localizedOptional(l10n, _memberType),
         ),
         _reviewRow(
           l10n.maritalStatus,
-          localizedReferenceValue(l10n, _maritalStatus),
+          _localizedOptional(l10n, _maritalStatus),
         ),
         _reviewRow(l10n.educationLevel, l10n.primaryEducation),
         const SizedBox(height: 14),
@@ -600,6 +617,17 @@ class _FarmerRegistrationScreenState
   String? _nullable(String value) {
     final text = value.trim();
     return text.isEmpty ? null : text;
+  }
+
+  String? _optionalDropdownValue(String? value) {
+    final text = value?.trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  String _localizedOptional(AppLocalizations l10n, String? value) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) return '-';
+    return localizedReferenceValue(l10n, text);
   }
 
   Future<void> _pickDate(TextEditingController controller) async {

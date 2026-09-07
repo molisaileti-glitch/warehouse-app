@@ -2,7 +2,8 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database_provider.dart';
-import '../network/api_client.dart' show secureStorageProvider;
+import '../network/api_client.dart'
+    show secureStorageProvider, sessionExpiredProvider;
 import '../repositories/auth_repository.dart';
 import '../enums/sync_status.dart';
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -65,6 +66,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     final result = await _repo.login(email: email, password: password);
 
     if (result.success) {
+      ref.read(sessionExpiredProvider).clear();
       state = AsyncValue.data(
           AuthState.authenticated(userId: result.userId!, role: result.role!));
     } else {

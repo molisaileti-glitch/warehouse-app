@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
@@ -159,24 +160,27 @@ class _HarvestFarmerDetailsScreenState
               async: cropsAsync,
               emptyTitle: l10n.noCropsAvailable,
               emptySubtitle: l10n.syncCropDataFirst,
-              child: DropdownButtonFormField<int>(
-                initialValue: _cropId,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: l10n.crop,
-                  prefixIcon: const Icon(Icons.grass_outlined),
+              child: AppLabeledField(
+                labelText: l10n.crop,
+                child: DropdownButtonFormField<int>(
+                  initialValue: _cropId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.grass_outlined),
+                  ),
+                  items: crops.map((crop) {
+                    return DropdownMenuItem(
+                      value: crop.id,
+                      child: Text(
+                        crop.name,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _cropId = value),
+                  validator: (value) =>
+                      value == null ? l10n.requiredField : null,
                 ),
-                items: crops.map((crop) {
-                  return DropdownMenuItem(
-                    value: crop.id,
-                    child: Text(
-                      crop.name,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => _cropId = value),
-                validator: (value) => value == null ? l10n.requiredField : null,
               ),
             ),
           ],

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/components/input_field.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/repository_providers.dart';
@@ -544,31 +545,55 @@ class _EditWarehouseSheetState extends ConsumerState<_EditWarehouseSheet> {
               style:
                   const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 20),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.warehouseName,
+            child: TextFormField(
               controller: _nameCtrl,
-              decoration: InputDecoration(labelText: l10n.warehouseName)),
+              decoration: const InputDecoration(),
+            ),
+          ),
           const SizedBox(height: 12),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.gpsLocationAddress,
+            child: TextFormField(
               controller: _gpsCtrl,
-              decoration: InputDecoration(labelText: l10n.gpsLocationAddress)),
+              decoration: const InputDecoration(),
+            ),
+          ),
           const SizedBox(height: 12),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.amcosId,
+            child: TextFormField(
               controller: _amcosCtrl,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: l10n.amcosId)),
+              decoration: const InputDecoration(),
+            ),
+          ),
           const SizedBox(height: 12),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.amcosName,
+            child: TextFormField(
               controller: _amcosNameCtrl,
-              decoration: InputDecoration(labelText: l10n.amcosName)),
+              decoration: const InputDecoration(),
+            ),
+          ),
           const SizedBox(height: 12),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.villageId,
+            child: TextFormField(
               controller: _villageCtrl,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: l10n.villageId)),
+              decoration: const InputDecoration(),
+            ),
+          ),
           const SizedBox(height: 12),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.villageName,
+            child: TextFormField(
               controller: _villageNameCtrl,
-              decoration: InputDecoration(labelText: l10n.villageName)),
+              decoration: const InputDecoration(),
+            ),
+          ),
           const SizedBox(height: 24),
           _loading
               ? const Center(

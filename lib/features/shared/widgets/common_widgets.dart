@@ -778,16 +778,62 @@ Future<void> runSyncWithProgressDialog(
   if (!context.mounted) return;
   final state = ref.read(syncNotifierProvider);
   if (state.isDone) {
-    final l10n = AppLocalizations.of(context)!;
-    await showSuccessDialog(
+    if (state.hasRemainingWork) {
+      await showWarningDialog(
+        context,
+        title: 'Sync needs retry',
+        description: _syncRetryMessage(state),
+      );
+    } else {
+      final l10n = AppLocalizations.of(context)!;
+      await showSuccessDialog(
+        context,
+        title: 'Sync complete',
+        description: l10n.syncedSummary(
+          state.pushed.toString(),
+          state.pulled.toString(),
+        ),
+      );
+    }
+  } else if (state.error != null) {
+    await showErrorDialog(
       context,
-      title: 'Sync complete',
-      description: l10n.syncedSummary(
-        state.pushed.toString(),
-        state.pulled.toString(),
-      ),
+      title: 'Sync failed',
+      description: _syncErrorMessage(state),
     );
   }
+}
+
+String _syncRetryMessage(SyncState state) {
+  final parts = <String>[];
+  if (state.remainingPending > 0) {
+    final recordLabel = _pluralize(state.remainingPending, 'record');
+    parts.add(
+      '${state.remainingPending} $recordLabel still waiting to sync',
+    );
+  }
+  if (state.conflicts > 0) {
+    final recordLabel = _pluralize(state.conflicts, 'record');
+    parts.add(
+      '${state.conflicts} $recordLabel need review',
+    );
+  }
+
+  final remaining =
+      parts.isEmpty ? 'Some records still need sync' : parts.join(' and ');
+  return '$remaining. Please try syncing again when the internet connection is stronger.';
+}
+
+String _syncErrorMessage(SyncState state) {
+  final error = state.error ?? 'Something went wrong while syncing.';
+  if (!state.hasRemainingWork) {
+    return '$error\n\nPlease check your internet connection and try again.';
+  }
+  return '$error\n\n${_syncRetryMessage(state)}';
+}
+
+String _pluralize(int count, String word) {
+  return count == 1 ? word : '${word}s';
 }
 
 class _SyncProgressDialog extends ConsumerWidget {

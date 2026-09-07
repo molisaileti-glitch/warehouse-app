@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/providers/auth_provider.dart';
@@ -488,6 +489,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
 
   Widget _buildLocationDropdown<T>({
     required String label,
+    required IconData icon,
     required T? value,
     required List<DropdownMenuItem<T>> Function(List<T>) itemBuilder,
     required ValueChanged<T?> onChanged,
@@ -498,13 +500,18 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
       stream: streamBuilder(),
       builder: (context, snapshot) {
         final items = snapshot.data ?? <T>[];
-        return DropdownButtonFormField<T>(
-          initialValue: value,
-          decoration: InputDecoration(labelText: label),
-          items: itemBuilder(items),
-          onChanged: onChanged,
-          validator:
-              validator == null ? null : (selected) => validator(selected),
+        return AppLabeledField(
+          labelText: label,
+          child: DropdownButtonFormField<T>(
+            initialValue: value,
+            decoration: InputDecoration(
+              prefixIcon: Icon(icon),
+            ),
+            items: itemBuilder(items),
+            onChanged: onChanged,
+            validator:
+                validator == null ? null : (selected) => validator(selected),
+          ),
         );
       },
     );
@@ -547,16 +554,22 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _nameCtrl,
-                decoration: InputDecoration(labelText: l10n.warehouseName),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? l10n.requiredField
-                    : null,
+              AppLabeledField(
+                labelText: l10n.warehouseName,
+                child: TextFormField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.warehouse_rounded),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? l10n.requiredField
+                      : null,
+                ),
               ),
               const SizedBox(height: 12),
               _buildLocationDropdown<Region>(
                 label: l10n.region,
+                icon: Icons.map_outlined,
                 value: _selectedRegion,
                 streamBuilder: () =>
                     ref.read(regionDaoProvider).watchAllRegions(),
@@ -583,6 +596,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
               const SizedBox(height: 12),
               _buildLocationDropdown<District>(
                 label: l10n.district,
+                icon: Icons.location_city_outlined,
                 value: _selectedDistrict,
                 streamBuilder: () => _selectedRegion == null
                     ? Stream.value(const <District>[])
@@ -613,6 +627,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
               const SizedBox(height: 12),
               _buildLocationDropdown<Ward>(
                 label: l10n.ward,
+                icon: Icons.location_on_outlined,
                 value: _selectedWard,
                 streamBuilder: () => _selectedDistrict == null
                     ? Stream.value(const <Ward>[])
@@ -643,6 +658,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
               const SizedBox(height: 12),
               _buildLocationDropdown<Village>(
                 label: l10n.village,
+                icon: Icons.home_work_outlined,
                 value: _selectedVillage,
                 streamBuilder: () => _selectedWard == null
                     ? Stream.value(const <Village>[])
@@ -673,6 +689,7 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
               const SizedBox(height: 12),
               _buildLocationDropdown<Amcos>(
                 label: l10n.amcos,
+                icon: Icons.groups_2_outlined,
                 value: _selectedAmcos,
                 streamBuilder: () => mcuId == null
                     ? Stream.value(const <Amcos>[])
@@ -689,12 +706,14 @@ class _CreateWarehouseSheetState extends ConsumerState<_CreateWarehouseSheet> {
                 validator: (value) => value == null ? l10n.requiredField : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _gpsCtrl,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: l10n.gpsLocationAddress,
-                  hintText: l10n.locationAutoBuilt,
+              AppLabeledField(
+                labelText: l10n.gpsLocationAddress,
+                child: TextFormField(
+                  controller: _gpsCtrl,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.place_outlined),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),

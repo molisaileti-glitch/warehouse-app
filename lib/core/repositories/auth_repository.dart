@@ -1,5 +1,7 @@
 // lib/core/repositories/auth_repository.dart
 
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/secure_token_storage.dart';
@@ -237,18 +239,33 @@ class AuthRepository {
   Future<bool> refreshToken() async {
     try {
       final refreshToken = await _storage.getRefreshToken();
-      if (refreshToken == null || refreshToken.isEmpty) return false;
+      if (refreshToken == null || refreshToken.isEmpty) {
+        _logRefresh('no refresh token stored');
+        return false;
+      }
 
+      _logRefresh('requesting new access token');
       final res = await _dio.post('/auth/refresh-token', data: {
         'refreshToken': refreshToken,
       });
+      _logRefresh(
+        'response status=${res.statusCode} data=${_safeRefreshResponse(res.data)}',
+      );
 
       final responseData = res.data;
-      if (responseData is! Map<String, dynamic>) return false;
+      if (responseData is! Map<String, dynamic>) {
+        _logRefresh('invalid refresh response type=${responseData.runtimeType}');
+        return false;
+      }
 
       final accessToken = responseData['token'];
       final rotatedRefreshToken = responseData['refreshToken'];
-      if (accessToken is! String || accessToken.isEmpty) return false;
+      if (accessToken is! String || accessToken.isEmpty) {
+        _logRefresh(
+          'refresh response missing token keys=${responseData.keys.toList()}',
+        );
+        return false;
+      }
 
       await _storage.saveTokens(
         accessToken: accessToken,
@@ -257,10 +274,40 @@ class AuthRepository {
                 ? rotatedRefreshToken
                 : refreshToken,
       );
+      _logRefresh(
+        'saved refreshed tokens rotatedRefreshToken=${rotatedRefreshToken is String && rotatedRefreshToken.isNotEmpty}',
+      );
       return true;
-    } catch (_) {
+    } on DioException catch (e) {
+      _logRefresh(
+        'request failed status=${e.response?.statusCode} '
+        'response=${_previewForLog(e.response?.data)}',
+      );
+      return false;
+    } catch (e) {
+      _logRefresh('request failed error=$e');
       return false;
     }
+  }
+
+  void _logRefresh(String message) {
+    developer.log('[AuthRepository] $message', name: 'auth.refresh');
+  }
+
+  String _safeRefreshResponse(Object? data) {
+    if (data is Map) {
+      return 'keys=${data.keys.toList()} '
+          'hasToken=${_nullableString(data['token']) != null} '
+          'hasRefreshToken=${_nullableString(data['refreshToken']) != null} '
+          'message=${_previewForLog(data['message'])}';
+    }
+    return 'type=${data.runtimeType} value=${_previewForLog(data)}';
+  }
+
+  String _previewForLog(Object? data) {
+    final text = data?.toString() ?? '';
+    if (text.length <= 300) return text;
+    return '${text.substring(0, 300)}...';
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────

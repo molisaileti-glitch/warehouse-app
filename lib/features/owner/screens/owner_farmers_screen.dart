@@ -130,6 +130,7 @@ class _FarmerTile extends StatelessWidget {
       farmer.middleName,
       farmer.lastName,
     ].whereType<String>().where((value) => value.trim().isNotEmpty).join(' ');
+    final idLine = _farmerIdLine(farmer.idType, farmer.idNumber);
 
     return AppCard(
       onTap: () => context.push(AppRoutes.ownerFarmerDetailFor(farmer.id)),
@@ -164,15 +165,18 @@ class _FarmerTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  '${farmer.idType}: ${farmer.idNumber}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
+                if (idLine != null) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    idLine,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                ],
                 if (farmer.amcosName != null) ...[
                   const SizedBox(height: 3),
                   Text(
@@ -193,6 +197,13 @@ class _FarmerTile extends StatelessWidget {
       ),
     );
   }
+}
+
+String? _farmerIdLine(String idType, String idNumber) {
+  final type = idType.trim();
+  final number = idNumber.trim();
+  if (type.isEmpty || number.isEmpty) return null;
+  return '$type: $number';
 }
 
 class _FarmerStatusBadge extends StatelessWidget {

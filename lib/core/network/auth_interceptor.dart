@@ -1,34 +1,35 @@
 // lib/core/network/auth_interceptor.dart
 //
-// Attaches Authorization header on every request.
-// On 401: refreshes the token and replays queued requests.
+// Attaches Authorization headers. If a protected endpoint returns 401/403,
+// the stored session is cleared so the router can force the user to log in.
 
-import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../auth/secure_token_storage.dart';
 
 class AuthInterceptor extends Interceptor {
-  final Dio _dio;
   final SecureTokenStorage _storage;
-  final Future<bool> Function() _onRefresh;
+  final AsyncCallback? _onSessionExpired;
 
-  // Prevents multiple simultaneous refresh calls.
-  bool _isRefreshing = false;
-  final List<_PendingRequest> _queue = [];
+  bool _isInvalidatingSession = false;
 
   AuthInterceptor({
-    required Dio dio,
     required SecureTokenStorage storage,
-    required Future<bool> Function() onRefresh,
-  })  : _dio = dio,
-        _storage = storage,
-        _onRefresh = onRefresh;
+    AsyncCallback? onSessionExpired,
+  })  : _storage = storage,
+        _onSessionExpired = onSessionExpired;
 
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    if (_isPublicAuthEndpoint(options.path)) {
+      handler.next(options);
+      return;
+    }
+
     final token = await _storage.getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -41,76 +42,44 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (err.response?.statusCode != 401) {
-      handler.next(err);
-      return;
+    _log(
+      'error status=${err.response?.statusCode} path=${err.requestOptions.path} '
+      'forceLogin=${_shouldForceLogin(err)}',
+    );
+
+    if (_shouldForceLogin(err) &&
+        !_isPublicAuthEndpoint(err.requestOptions.path)) {
+      await _forceLogin();
     }
 
-    // Skip refresh loop for the refresh endpoint itself.
-    if (err.requestOptions.path.contains('/auth/refresh')) {
-      handler.next(err);
-      return;
-    }
+    handler.next(err);
+  }
 
-    if (_isRefreshing) {
-      // Queue request until refresh completes.
-      final completer = Completer<Response>();
-      _queue.add(_PendingRequest(err.requestOptions, completer));
-      try {
-        handler.resolve(await completer.future);
-      } catch (e) {
-        handler.next(err);
-      }
-      return;
-    }
+  bool _shouldForceLogin(DioException err) {
+    final statusCode = err.response?.statusCode;
+    return statusCode == 401 || statusCode == 403;
+  }
 
-    _isRefreshing = true;
-    var success = false;
+  bool _isPublicAuthEndpoint(String path) {
+    return path.contains('/auth/login') ||
+        path.contains('/auth/refresh-token') ||
+        path.contains('/auth/forgot-password') ||
+        path.contains('/auth/reset-password');
+  }
+
+  Future<void> _forceLogin() async {
+    if (_isInvalidatingSession) return;
+    _isInvalidatingSession = true;
     try {
-      success = await _onRefresh();
-    } catch (_) {
-      success = false;
-    }
-
-    if (success) {
-      // Replay the failed request with the new token.
-      final newToken = await _storage.getAccessToken();
-
-      // Resolve all queued requests.
-      for (final pending in _queue) {
-        pending.options.headers['Authorization'] = 'Bearer $newToken';
-        try {
-          final response = await _dio.fetch(pending.options);
-          pending.completer.complete(response);
-        } catch (e) {
-          pending.completer.completeError(e);
-        }
-      }
-      _queue.clear();
-      _isRefreshing = false;
-
-      // Replay original request.
-      err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-      try {
-        final response = await _dio.fetch(err.requestOptions);
-        handler.resolve(response);
-      } catch (e) {
-        handler.next(err);
-      }
-    } else {
-      // Refresh failed — reject all queued requests.
-      for (final pending in _queue) {
-        pending.completer.completeError(err);
-      }
-      _queue.clear();
-      _isRefreshing = false;
-      handler.next(err);
+      _log('clearing stored session and forcing login');
+      await _storage.clearAll();
+      await _onSessionExpired?.call();
+    } finally {
+      _isInvalidatingSession = false;
     }
   }
-}
 
-class _PendingRequest {
-  final RequestOptions options;
-  final Completer<Response> completer;
-  _PendingRequest(this.options, this.completer);
+  void _log(String message) {
+    developer.log('[AuthInterceptor] $message', name: 'auth.session');
+  }
 }

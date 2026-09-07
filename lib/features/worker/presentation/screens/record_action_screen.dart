@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/components/input_field.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -186,26 +187,24 @@ class _RecordActionScreenState extends ConsumerState<RecordActionScreen> {
             ]),
 
             const SizedBox(height: 24),
-            Text(l10n.item,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-            const SizedBox(height: 8),
             itemsAsync.when(
-              data: (items) => DropdownButtonFormField<InventoryItem>(
-                initialValue: _item,
-                isExpanded: true,
-                decoration: InputDecoration(hintText: l10n.selectItem),
-                items: items.map((i) {
-                  final qty = i.quantityOnHand % 1 == 0
-                      ? i.quantityOnHand.toInt().toString()
-                      : i.quantityOnHand.toStringAsFixed(1);
-                  return DropdownMenuItem(
-                    value: i,
-                    child: Text('${i.name} ($qty ${i.unit})',
-                        overflow: TextOverflow.ellipsis),
-                  );
-                }).toList(),
-                onChanged: (v) => setState(() => _item = v),
+              data: (items) => AppLabeledField(
+                labelText: l10n.item,
+                child: DropdownButtonFormField<InventoryItem>(
+                  initialValue: _item,
+                  isExpanded: true,
+                  items: items.map((i) {
+                    final qty = i.quantityOnHand % 1 == 0
+                        ? i.quantityOnHand.toInt().toString()
+                        : i.quantityOnHand.toStringAsFixed(1);
+                    return DropdownMenuItem(
+                      value: i,
+                      child: Text('${i.name} ($qty ${i.unit})',
+                          overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (v) => setState(() => _item = v),
+                ),
               ),
               loading: () => const LoadingView(),
               error: (e, _) => ErrorView(message: '$e'),
@@ -250,11 +249,6 @@ class _RecordActionScreenState extends ConsumerState<RecordActionScreen> {
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
               textAlign: TextAlign.center,
               decoration: InputDecoration(
-                hintText: '0',
-                hintStyle: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textMuted),
                 suffix: _item != null
                     ? Text(_item!.unit,
                         style: const TextStyle(
@@ -264,12 +258,14 @@ class _RecordActionScreenState extends ConsumerState<RecordActionScreen> {
             ),
 
             const SizedBox(height: 16),
-            TextField(
-              controller: _notesCtrl,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: l10n.notesOptional,
-                prefixIcon: Icon(Icons.notes_rounded),
+            AppLabeledField(
+              labelText: l10n.notesOptional,
+              child: TextField(
+                controller: _notesCtrl,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
               ),
             ),
 

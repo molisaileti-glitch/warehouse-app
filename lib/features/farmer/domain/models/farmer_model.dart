@@ -5,7 +5,7 @@ class FarmerCreateInput {
   final String? middleName;
   final String lastName;
   final String sex;
-  final String idType;
+  final String? idType;
   final String idNumber;
   final String dob;
   final String phoneNumber;
@@ -15,12 +15,12 @@ class FarmerCreateInput {
   final int secondaryCrop;
   final int amcos;
   final int mcu;
-  final String memberType;
+  final String? memberType;
   final String? ttbNumber;
   final String? tinNumber;
   final String? voterId;
   final String? driversLicense;
-  final String maritalStatus;
+  final String? maritalStatus;
   final double? noOfShares;
 
   const FarmerCreateInput({
@@ -28,7 +28,7 @@ class FarmerCreateInput {
     this.middleName,
     required this.lastName,
     required this.sex,
-    required this.idType,
+    this.idType,
     required this.idNumber,
     required this.dob,
     required this.phoneNumber,
@@ -38,12 +38,12 @@ class FarmerCreateInput {
     required this.secondaryCrop,
     required this.amcos,
     required this.mcu,
-    required this.memberType,
+    this.memberType,
     this.ttbNumber,
     this.tinNumber,
     this.voterId,
     this.driversLicense,
-    required this.maritalStatus,
+    this.maritalStatus,
     this.noOfShares,
   });
 
@@ -53,8 +53,8 @@ class FarmerCreateInput {
       if (_hasValue(middleName)) 'middleName': middleName!.trim(),
       'lastName': lastName,
       'sex': sex,
-      'idType': idType,
-      'idNumber': idNumber,
+      if (_hasValue(idType)) 'idType': idType!.trim(),
+      if (_hasValue(idNumber)) 'idNumber': idNumber.trim(),
       'dob': dob,
       'phoneNumber': phoneNumber,
       if (_hasValue(tumeNumber)) 'tumeNumber': tumeNumber!.trim(),
@@ -65,12 +65,12 @@ class FarmerCreateInput {
       'amcos': amcos,
       'mcu': mcu,
       'educationLevel': 'PRIMARY',
-      'memberType': memberType,
+      if (_hasValue(memberType)) 'memberType': memberType!.trim(),
       if (_hasValue(ttbNumber)) 'ttbNumber': ttbNumber!.trim(),
       if (_hasValue(tinNumber)) 'tinNumber': tinNumber!.trim(),
       if (_hasValue(voterId)) 'voterId': voterId!.trim(),
       if (_hasValue(driversLicense)) 'driversLicense': driversLicense!.trim(),
-      'maritalStatus': maritalStatus,
+      if (_hasValue(maritalStatus)) 'maritalStatus': maritalStatus!.trim(),
       if (noOfShares != null) 'noOfShares': noOfShares,
     };
   }
@@ -171,7 +171,7 @@ class FarmerModel {
       driversLicense: _nullableString(json['driversLicense']),
       fingerprintCaptured: _bool(json['fingerprintCaptured']),
       uuid: _nullableString(json['uuid']),
-      maritalStatus: _string(json['maritalStatus'], fallback: 'SINGLE'),
+      maritalStatus: _string(json['maritalStatus']),
       noOfShares: _double(json['noOfShares']),
       createdAt: _date(json['createdAt']),
       updatedAt: _date(json['updatedAt']),

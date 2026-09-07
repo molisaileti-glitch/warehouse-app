@@ -223,9 +223,16 @@ class DriftFarmerRepository implements FarmerRepository {
     for (final farmer in farmers) {
       final serverId = farmer.serverId;
       final farmerUuid = farmer.uuid?.trim();
-      if (farmerUuid == null || farmerUuid.isEmpty) continue;
+      if (serverId == null || serverId <= 0) {
+        developer.log(
+          '[FarmerSync] skip dependants for farmer '
+          'local=${farmer.id} uuid=$farmerUuid because server id is missing',
+          name: 'sync.farmer',
+        );
+        continue;
+      }
       var pulledForFarmer = 0;
-      final path = '/farmer-dependants/$farmerUuid';
+      final path = '/farmer-dependants/farmer/$serverId';
       try {
         final response = await _dio.get(path);
         final rows = _asList(response.data);
@@ -311,8 +318,18 @@ class DriftFarmerRepository implements FarmerRepository {
     final raw = data is Map<String, dynamic>
         ? data['content'] ?? data['records'] ?? data['results'] ?? data['data']
         : data;
+    if (raw == null && data is Map && _looksLikeDependant(data)) {
+      return [_asMap(data)];
+    }
     if (raw is! List) return const [];
     return raw.whereType<Map>().map((row) => _asMap(row)).toList();
+  }
+
+  bool _looksLikeDependant(Map<dynamic, dynamic> data) {
+    return data.containsKey('farmerId') ||
+        data.containsKey('farmerUuid') ||
+        data.containsKey('relationship') ||
+        data.containsKey('firstName');
   }
 
   String _previewForLog(Object? data) {

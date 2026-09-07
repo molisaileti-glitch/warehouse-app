@@ -1,7 +1,9 @@
 // lib/core/network/api_client.dart
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../auth/secure_token_storage.dart';
 import 'auth_interceptor.dart';
 import 'connectivity_interceptor.dart';
@@ -16,7 +18,7 @@ class ApiClient {
 
   ApiClient({
     required SecureTokenStorage storage,
-    required Future<bool> Function() onRefresh,
+    AsyncCallback? onSessionExpired,
   }) {
     dio = Dio(
       BaseOptions(
@@ -32,9 +34,12 @@ class ApiClient {
 
     dio.interceptors.addAll([
       ConnectivityInterceptor(),
-      AuthInterceptor(dio: dio, storage: storage, onRefresh: onRefresh),
+      AuthInterceptor(
+        storage: storage,
+        onSessionExpired: onSessionExpired,
+      ),
       LogInterceptor(
-        requestBody: false, // set true during dev only
+        requestBody: false,
         responseBody: false,
         error: true,
       ),
@@ -42,25 +47,38 @@ class ApiClient {
   }
 }
 
-// ── Providers ────────────────────────────────────────────────────────────────
+class SessionExpiredNotifier extends ChangeNotifier {
+  bool _expired = false;
+
+  bool get expired => _expired;
+
+  void expire() {
+    if (_expired) return;
+    _expired = true;
+    notifyListeners();
+  }
+
+  void clear() {
+    if (!_expired) return;
+    _expired = false;
+    notifyListeners();
+  }
+}
 
 final secureStorageProvider = Provider<SecureTokenStorage>(
   (_) => SecureTokenStorage(),
 );
 
-final apiClientProvider = Provider<ApiClient>((ref) {
-  final storage = ref.watch(secureStorageProvider);
-  return ApiClient(
-    storage: storage,
-    onRefresh: () async {
-      // Calls the auth repository's refresh — circular dependency avoided
-      // by reading the provider lazily at call-time.
-      final repo = ref.read(authRepositoryProvider);
-      return repo.refreshToken();
-    },
-  );
+final sessionExpiredProvider =
+    ChangeNotifierProvider<SessionExpiredNotifier>((ref) {
+  return SessionExpiredNotifier();
 });
 
-// Forward declaration — implemented in auth_repository.dart.
-// Needed here to break the circular dep between ApiClient ↔ AuthRepository.
-late final Provider<dynamic> authRepositoryProvider;
+final apiClientProvider = Provider<ApiClient>((ref) {
+  final storage = ref.watch(secureStorageProvider);
+  final sessionExpired = ref.watch(sessionExpiredProvider);
+  return ApiClient(
+    storage: storage,
+    onSessionExpired: () async => sessionExpired.expire(),
+  );
+});

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/components/input_field.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -375,19 +376,26 @@ class _RecordMovementSheetState extends ConsumerState<_RecordMovementSheet> {
             ));
           }).toList()),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: _qtyCtrl,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-                labelText: _type == 'count' ? l10n.actualCount : l10n.quantity,
-                prefixIcon: const Icon(Icons.numbers_rounded)),
+          AppLabeledField(
+            labelText: _type == 'count' ? l10n.actualCount : l10n.quantity,
+            child: TextFormField(
+              controller: _qtyCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.numbers_rounded),
+              ),
+            ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
+          AppLabeledField(
+            labelText: l10n.notesOptional,
+            child: TextFormField(
               controller: _notesCtrl,
-              decoration: InputDecoration(
-                  labelText: l10n.notesOptional,
-                  prefixIcon: const Icon(Icons.notes_rounded))),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.notes_rounded),
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           _loading
               ? const Center(

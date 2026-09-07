@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
@@ -1131,17 +1132,19 @@ class _WarehouseOperationFormScreenState
       ),
       if (_requiresMoisture(crop)) ...[
         const SizedBox(height: 14),
-        TextFormField(
-          controller: _moisture,
-          decoration: const InputDecoration(
-            labelText: 'Moisture content',
-            suffixText: '%',
-            prefixIcon: Icon(Icons.water_drop_outlined),
+        AppLabeledField(
+          labelText: 'Moisture content',
+          child: TextFormField(
+            controller: _moisture,
+            decoration: const InputDecoration(
+              suffixText: '%',
+              prefixIcon: Icon(Icons.water_drop_outlined),
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
           ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-          ],
         ),
       ],
       const SizedBox(height: 16),
@@ -1279,38 +1282,44 @@ class _WarehouseOperationFormScreenState
   Widget _dispatchFields() {
     return Column(
       children: [
-        DropdownButtonFormField<String>(
-          initialValue: _recipientType,
-          decoration: const InputDecoration(
-            labelText: 'Recipient type',
-            prefixIcon: Icon(Icons.person_pin_outlined),
-          ),
-          items: WarehouseRecipientType.values
-              .map(
-                (value) => DropdownMenuItem(value: value, child: Text(value)),
-              )
-              .toList(),
-          onChanged: (value) => setState(
-            () => _recipientType = value ?? WarehouseRecipientType.buyer,
+        AppLabeledField(
+          labelText: 'Recipient type',
+          child: DropdownButtonFormField<String>(
+            initialValue: _recipientType,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.person_pin_outlined),
+            ),
+            items: WarehouseRecipientType.values
+                .map(
+                  (value) => DropdownMenuItem(value: value, child: Text(value)),
+                )
+                .toList(),
+            onChanged: (value) => setState(
+              () => _recipientType = value ?? WarehouseRecipientType.buyer,
+            ),
           ),
         ),
         const SizedBox(height: 10),
-        TextFormField(
-          controller: _recipientName,
-          decoration: const InputDecoration(
-            labelText: 'Recipient name',
-            prefixIcon: Icon(Icons.person_outline),
+        AppLabeledField(
+          labelText: 'Recipient name',
+          child: TextFormField(
+            controller: _recipientName,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+            validator: _required,
           ),
-          validator: _required,
         ),
         const SizedBox(height: 10),
-        TextFormField(
-          controller: _recipientPhone,
-          decoration: const InputDecoration(
-            labelText: 'Recipient phone (Optional)',
-            prefixIcon: Icon(Icons.phone_outlined),
+        AppLabeledField(
+          labelText: 'Recipient phone (Optional)',
+          child: TextFormField(
+            controller: _recipientPhone,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.phone_outlined),
+            ),
+            keyboardType: TextInputType.phone,
           ),
-          keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 10),
       ],
@@ -1320,35 +1329,39 @@ class _WarehouseOperationFormScreenState
   Widget _adjustmentFields() {
     return Column(
       children: [
-        DropdownButtonFormField<String>(
-          initialValue: _adjustmentType,
-          decoration: const InputDecoration(
-            labelText: 'Adjustment type',
-            prefixIcon: Icon(Icons.swap_vert_rounded),
-          ),
-          items: StockAdjustmentType.values
-              .map(
-                (value) => DropdownMenuItem(value: value, child: Text(value)),
-              )
-              .toList(),
-          onChanged: (value) => setState(
-            () => _adjustmentType = value ?? StockAdjustmentType.increase,
+        AppLabeledField(
+          labelText: 'Adjustment type',
+          child: DropdownButtonFormField<String>(
+            initialValue: _adjustmentType,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.swap_vert_rounded),
+            ),
+            items: StockAdjustmentType.values
+                .map(
+                  (value) => DropdownMenuItem(value: value, child: Text(value)),
+                )
+                .toList(),
+            onChanged: (value) => setState(
+              () => _adjustmentType = value ?? StockAdjustmentType.increase,
+            ),
           ),
         ),
         const SizedBox(height: 10),
-        DropdownButtonFormField<String>(
-          initialValue: _reason,
-          decoration: const InputDecoration(
-            labelText: 'Reason',
-            prefixIcon: Icon(Icons.info_outline),
+        AppLabeledField(
+          labelText: 'Reason',
+          child: DropdownButtonFormField<String>(
+            initialValue: _reason,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.info_outline),
+            ),
+            items: StockAdjustmentReason.values
+                .map(
+                  (value) => DropdownMenuItem(value: value, child: Text(value)),
+                )
+                .toList(),
+            onChanged: (value) =>
+                setState(() => _reason = value ?? StockAdjustmentReason.other),
           ),
-          items: StockAdjustmentReason.values
-              .map(
-                (value) => DropdownMenuItem(value: value, child: Text(value)),
-              )
-              .toList(),
-          onChanged: (value) =>
-              setState(() => _reason = value ?? StockAdjustmentReason.other),
         ),
         const SizedBox(height: 10),
       ],

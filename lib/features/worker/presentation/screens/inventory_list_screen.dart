@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/components/input_field.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/router/app_router.dart';
@@ -325,36 +326,59 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 20),
-              TextFormField(
+              AppLabeledField(
+                labelText: l10n.itemName,
+                child: TextFormField(
                   controller: _nameCtrl,
-                  decoration: InputDecoration(labelText: l10n.itemName),
+                  decoration: const InputDecoration(),
                   validator: (v) =>
-                      (v?.isEmpty ?? true) ? l10n.requiredField : null),
+                      (v?.isEmpty ?? true) ? l10n.requiredField : null,
+                ),
+              ),
               const SizedBox(height: 10),
               Row(children: [
                 Expanded(
+                  child: AppLabeledField(
+                    labelText: l10n.sku,
                     child: TextFormField(
-                        controller: _skuCtrl,
-                        decoration: InputDecoration(labelText: l10n.sku))),
+                      controller: _skuCtrl,
+                      decoration: const InputDecoration(),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
+                  child: AppLabeledField(
+                    labelText: l10n.category,
                     child: TextFormField(
-                        controller: _catCtrl,
-                        decoration: InputDecoration(labelText: l10n.category))),
+                      controller: _catCtrl,
+                      decoration: const InputDecoration(),
+                    ),
+                  ),
+                ),
               ]),
               const SizedBox(height: 10),
               Row(children: [
                 Expanded(
+                  child: AppLabeledField(
+                    labelText: l10n.unit,
                     child: TextFormField(
-                        controller: _unitCtrl,
-                        decoration: InputDecoration(labelText: l10n.unit))),
+                      controller: _unitCtrl,
+                      decoration: const InputDecoration(),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
+                  child: AppLabeledField(
+                    labelText: l10n.reorderLevel,
                     child: TextFormField(
-                        controller: _reorderCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration:
-                            InputDecoration(labelText: l10n.reorderLevel))),
+                      controller: _reorderCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(),
+                    ),
+                  ),
+                ),
               ]),
               const SizedBox(height: 24),
               _loading

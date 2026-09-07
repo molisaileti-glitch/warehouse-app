@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/enums/sync_status.dart';
@@ -550,30 +551,34 @@ class _PasswordField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: TextInputType.visiblePassword,
-      autocorrect: false,
-      enableSuggestions: false,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.lock_outline_rounded),
-        suffixIcon: IconButton(
-          onPressed: onToggle,
-          icon: Icon(
-            obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+    return AppLabeledField(
+      labelText: label,
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: TextInputType.visiblePassword,
+        autocorrect: false,
+        enableSuggestions: false,
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.lock_outline_rounded),
+          suffixIcon: IconButton(
+            onPressed: onToggle,
+            icon: Icon(
+              obscure
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+            ),
           ),
         ),
+        validator: validator ??
+            (value) {
+              if (value == null || value.isEmpty) return l10n.requiredField;
+              if (value.length < 6) {
+                return l10n.passwordMinLength;
+              }
+              return null;
+            },
       ),
-      validator: validator ??
-          (value) {
-            if (value == null || value.isEmpty) return l10n.requiredField;
-            if (value.length < 6) {
-              return l10n.passwordMinLength;
-            }
-            return null;
-          },
     );
   }
 }

@@ -1,10 +1,40 @@
 // lib/core/components/input_field.dart
 //
-// Shared outlined form fields with labels kept visible on the border.
+// Shared outlined form fields with labels above the field.
 
 import 'package:flutter/material.dart';
 
 String optionalLabel(String label) => '$label (Optional)';
+
+class AppLabeledField extends StatelessWidget {
+  final String labelText;
+  final Widget child;
+
+  const AppLabeledField({
+    super.key,
+    required this.labelText,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          labelText,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 6),
+        child,
+      ],
+    );
+  }
+}
 
 class AppTextFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -20,8 +50,6 @@ class AppTextFormField extends StatelessWidget {
   final void Function(String)? onFieldSubmitted;
   final VoidCallback? onTap;
   final bool readOnly;
-  final FloatingLabelBehavior? floatingLabelBehavior;
-  final bool useFloatingLabel;
 
   const AppTextFormField({
     super.key,
@@ -38,55 +66,31 @@ class AppTextFormField extends StatelessWidget {
     this.onFieldSubmitted,
     this.onTap,
     this.readOnly = false,
-    this.floatingLabelBehavior,
-    this.useFloatingLabel = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!useFloatingLabel) ...[
-          Text(
-            labelText,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          autocorrect: autocorrect,
-          textCapitalization: textCapitalization,
-          readOnly: readOnly,
-          onTap: onTap,
-          decoration: InputDecoration(
-            labelText: useFloatingLabel ? labelText : null,
-            hintText: hintText ?? (!useFloatingLabel ? labelText : null),
-            floatingLabelBehavior: useFloatingLabel
-                ? (floatingLabelBehavior ?? FloatingLabelBehavior.always)
-                : null,
-            prefixIcon: Icon(icon),
-            suffixIcon: suffixIcon,
-          ),
-          validator: validator,
-          onFieldSubmitted: onFieldSubmitted,
-        ),
-      ],
+    final field = TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      autocorrect: autocorrect,
+      textCapitalization: textCapitalization,
+      readOnly: readOnly,
+      onTap: onTap,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+      ),
+      validator: validator,
+      onFieldSubmitted: onFieldSubmitted,
     );
+
+    return AppLabeledField(labelText: labelText, child: field);
   }
 }
 
-/// Dropdown counterpart to [AppTextFormField] — same "label above, no
-/// floating label" look, so business type / region selectors match the
-/// text fields visually. Relies on the same global InputDecorationTheme
-/// as AppTextFormField (no border colors hardcoded here on purpose).
+/// Dropdown counterpart to [AppTextFormField].
 class AppDropdownFormField<T> extends StatelessWidget {
   final String labelText;
   final IconData icon;
@@ -95,8 +99,6 @@ class AppDropdownFormField<T> extends StatelessWidget {
   final void Function(T?) onChanged;
   final String? Function(T?)? validator;
   final String? hintText;
-  final FloatingLabelBehavior? floatingLabelBehavior;
-  final bool useFloatingLabel;
 
   const AppDropdownFormField({
     super.key,
@@ -107,43 +109,21 @@ class AppDropdownFormField<T> extends StatelessWidget {
     this.value,
     this.validator,
     this.hintText,
-    this.floatingLabelBehavior,
-    this.useFloatingLabel = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!useFloatingLabel) ...[
-          Text(
-            labelText,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        DropdownButtonFormField<T>(
-          initialValue: value,
-          items: items,
-          onChanged: onChanged,
-          validator: validator,
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: useFloatingLabel ? labelText : null,
-            hintText: hintText ?? (!useFloatingLabel ? labelText : null),
-            floatingLabelBehavior: useFloatingLabel
-                ? (floatingLabelBehavior ?? FloatingLabelBehavior.always)
-                : null,
-            prefixIcon: Icon(icon),
-          ),
-          hint: hintText != null ? Text(hintText!) : null,
-        ),
-      ],
+    final field = DropdownButtonFormField<T>(
+      initialValue: value,
+      items: items,
+      onChanged: onChanged,
+      validator: validator,
+      isExpanded: true,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon),
+      ),
     );
+
+    return AppLabeledField(labelText: labelText, child: field);
   }
 }

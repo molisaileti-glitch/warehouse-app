@@ -54,6 +54,7 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
             farmer.middleName,
             farmer.lastName,
           ].whereType<String>().where((v) => v.isNotEmpty).join(' ');
+          final idLine = _idLine(farmer.idType, farmer.idNumber);
 
           return CustomScrollView(
             slivers: [
@@ -88,11 +89,13 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${farmer.idType}: ${farmer.idNumber}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
+                      if (idLine != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          idLine,
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
                       Text(
                         farmer.phoneNumber,
                         style: const TextStyle(color: Colors.white70),
@@ -118,13 +121,11 @@ class _FarmerDetailScreenState extends ConsumerState<FarmerDetailScreen> {
                         ),
                         _DetailRow(
                           label: l10n.memberType,
-                          value:
-                              localizedReferenceValue(l10n, farmer.memberType),
+                          value: _referenceOrDash(l10n, farmer.memberType),
                         ),
                         _DetailRow(
                           label: l10n.maritalStatus,
-                          value: localizedReferenceValue(
-                              l10n, farmer.maritalStatus),
+                          value: _referenceOrDash(l10n, farmer.maritalStatus),
                         ),
                         _DetailRow(
                           label: l10n.mainCrop,
@@ -423,4 +424,17 @@ class _DetailRow extends StatelessWidget {
       ),
     );
   }
+}
+
+String? _idLine(String idType, String idNumber) {
+  final type = idType.trim();
+  final number = idNumber.trim();
+  if (type.isEmpty || number.isEmpty) return null;
+  return '$type: $number';
+}
+
+String _referenceOrDash(AppLocalizations l10n, String value) {
+  final text = value.trim();
+  if (text.isEmpty) return '-';
+  return localizedReferenceValue(l10n, text);
 }

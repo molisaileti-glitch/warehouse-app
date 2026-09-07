@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/repositories/auth_repository.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
@@ -182,6 +183,8 @@ class _LoginHeader extends StatelessWidget {
 }
 
 class _LoginCard extends StatelessWidget {
+  static const String _appVersion = '1.0.0+1';
+
   final GlobalKey<FormState> formKey;
   final TextEditingController emailCtrl;
   final TextEditingController passCtrl;
@@ -271,56 +274,58 @@ class _LoginCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
             ],
-            TextFormField(
-              controller: emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: l10n.emailAddress,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                prefixIcon: const Icon(Icons.email_outlined),
+            AppLabeledField(
+              labelText: l10n.emailAddress,
+              child: TextFormField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return l10n.validationEmailRequired;
+                  }
+                  if (!value.contains('@')) {
+                    return l10n.validationEmailInvalid;
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return l10n.validationEmailRequired;
-                }
-                if (!value.contains('@')) {
-                  return l10n.validationEmailInvalid;
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: passCtrl,
-              keyboardType: TextInputType.visiblePassword,
-              obscureText: obscure,
-              autocorrect: false,
-              enableSuggestions: false,
-              decoration: InputDecoration(
-                labelText: l10n.password,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                prefixIcon: const Icon(Icons.lock_outline_rounded),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscure
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
+            AppLabeledField(
+              labelText: l10n.password,
+              child: TextFormField(
+                controller: passCtrl,
+                keyboardType: TextInputType.visiblePassword,
+                obscureText: obscure,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed: onTogglePassword,
+                    tooltip: obscure ? l10n.showPassword : l10n.hidePassword,
                   ),
-                  onPressed: onTogglePassword,
-                  tooltip: obscure ? l10n.showPassword : l10n.hidePassword,
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return l10n.validationPasswordRequired;
+                  }
+                  if (value.length < 6) {
+                    return l10n.validationPasswordTooShort;
+                  }
+                  return null;
+                },
+                onFieldSubmitted: (_) => onSubmit(),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return l10n.validationPasswordRequired;
-                }
-                if (value.length < 6) {
-                  return l10n.validationPasswordTooShort;
-                }
-                return null;
-              },
-              onFieldSubmitted: (_) => onSubmit(),
             ),
             const SizedBox(height: 22),
             loading
@@ -345,6 +350,15 @@ class _LoginCard extends StatelessWidget {
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.appVersion(_appVersion),
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -444,20 +458,24 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
               _AuthErrorBox(message: _error!),
               const SizedBox(height: 14),
             ],
-            TextFormField(
-              controller: _emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: l10n.emailAddress,
-                prefixIcon: const Icon(Icons.email_outlined),
+            AppLabeledField(
+              labelText: l10n.emailAddress,
+              child: TextFormField(
+                controller: _emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return l10n.requiredField;
+                  }
+                  return value.contains('@')
+                      ? null
+                      : l10n.validationEmailInvalid;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return l10n.requiredField;
-                }
-                return value.contains('@') ? null : l10n.validationEmailInvalid;
-              },
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -550,16 +568,18 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
               _AuthErrorBox(message: _error!),
               const SizedBox(height: 14),
             ],
-            TextFormField(
-              controller: _tokenCtrl,
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: l10n.resetToken,
-                prefixIcon: const Icon(Icons.key_outlined),
+            AppLabeledField(
+              labelText: l10n.resetToken,
+              child: TextFormField(
+                controller: _tokenCtrl,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.key_outlined),
+                ),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? l10n.requiredField
+                    : null,
               ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? l10n.requiredField
-                  : null,
             ),
             const SizedBox(height: 14),
             _ResetPasswordField(
@@ -656,30 +676,34 @@ class _ResetPasswordField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: TextInputType.visiblePassword,
-      autocorrect: false,
-      enableSuggestions: false,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.lock_outline_rounded),
-        suffixIcon: IconButton(
-          onPressed: onToggle,
-          icon: Icon(
-            obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+    return AppLabeledField(
+      labelText: label,
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: TextInputType.visiblePassword,
+        autocorrect: false,
+        enableSuggestions: false,
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.lock_outline_rounded),
+          suffixIcon: IconButton(
+            onPressed: onToggle,
+            icon: Icon(
+              obscure
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+            ),
           ),
         ),
+        validator: validator ??
+            (value) {
+              if (value == null || value.isEmpty) return l10n.requiredField;
+              if (value.length < 6) {
+                return l10n.passwordMinLength;
+              }
+              return null;
+            },
       ),
-      validator: validator ??
-          (value) {
-            if (value == null || value.isEmpty) return l10n.requiredField;
-            if (value.length < 6) {
-              return l10n.passwordMinLength;
-            }
-            return null;
-          },
     );
   }
 }

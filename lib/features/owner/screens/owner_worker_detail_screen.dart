@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/providers/auth_provider.dart';
@@ -78,7 +79,8 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
               ? const AsyncValue<User?>.data(null)
               : ref.watch(_workerMcuProvider(worker.mcu!));
           final amcosName = _amcosLabel(amcosAsync, worker.amcos, l10n);
-          final mcuName = _mcuLabel(mcuAsync, amcosAsync, worker.mcu, l10n);
+          final warehouseOwnerName =
+              _warehouseOwnerLabel(mcuAsync, amcosAsync, worker.mcu, l10n);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -136,7 +138,10 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
                         value: worker.isActive ? l10n.active : l10n.inactive,
                       ),
                       _DetailRow(label: l10n.amcos, value: amcosName),
-                      _DetailRow(label: l10n.mcu, value: mcuName),
+                      _DetailRow(
+                        label: '${l10n.warehouse} ${l10n.owner}',
+                        value: warehouseOwnerName,
+                      ),
                       warehouseAsync.maybeWhen(
                         data: (warehouse) => _DetailRow(
                           label: l10n.warehouse,
@@ -189,7 +194,7 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
     );
   }
 
-  String _mcuLabel(
+  String _warehouseOwnerLabel(
     AsyncValue<User?> async,
     AsyncValue<Amcos?> amcos,
     int? id,
@@ -204,10 +209,10 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
         if (amcosMcuName != null && amcosMcuName.isNotEmpty) {
           return amcosMcuName;
         }
-        return 'MCU #$id';
+        return 'Owner #$id';
       },
       loading: () => l10n.loading,
-      orElse: () => 'MCU #$id',
+      orElse: () => 'Owner #$id',
     );
   }
 
@@ -436,75 +441,84 @@ class _EditWorkerSheetState extends ConsumerState<_EditWorkerSheet> {
                 ),
                 const SizedBox(height: 14),
               ],
-              TextFormField(
-                controller: _nameCtrl,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(
-                  labelText: l10n.fullName,
-                  prefixIcon: const Icon(Icons.person_outline_rounded),
+              AppLabeledField(
+                labelText: l10n.fullName,
+                child: TextFormField(
+                  controller: _nameCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person_outline_rounded),
+                  ),
+                  validator: _required,
                 ),
-                validator: _required,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: l10n.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
+              AppLabeledField(
+                labelText: l10n.emailAddress,
+                child: TextFormField(
+                  controller: _emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.requiredField;
+                    }
+                    return value.contains('@')
+                        ? null
+                        : l10n.validationEmailInvalid;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.requiredField;
-                  }
-                  return value.contains('@')
-                      ? null
-                      : l10n.validationEmailInvalid;
-                },
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _phoneCtrl,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: l10n.phoneNumber,
-                  prefixIcon: const Icon(Icons.phone_outlined),
+              AppLabeledField(
+                labelText: l10n.phoneNumber,
+                child: TextFormField(
+                  controller: _phoneCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.phone_outlined),
+                  ),
+                  validator: _required,
                 ),
-                validator: _required,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _warehouseId,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: l10n.assignToWarehouse,
-                  prefixIcon: const Icon(Icons.warehouse_rounded),
-                ),
-                selectedItemBuilder: (context) => warehouses
-                    .map(
-                      (warehouse) => Text(
-                        warehouse.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )
-                    .toList(),
-                items: warehouses
-                    .map(
-                      (warehouse) => DropdownMenuItem<String>(
-                        value: warehouse.id,
-                        child: Text(
-                          warehouse.amcosName == null
-                              ? warehouse.name
-                              : '${warehouse.name} - ${warehouse.amcosName}',
+              AppLabeledField(
+                labelText: l10n.assignToWarehouse,
+                child: DropdownButtonFormField<String>(
+                  initialValue: _warehouseId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.warehouse_rounded),
+                  ),
+                  selectedItemBuilder: (context) => warehouses
+                      .map(
+                        (warehouse) => Text(
+                          warehouse.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) => setState(() => _warehouseId = value),
-                validator: (value) => value == null ? l10n.requiredField : null,
+                      )
+                      .toList(),
+                  items: warehouses
+                      .map(
+                        (warehouse) => DropdownMenuItem<String>(
+                          value: warehouse.id,
+                          child: Text(
+                            warehouse.amcosName == null
+                                ? warehouse.name
+                                : '${warehouse.name} - ${warehouse.amcosName}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) => setState(() => _warehouseId = value),
+                  validator: (value) =>
+                      value == null ? l10n.requiredField : null,
+                ),
               ),
               const SizedBox(height: 12),
               SwitchListTile(

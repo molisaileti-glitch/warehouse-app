@@ -108,7 +108,15 @@ class SyncManager {
 
     progress(5, 'Finishing sync');
     await _syncDao.purgeSync();
-    return SyncResult(pushed: pushed, pulled: pulled, errors: errors);
+    final remainingPending = await _syncDao.getPendingCount();
+    final conflictCount = (await _syncDao.getConflicts()).length;
+    return SyncResult(
+      pushed: pushed,
+      pulled: pulled,
+      errors: errors,
+      remainingPending: remainingPending,
+      conflicts: conflictCount,
+    );
   }
 
   Future<int> pullReferenceData({DateTime? since}) {
@@ -977,12 +985,17 @@ class SyncResult {
   final int pushed;
   final int pulled;
   final List<String> errors;
+  final int remainingPending;
+  final int conflicts;
   bool get hasErrors => errors.isNotEmpty;
+  bool get hasRemainingWork => remainingPending > 0 || conflicts > 0;
 
   const SyncResult({
     required this.pushed,
     required this.pulled,
     required this.errors,
+    required this.remainingPending,
+    required this.conflicts,
   });
 }
 
@@ -1038,18 +1051,31 @@ class SyncNotifier extends StateNotifier<SyncState> {
       totalSteps: 5,
       progressMessage: 'Preparing local queue',
     );
-    final result = await _manager.sync(
-      onProgress: (progress) {
-        state = SyncState.syncing(
-          currentStep: progress.currentStep,
-          totalSteps: progress.totalSteps,
-          progressMessage: progress.message,
-        );
-      },
-    );
-    state = result.hasErrors
-        ? SyncState.error(result.errors.first)
-        : SyncState.done(pushed: result.pushed, pulled: result.pulled);
+    try {
+      final result = await _manager.sync(
+        onProgress: (progress) {
+          state = SyncState.syncing(
+            currentStep: progress.currentStep,
+            totalSteps: progress.totalSteps,
+            progressMessage: progress.message,
+          );
+        },
+      );
+      state = result.hasErrors
+          ? SyncState.error(
+              result.errors.first,
+              remainingPending: result.remainingPending,
+              conflicts: result.conflicts,
+            )
+          : SyncState.done(
+              pushed: result.pushed,
+              pulled: result.pulled,
+              remainingPending: result.remainingPending,
+              conflicts: result.conflicts,
+            );
+    } catch (e) {
+      state = SyncState.error(e.toString());
+    }
   }
 }
 
@@ -1059,6 +1085,8 @@ class SyncState {
   final String? error;
   final int pushed;
   final int pulled;
+  final int remainingPending;
+  final int conflicts;
   final int currentStep;
   final int totalSteps;
   final String progressMessage;
@@ -1069,6 +1097,8 @@ class SyncState {
     this.error,
     this.pushed = 0,
     this.pulled = 0,
+    this.remainingPending = 0,
+    this.conflicts = 0,
     this.currentStep = 0,
     this.totalSteps = 5,
     this.progressMessage = '',
@@ -1085,10 +1115,31 @@ class SyncState {
           totalSteps: totalSteps,
           progressMessage: progressMessage,
         );
-  factory SyncState.done({required int pushed, required int pulled}) =>
-      SyncState(isDone: true, pushed: pushed, pulled: pulled);
-  factory SyncState.error(String error) => SyncState(error: error);
+  factory SyncState.done({
+    required int pushed,
+    required int pulled,
+    int remainingPending = 0,
+    int conflicts = 0,
+  }) =>
+      SyncState(
+        isDone: true,
+        pushed: pushed,
+        pulled: pulled,
+        remainingPending: remainingPending,
+        conflicts: conflicts,
+      );
+  factory SyncState.error(
+    String error, {
+    int remainingPending = 0,
+    int conflicts = 0,
+  }) =>
+      SyncState(
+        error: error,
+        remainingPending: remainingPending,
+        conflicts: conflicts,
+      );
   bool get hasErrors => error != null;
+  bool get hasRemainingWork => remainingPending > 0 || conflicts > 0;
   double get progressFraction {
     if (totalSteps <= 0) return 0;
     return (currentStep / totalSteps).clamp(0, 1).toDouble();

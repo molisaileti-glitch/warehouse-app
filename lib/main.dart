@@ -10,6 +10,7 @@ import 'package:warehouse_app/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/providers/locale_provider.dart';
+import 'core/network/api_client.dart' show sessionExpiredProvider;
 
 final appScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -44,6 +45,7 @@ class WarehouseApp extends ConsumerStatefulWidget {
 class _WarehouseAppState extends ConsumerState<WarehouseApp> {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool? _wasOffline;
+  bool _sessionExpiredMessageShown = false;
 
   @override
   void initState() {
@@ -100,10 +102,35 @@ class _WarehouseAppState extends ConsumerState<WarehouseApp> {
     });
   }
 
+  void _showSessionExpiredMessage() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final messenger = appScaffoldMessengerKey.currentState;
+      if (messenger == null) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
+            content: Text('Session expired. Please log in again.'),
+          ),
+        );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final currentLang = ref.watch(localeProvider);
+    ref.listen(sessionExpiredProvider, (_, notifier) {
+      if (notifier.expired && !_sessionExpiredMessageShown) {
+        _sessionExpiredMessageShown = true;
+        _showSessionExpiredMessage();
+      }
+      if (!notifier.expired) {
+        _sessionExpiredMessageShown = false;
+      }
+    });
 
     return MaterialApp.router(
       title: 'StockPilot',

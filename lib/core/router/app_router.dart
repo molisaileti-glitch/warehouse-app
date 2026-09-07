@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
+import '../network/api_client.dart' show sessionExpiredProvider;
 import '../enums/sync_status.dart';
 import '../../features/onboarding/screens/language_picker_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -193,8 +194,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // ── Step 3: onboarding already done — normal auth flow ──────────────
       final authState = ref.read(authProvider).valueOrNull;
+      final sessionExpired = ref.read(sessionExpiredProvider).expired;
       final onAnyPreLoginScreen =
           onLangPicker || onOnboarding || onLogin || onRegister || onSplash;
+
+      if (sessionExpired) {
+        if (onLogin || onLangPicker || onRegister) return null;
+        return AppRoutes.login;
+      }
 
       if (authState == null || authState.status == AuthStatus.loading) {
         return onSplash ? null : AppRoutes.splash;
@@ -476,5 +483,6 @@ class _AppStateListenable extends ChangeNotifier {
   _AppStateListenable(Ref ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
     ref.listen(onboardingProvider, (_, __) => notifyListeners());
+    ref.listen(sessionExpiredProvider, (_, __) => notifyListeners());
   }
 }

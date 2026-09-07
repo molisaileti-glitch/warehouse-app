@@ -88,6 +88,8 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                       farmer.middleName,
                       farmer.lastName,
                     ].whereType<String>().where((v) => v.isNotEmpty).join(' ');
+                    final idLine =
+                        _farmerIdLine(farmer.idType, farmer.idNumber);
                     return AppCard(
                       onTap: () => context.push(
                         AppRoutes.workerFarmerDetailFor(farmer.id),
@@ -114,13 +116,14 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                                     fontSize: 14,
                                   ),
                                 ),
-                                Text(
-                                  '${farmer.idType}: ${farmer.idNumber}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                if (idLine != null)
+                                  Text(
+                                    idLine,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
-                                ),
                                 if (farmer.amcosName != null)
                                   Text(
                                     farmer.amcosName!,
@@ -150,4 +153,11 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
       ),
     );
   }
+}
+
+String? _farmerIdLine(String idType, String idNumber) {
+  final type = idType.trim();
+  final number = idNumber.trim();
+  if (type.isEmpty || number.isEmpty) return null;
+  return '$type: $number';
 }

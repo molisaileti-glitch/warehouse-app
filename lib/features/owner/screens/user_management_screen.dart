@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/components/app_feedback.dart';
+import '../../../core/components/input_field.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/auth_provider.dart';
@@ -443,82 +444,92 @@ class _FormView extends StatelessWidget {
             ],
 
             // Full name field
-            TextFormField(
-              controller: nameCtrl,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: l10n.fullName,
-                prefixIcon: const Icon(Icons.person_outline_rounded),
+            AppLabeledField(
+              labelText: l10n.fullName,
+              child: TextFormField(
+                controller: nameCtrl,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.person_outline_rounded),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.enterWorkerName
+                    : null,
               ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? l10n.enterWorkerName : null,
             ),
             const SizedBox(height: 12),
 
             // Email field
-            TextFormField(
-              controller: emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: l10n.emailAddress,
-                prefixIcon: const Icon(Icons.email_outlined),
+            AppLabeledField(
+              labelText: l10n.emailAddress,
+              child: TextFormField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return l10n.enterWorkerEmail;
+                  if (!v.contains('@')) return l10n.validationEmailInvalid;
+                  return null;
+                },
               ),
-              validator: (v) {
-                if (v == null || v.isEmpty) return l10n.enterWorkerEmail;
-                if (!v.contains('@')) return l10n.validationEmailInvalid;
-                return null;
-              },
             ),
             const SizedBox(height: 12),
 
             // Phone number field
-            TextFormField(
-              controller: phoneCtrl,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: l10n.phoneNumber,
-                prefixIcon: const Icon(Icons.phone_outlined),
+            AppLabeledField(
+              labelText: l10n.phoneNumber,
+              child: TextFormField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.enterPhoneNumber
+                    : null,
               ),
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? l10n.enterPhoneNumber
-                  : null,
             ),
             const SizedBox(height: 12),
 
             // Password field
-            TextFormField(
-              controller: passwordCtrl,
-              obscureText: obscurePassword,
-              autocorrect: false,
-              enableSuggestions: false,
-              decoration: InputDecoration(
-                labelText: l10n.password,
-                prefixIcon: const Icon(Icons.lock_outline_rounded),
-                suffixIcon: IconButton(
-                  icon: Icon(obscurePassword
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined),
-                  onPressed: onTogglePassword,
+            AppLabeledField(
+              labelText: l10n.password,
+              child: TextFormField(
+                controller: passwordCtrl,
+                obscureText: obscurePassword,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined),
+                    onPressed: onTogglePassword,
+                  ),
                 ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return l10n.enterPassword;
+                  if (v.length < 6) {
+                    return l10n.passwordMinLength;
+                  }
+                  return null;
+                },
               ),
-              validator: (v) {
-                if (v == null || v.isEmpty) return l10n.enterPassword;
-                if (v.length < 6) {
-                  return l10n.passwordMinLength;
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 12),
 
             // Warehouse dropdown
             // The selected warehouse also silently provides the amcos ID.
-            DropdownButtonFormField<String>(
-              initialValue: selectedWarehouseId,
-              isExpanded: true,
-              decoration: InputDecoration(
-                labelText: l10n.assignToWarehouse,
+            AppLabeledField(
+              labelText: l10n.assignToWarehouse,
+              child: DropdownButtonFormField<String>(
+                initialValue: selectedWarehouseId,
+                isExpanded: true,
+                decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.warehouse_rounded),
                 helperText: l10n.amcosDerivedFromWarehouse,
                 helperStyle: const TextStyle(
@@ -526,7 +537,6 @@ class _FormView extends StatelessWidget {
                   color: AppColors.textMuted,
                 ),
               ),
-              hint: Text(l10n.selectWarehouse),
               selectedItemBuilder: (context) => warehouses
                   .map(
                     (w) => Text(
@@ -547,6 +557,7 @@ class _FormView extends StatelessWidget {
               onChanged: onWarehouseChanged,
               validator: (value) =>
                   value == null || value.isEmpty ? l10n.selectWarehouse : null,
+              ),
             ),
             const SizedBox(height: 28),
 

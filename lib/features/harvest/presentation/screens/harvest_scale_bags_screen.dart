@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
+import 'package:warehouse_app/core/components/input_field.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
@@ -129,25 +130,29 @@ class _HarvestScaleBagsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        controller: _tagCtrl,
-                        decoration: InputDecoration(
-                          labelText: l10n.bagTag,
-                          hintText: 'BAG-1234-5678',
-                          prefixIcon: Icon(Icons.qr_code_2_outlined),
+                      child: AppLabeledField(
+                        labelText: l10n.bagTag,
+                        child: TextFormField(
+                          controller: _tagCtrl,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.qr_code_2_outlined),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            const _BagTagInputFormatter(),
+                          ],
+                          validator: _bagTagValidator,
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          const _BagTagInputFormatter(),
-                        ],
-                        validator: _bagTagValidator,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    IconButton.filledTonal(
-                      tooltip: l10n.generateBagTag,
-                      onPressed: _generateBagTag,
-                      icon: const Icon(Icons.casino_outlined),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 23),
+                      child: IconButton.filledTonal(
+                        tooltip: l10n.generateBagTag,
+                        onPressed: _generateBagTag,
+                        icon: const Icon(Icons.casino_outlined),
+                      ),
                     ),
                   ],
                 ),
@@ -159,21 +164,23 @@ class _HarvestScaleBagsScreenState
                 ),
                 if (needsMoisture) ...[
                   const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _moistureCtrl,
-                    decoration: InputDecoration(
-                      labelText: l10n.moisture,
-                      suffixText: '%',
-                      prefixIcon: const Icon(Icons.water_drop_outlined),
+                  AppLabeledField(
+                    labelText: l10n.moisture,
+                    child: TextFormField(
+                      controller: _moistureCtrl,
+                      decoration: const InputDecoration(
+                        suffixText: '%',
+                        prefixIcon: Icon(Icons.water_drop_outlined),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      onChanged: (_) => setState(() {}),
+                      validator: _moistureValidator,
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                    ],
-                    onChanged: (_) => setState(() {}),
-                    validator: _moistureValidator,
                   ),
                 ],
               ],
