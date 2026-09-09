@@ -23,17 +23,6 @@ import 'package:warehouse_app/features/worker/presentation/providers/worker_prov
 const _maxRetries = 5;
 const _batchSize = 30;
 const _lastSyncKey = 'last_sync_timestamp';
-const _syncableEntityTypes = <String>{
-  'amcos',
-  'warehouses',
-  'users',
-  'farmers',
-  'farmerDependants',
-  'farmerHarvests',
-  'dispatches',
-  'stockCounts',
-  'stockAdjustments',
-};
 
 class SyncManager {
   final Dio _dio;
@@ -86,9 +75,7 @@ class SyncManager {
 
     progress(1, 'Preparing local queue');
 
-    // Recover any entries that were wrongly stuck in 'conflict' by a prior
-    // version of the sync logic that treated 400/422 as permanent conflicts.
-    await _syncDao.resetConflictsToPending();
+    await _syncDao.purgeUnsupportedEntityTypes();
 
     try {
       progress(2, 'Uploading pending records');
@@ -126,7 +113,7 @@ class SyncManager {
   Future<int> _push() async {
     final batch = await _syncDao.getNextBatch(
       limit: _batchSize,
-      entityTypes: _syncableEntityTypes,
+      entityTypes: backendSupportedSyncEntityTypes,
     );
     var successCount = 0;
 
@@ -145,14 +132,17 @@ class SyncManager {
         final status = e.response?.statusCode;
         developer.log(
           '[SyncPush] entity=${entry.entityType} operation=${entry.operation} '
-          'path=${e.requestOptions.path} status=$status response=${e.response?.data}',
+          'path=${e.requestOptions.path} status=$status '
+          'retry=${entry.retryCount + 1} '
+          'response=${e.response?.data} '
+          'payload=${_logPreview(_safeQueuedPayloadForLog(entry.payload))}',
           name: 'sync.push',
         );
-        if (status == 409) {
+        if (status == 409 || _isPermanentValidationConflict(e)) {
           await _syncDao.markConflict(entry.id);
           await _markEntityConflict(entry.entityType, entry.entityId);
         } else {
-          // 400/422 are validation errors — the payload may be fixable on the
+          // 400/422 are validation errors - the payload may be fixable on the
           // next sync (e.g. a parent reference that wasn't synced yet).
           // Treat them as retryable failures, not permanent conflicts.
           await _syncDao.recordFailureWithCount(entry.id, entry.retryCount + 1);
@@ -204,8 +194,15 @@ class SyncManager {
       await _resolveHarvestWarehouse(payload, entry.entityId);
       await _resolveHarvestFarmer(payload);
       _normalizeHarvestBagTags(payload);
+      _normalizeHarvestPayloadForPost(payload);
     }
     final path = _entityPath(entry.entityType, entry.entityId);
+    if (entry.entityType == 'farmerHarvests' && entry.operation == 'create') {
+      developer.log(
+        '[HarvestSync] POST payload=${_logPreview(payload)}',
+        name: 'sync.harvest',
+      );
+    }
 
     switch (entry.operation) {
       case 'create':
@@ -512,8 +509,7 @@ class SyncManager {
     final farmerUuid = payload['farmerUuid']?.toString();
     if (farmerUuid == null || farmerUuid.isEmpty) return;
     final serverId = await _farmerServerId(farmerUuid);
-    payload['farmer'] = serverId;
-    payload['guarantor'] = serverId;
+    payload['guarantor'] = serverId.toString();
   }
 
   Future<void> _resolveUserWarehouse(Map<String, dynamic> payload) async {
@@ -658,6 +654,25 @@ class SyncManager {
     return value;
   }
 
+  Object? _safeQueuedPayloadForLog(String payload) {
+    try {
+      return _redactForLog(jsonDecode(payload));
+    } catch (_) {
+      return payload;
+    }
+  }
+
+  bool _isPermanentValidationConflict(DioException error) {
+    final status = error.response?.statusCode;
+    if (status != 400 && status != 422) return false;
+
+    final text = error.response?.data?.toString().toLowerCase() ?? '';
+    return text.contains('already in use') ||
+        text.contains('already exist') ||
+        text.contains('already exists') ||
+        text.contains('duplicate');
+  }
+
   List<Map<String, dynamic>> _asList(Object? value) {
     final raw = value is Map<String, dynamic>
         ? value['content'] ??
@@ -768,6 +783,30 @@ class SyncManager {
       }
       bag.remove('tag');
     }
+  }
+
+  void _normalizeHarvestPayloadForPost(Map<String, dynamic> payload) {
+    if (payload['uom'] != null) {
+      payload['uom'] = payload['uom'].toString();
+    }
+    if (payload['guarantor'] != null) {
+      payload['guarantor'] = payload['guarantor'].toString();
+    }
+
+    payload.remove('farmer');
+    payload.remove('farmerName');
+    payload.remove('farmerPhoneNumber');
+    payload.remove('amcosName');
+    payload.remove('amcosUuid');
+    payload.remove('mcuName');
+    payload.remove('receivedBy');
+    payload.remove('receivedByName');
+    payload.remove('cropName');
+    payload.remove('cropGradeName');
+    payload.remove('warehouseId');
+    payload.remove('warehouseUuid');
+    payload.remove('collectionCenterId');
+    payload.remove('collectionCenterName');
   }
 
   String _logPreview(Object? data) {
@@ -1045,6 +1084,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
   SyncNotifier(this._manager) : super(const SyncState.idle());
 
   Future<void> runSync() async {
+    if (!mounted) return;
     if (state.isSyncing) return;
     state = const SyncState.syncing(
       currentStep: 1,
@@ -1054,6 +1094,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
     try {
       final result = await _manager.sync(
         onProgress: (progress) {
+          if (!mounted) return;
           state = SyncState.syncing(
             currentStep: progress.currentStep,
             totalSteps: progress.totalSteps,
@@ -1061,6 +1102,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
           );
         },
       );
+      if (!mounted) return;
       state = result.hasErrors
           ? SyncState.error(
               result.errors.first,
@@ -1074,6 +1116,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
               conflicts: result.conflicts,
             );
     } catch (e) {
+      if (!mounted) return;
       state = SyncState.error(e.toString());
     }
   }

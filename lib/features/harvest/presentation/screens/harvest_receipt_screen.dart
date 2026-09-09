@@ -145,6 +145,10 @@ class _HarvestReceiptScreenState extends ConsumerState<HarvestReceiptScreen> {
                   '${_formatWeight(harvest.packagingWeight)} $uom',
                 ),
                 _receiptRow(
+                  l10n.receiptMoisturePercent,
+                  '${_formatWeight(harvest.moistureContent)}%',
+                ),
+                _receiptRow(
                   l10n.receiptNet,
                   '${_formatWeight(harvest.netWeight)} $uom',
                   bold: true,

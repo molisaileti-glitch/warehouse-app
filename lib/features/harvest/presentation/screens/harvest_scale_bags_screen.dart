@@ -12,6 +12,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/harvest/domain/models/harvest_model.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_receiving_controller.dart';
+import 'package:warehouse_app/features/moisture/presentation/screens/moisture_reading_screen.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
@@ -35,13 +36,11 @@ class _HarvestScaleBagsScreenState
     extends ConsumerState<HarvestScaleBagsScreen> {
   final _bagFormKey = GlobalKey<FormState>();
   final _tagCtrl = TextEditingController();
-  final _moistureCtrl = TextEditingController(text: '0');
   bool _submitting = false;
 
   @override
   void dispose() {
     _tagCtrl.dispose();
-    _moistureCtrl.dispose();
     super.dispose();
   }
 
@@ -106,7 +105,6 @@ class _HarvestScaleBagsScreenState
     final unit =
         _selectedUnit(unitsAsync.valueOrNull ?? const [], session.uomId);
     final packagingWeight = _cropPackagingWeight(crop);
-    final needsMoisture = crop?.moistureContentComputation ?? false;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -162,27 +160,6 @@ class _HarvestScaleBagsScreenState
                   value: packagingWeight,
                   unit: scaleState.uom,
                 ),
-                if (needsMoisture) ...[
-                  const SizedBox(height: 14),
-                  AppLabeledField(
-                    labelText: l10n.moisture,
-                    child: TextFormField(
-                      controller: _moistureCtrl,
-                      decoration: const InputDecoration(
-                        suffixText: '%',
-                        prefixIcon: Icon(Icons.water_drop_outlined),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      onChanged: (_) => setState(() {}),
-                      validator: _moistureValidator,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -225,9 +202,7 @@ class _HarvestScaleBagsScreenState
           ),
           const SizedBox(height: 14),
           Text(
-            l10n.moistureReceiptMessage(
-              _formatWeight(_moistureContentValue(crop)),
-            ),
+            'Moisture reading will be requested when you add each bag.',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -418,7 +393,7 @@ class _HarvestScaleBagsScreenState
     _tagCtrl.selection = TextSelection.collapsed(offset: _tagCtrl.text.length);
   }
 
-  void _addBag(WeightScaleState scaleState, Crop? crop) {
+  Future<void> _addBag(WeightScaleState scaleState, Crop? crop) async {
     if (!(_bagFormKey.currentState?.validate() ?? false)) return;
     if (!scaleState.isConnected || !scaleState.isStreaming) {
       _showError(AppLocalizations.of(context)!.connectScaleBeforeBag);
@@ -438,7 +413,12 @@ class _HarvestScaleBagsScreenState
       _showError(AppLocalizations.of(context)!.packagingLessThanGross);
       return;
     }
-    final moistureContent = _moistureContentValue(crop);
+    final moistureContent = await askAndMeasureMoisture(
+      context: context,
+      cropName: crop?.name ?? AppLocalizations.of(context)!.crop,
+      maxMoistureContent: crop?.maxMoisureContent,
+    );
+    if (!mounted || moistureContent == null) return;
 
     ref
         .read(harvestReceivingControllerProvider(widget.warehouseId).notifier)
@@ -452,9 +432,6 @@ class _HarvestScaleBagsScreenState
         );
 
     _tagCtrl.clear();
-    if (crop?.moistureContentComputation != true) {
-      _moistureCtrl.text = '0';
-    }
     ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
   }
 
@@ -701,23 +678,8 @@ class _HarvestScaleBagsScreenState
     return digits.length == 8 ? null : 'Enter 8 digits';
   }
 
-  String? _moistureValidator(String? value) {
-    final l10n = AppLocalizations.of(context)!;
-    if (value == null || value.trim().isEmpty) return l10n.requiredField;
-    final parsed = double.tryParse(value.trim());
-    if (parsed == null) return l10n.enterValidNumber;
-    if (parsed < 0) return l10n.cannotBeNegative;
-    if (parsed > 100) return l10n.enterValidNumber;
-    return null;
-  }
-
   double _cropPackagingWeight(Crop? crop) {
     return crop?.packagingWeight ?? 0;
-  }
-
-  double _moistureContentValue(Crop? crop) {
-    if (crop?.moistureContentComputation != true) return 0;
-    return double.tryParse(_moistureCtrl.text.trim()) ?? 0;
   }
 
   String _farmerName(Farmer farmer) {

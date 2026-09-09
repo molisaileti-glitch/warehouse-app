@@ -10,6 +10,18 @@ import '../app_database.dart';
 
 part 'sync_queue_dao.g.dart';
 
+const backendSupportedSyncEntityTypes = <String>{
+  'amcos',
+  'warehouses',
+  'users',
+  'farmers',
+  'farmerDependants',
+  'farmerHarvests',
+  'dispatches',
+  'stockCounts',
+  'stockAdjustments',
+};
+
 @DriftAccessor(tables: [SyncQueue])
 class SyncQueueDao extends DatabaseAccessor<AppDatabase>
     with _$SyncQueueDaoMixin {
@@ -18,18 +30,29 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   // ── Streams ─────────────────────────────────────────────────────────────
 
   /// Emits the count of pending items — drives the sync indicator badge in UI.
-  Stream<int> watchPendingCount() {
+  Stream<int> watchPendingCount({
+    Set<String> entityTypes = backendSupportedSyncEntityTypes,
+  }) {
     final count = syncQueue.id.count();
     final query = selectOnly(syncQueue)
       ..addColumns([count])
-      ..where(syncQueue.syncStatus.equals('pending'));
+      ..where(
+        syncQueue.syncStatus.equals('pending') &
+            syncQueue.entityType.isIn(entityTypes),
+      );
     return query.map((row) => row.read(count) ?? 0).watchSingle();
   }
 
   /// All pending entries ordered by creation time (FIFO).
-  Stream<List<SyncQueueData>> watchPendingEntries() {
+  Stream<List<SyncQueueData>> watchPendingEntries({
+    Set<String> entityTypes = backendSupportedSyncEntityTypes,
+  }) {
     return (select(syncQueue)
-          ..where((q) => q.syncStatus.equals('pending'))
+          ..where(
+            (q) =>
+                q.syncStatus.equals('pending') &
+                q.entityType.isIn(entityTypes),
+          )
           ..orderBy([
             (q) => OrderingTerm.asc(q.createdAt),
             (q) => OrderingTerm.asc(q.id),
@@ -82,16 +105,28 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// Returns all conflict entries that need user resolution.
-  Future<List<SyncQueueData>> getConflicts() {
-    return (select(syncQueue)..where((q) => q.syncStatus.equals('conflict')))
+  Future<List<SyncQueueData>> getConflicts({
+    Set<String> entityTypes = backendSupportedSyncEntityTypes,
+  }) {
+    return (select(syncQueue)
+          ..where(
+            (q) =>
+                q.syncStatus.equals('conflict') &
+                q.entityType.isIn(entityTypes),
+          ))
         .get();
   }
 
-  Future<int> getPendingCount() async {
+  Future<int> getPendingCount({
+    Set<String> entityTypes = backendSupportedSyncEntityTypes,
+  }) async {
     final count = syncQueue.id.count();
     final query = selectOnly(syncQueue)
       ..addColumns([count])
-      ..where(syncQueue.syncStatus.equals('pending'));
+      ..where(
+        syncQueue.syncStatus.equals('pending') &
+            syncQueue.entityType.isIn(entityTypes),
+      );
     final row = await query.getSingle();
     return row.read(count) ?? 0;
   }
@@ -100,8 +135,13 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Enqueue a new change. Called by repositories whenever a local write
   /// happens while offline (or always — the sync engine deduplicates).
-  Future<int> enqueue(SyncQueueCompanion entry) =>
-      into(syncQueue).insert(entry);
+  Future<int> enqueue(SyncQueueCompanion entry) {
+    if (entry.entityType.present &&
+        !backendSupportedSyncEntityTypes.contains(entry.entityType.value)) {
+      return Future.value(0);
+    }
+    return into(syncQueue).insert(entry);
+  }
 
   /// Mark an entry as successfully synced and remove it from the queue.
   Future<void> markSynced(int id) {
@@ -143,6 +183,20 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   Future<void> purgeSync() {
     return (delete(syncQueue)..where((q) => q.syncStatus.equals('synced')))
         .go();
+  }
+
+  /// Remove queued uploads for endpoints the backend does not support.
+  Future<void> purgeUnsupportedEntityTypes({
+    Set<String> entityTypes = backendSupportedSyncEntityTypes,
+  }) async {
+    final entries = await select(syncQueue).get();
+    final unsupportedIds = entries
+        .where((entry) => !entityTypes.contains(entry.entityType))
+        .map((entry) => entry.id)
+        .toList();
+    if (unsupportedIds.isEmpty) return;
+
+    await (delete(syncQueue)..where((q) => q.id.isIn(unsupportedIds))).go();
   }
 
   /// Reset 'conflict' entries back to 'pending' so they are retried on the

@@ -1,7 +1,8 @@
 // lib/core/network/auth_interceptor.dart
 //
-// Attaches Authorization headers. If a protected endpoint returns 401/403,
+// Attaches Authorization headers. If a protected endpoint returns 401,
 // the stored session is cleared so the router can force the user to log in.
+// A 403 can also mean "logged in but not allowed", so we keep the session.
 
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
@@ -57,7 +58,7 @@ class AuthInterceptor extends Interceptor {
 
   bool _shouldForceLogin(DioException err) {
     final statusCode = err.response?.statusCode;
-    return statusCode == 401 || statusCode == 403;
+    return statusCode == 401;
   }
 
   bool _isPublicAuthEndpoint(String path) {

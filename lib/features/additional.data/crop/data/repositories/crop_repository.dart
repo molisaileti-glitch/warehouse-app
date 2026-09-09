@@ -60,7 +60,9 @@ class CropRepository {
         _bool(json['moistureContentComputation'] ??
             json['moisture_content_computation']),
       ),
-      maxMoisureContent: Value(_double(json['maxMoisureContent'])),
+      maxMoisureContent: Value(
+        _double(json['maxMoistureContent'] ?? json['maxMoisureContent']),
+      ),
       packagingWeight: Value(_double(json['packagingWeight'])),
     );
   }

@@ -22,7 +22,7 @@ class PendingSyncsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final pendingAsync = ref.watch(_pendingSyncsProvider(workerFlow));
+    final pendingAsync = ref.watch(_pendingSyncsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -92,28 +92,8 @@ class PendingSyncsScreen extends ConsumerWidget {
   }
 }
 
-final _pendingSyncsProvider =
-    StreamProvider.family<List<SyncQueueData>, bool>((ref, workerFlow) {
-  return ref.watch(syncQueueDaoProvider).watchPendingEntries().map(
-        (entries) => entries.where((entry) {
-          if (workerFlow) {
-            return entry.entityType == 'farmers' ||
-                entry.entityType == 'farmerDependants' ||
-                entry.entityType == 'farmerHarvests' ||
-                entry.entityType == 'dispatches' ||
-                entry.entityType == 'stockCounts' ||
-                entry.entityType == 'stockAdjustments';
-          }
-          return entry.entityType == 'warehouses' ||
-              entry.entityType == 'users' ||
-              entry.entityType == 'farmers' ||
-              entry.entityType == 'farmerDependants' ||
-              entry.entityType == 'farmerHarvests' ||
-              entry.entityType == 'dispatches' ||
-              entry.entityType == 'stockCounts' ||
-              entry.entityType == 'stockAdjustments';
-        }).toList(),
-      );
+final _pendingSyncsProvider = StreamProvider<List<SyncQueueData>>((ref) {
+  return ref.watch(syncQueueDaoProvider).watchPendingEntries();
 });
 
 class _PendingSyncTile extends StatelessWidget {
@@ -179,6 +159,12 @@ _SyncDetails _syncDetails(SyncQueueData entry, AppLocalizations l10n) {
   final operation = _operationLabel(entry.operation, l10n);
 
   return switch (entry.entityType) {
+    'amcos' => _SyncDetails(
+        title: l10n.operationRecord(operation, 'AMCOS'),
+        subtitle: _stringValue(payload, 'name') ?? entry.entityId,
+        icon: Icons.groups_2_rounded,
+        color: AppColors.info,
+      ),
     'warehouses' => _SyncDetails(
         title: l10n.operationWarehouse(operation),
         subtitle: _stringValue(payload, 'name') ?? l10n.warehouseRecord,

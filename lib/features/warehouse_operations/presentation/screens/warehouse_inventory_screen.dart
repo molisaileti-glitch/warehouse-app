@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +7,7 @@ import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/features/moisture/presentation/screens/moisture_reading_screen.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/features/warehouse_operations/domain/models/warehouse_operation_models.dart';
@@ -1029,7 +1029,6 @@ class _WarehouseOperationFormScreenState
   final _formKey = GlobalKey<FormState>();
   final _recipientName = TextEditingController();
   final _recipientPhone = TextEditingController();
-  final _moisture = TextEditingController(text: '0');
   final List<_OperationBag> _bags = [];
   _OperationStep _step = _OperationStep.weighing;
   String _recipientType = WarehouseRecipientType.buyer;
@@ -1040,20 +1039,13 @@ class _WarehouseOperationFormScreenState
   @override
   void initState() {
     super.initState();
-    _moisture.addListener(_refreshComputed);
   }
 
   @override
   void dispose() {
-    _moisture.removeListener(_refreshComputed);
     _recipientName.dispose();
     _recipientPhone.dispose();
-    _moisture.dispose();
     super.dispose();
-  }
-
-  void _refreshComputed() {
-    if (mounted) setState(() {});
   }
 
   @override
@@ -1130,23 +1122,14 @@ class _WarehouseOperationFormScreenState
         value: _nextPackagingWeight(crop),
         unit: scaleState.uom,
       ),
-      if (_requiresMoisture(crop)) ...[
-        const SizedBox(height: 14),
-        AppLabeledField(
-          labelText: 'Moisture content',
-          child: TextFormField(
-            controller: _moisture,
-            decoration: const InputDecoration(
-              suffixText: '%',
-              prefixIcon: Icon(Icons.water_drop_outlined),
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-            ],
-          ),
+      const SizedBox(height: 14),
+      const Text(
+        'Moisture reading will be requested when you add each bag.',
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
         ),
-      ],
+      ),
       const SizedBox(height: 16),
       Row(
         children: [
@@ -1523,9 +1506,6 @@ class _WarehouseOperationFormScreenState
     );
   }
 
-  double _moistureValue(Crop crop) =>
-      _requiresMoisture(crop) ? double.tryParse(_moisture.text.trim()) ?? 0 : 0;
-
   double _nextPackagingWeight(Crop crop) {
     final cropWeight = crop.packagingWeight ?? 0;
     return cropWeight;
@@ -1594,7 +1574,7 @@ class _WarehouseOperationFormScreenState
         scaleState.weight > 0;
   }
 
-  void _addBagFromScale(Crop crop, WeightScaleState scaleState) {
+  Future<void> _addBagFromScale(Crop crop, WeightScaleState scaleState) async {
     if (!scaleState.isConnected || !scaleState.isStreaming) {
       _showError('Connect scale before adding a bag.');
       return;
@@ -1608,29 +1588,29 @@ class _WarehouseOperationFormScreenState
       return;
     }
 
-    final added = _addBag(crop, scaleState.weight);
+    final added = await _addBag(crop, scaleState.weight);
     if (added) {
       ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
     }
   }
 
-  bool _addBag(Crop crop, double grossWeight) {
-    final moistureContent = _moistureValue(crop);
+  Future<bool> _addBag(Crop crop, double grossWeight) async {
     final packagingWeight = _nextPackagingWeight(crop);
 
     if (grossWeight <= 0) {
       _showError('Enter a positive gross weight before adding a bag.');
       return false;
     }
-    if (_requiresMoisture(crop) &&
-        (moistureContent < 0 || moistureContent > 100)) {
-      _showError('Enter moisture content from 0 to 100.');
-      return false;
-    }
     if (packagingWeight >= grossWeight) {
       _showError('Packaging weight must be less than gross weight.');
       return false;
     }
+    final moistureContent = await askAndMeasureMoisture(
+      context: context,
+      cropName: crop.name,
+      maxMoistureContent: crop.maxMoisureContent,
+    );
+    if (!mounted || moistureContent == null) return false;
 
     setState(() {
       _bags.add(
@@ -1641,9 +1621,6 @@ class _WarehouseOperationFormScreenState
           moistureContent: moistureContent,
         ),
       );
-      if (!_requiresMoisture(crop)) {
-        _moisture.text = '0';
-      }
     });
     return true;
   }
@@ -2131,7 +2108,6 @@ Crop _cropFromInventory(WarehouseInventory item) {
   );
 }
 
-bool _requiresMoisture(Crop crop) => crop.moistureContentComputation;
 
 _WarehouseAction _actionFromPath(String value) {
   return switch (value) {

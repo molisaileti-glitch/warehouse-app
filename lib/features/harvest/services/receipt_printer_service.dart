@@ -167,6 +167,11 @@ class ReceiptPrinterService {
     _row(line, l10n.receiptCrop, harvest.cropName);
     _row(line, l10n.receiptGross, '${_weight(harvest.grossWeight)} $unit');
     _row(line, l10n.receiptNet, '${_weight(harvest.netWeight)} $unit');
+    _row(
+      line,
+      l10n.receiptMoisturePercent,
+      '${_weight(harvest.moistureContent)} %',
+    );
     _row(line, l10n.receiptPackaging, harvest.packaging);
     line(_divider());
     center('${l10n.receiptTotalBags} (${bags.length})');

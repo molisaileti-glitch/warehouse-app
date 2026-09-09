@@ -21,17 +21,7 @@ final _workerProfileProvider = StreamProvider<User?>((ref) {
 });
 
 final _workerPendingSyncCountProvider = StreamProvider<int>((ref) {
-  return ref.watch(syncQueueDaoProvider).watchPendingEntries().map(
-        (entries) => entries
-            .where((entry) =>
-                entry.entityType == 'farmers' ||
-                entry.entityType == 'farmerDependants' ||
-                entry.entityType == 'farmerHarvests' ||
-                entry.entityType == 'dispatches' ||
-                entry.entityType == 'stockCounts' ||
-                entry.entityType == 'stockAdjustments')
-            .length,
-      );
+  return ref.watch(syncQueueDaoProvider).watchPendingCount();
 });
 
 final _workerWarehousesByAmcosProvider =

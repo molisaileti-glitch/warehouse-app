@@ -821,6 +821,12 @@ String _syncRetryMessage(SyncState state) {
 
   final remaining =
       parts.isEmpty ? 'Some records still need sync' : parts.join(' and ');
+  if (state.conflicts > 0 && state.remainingPending == 0) {
+    return '$remaining. Please review the affected records before syncing again.';
+  }
+  if (state.conflicts > 0) {
+    return '$remaining. Please retry the pending records and review any records marked as conflicts.';
+  }
   return '$remaining. Please try syncing again when the internet connection is stronger.';
 }
 

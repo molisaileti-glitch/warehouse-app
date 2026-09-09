@@ -60,27 +60,32 @@ class DriftHarvestRepository implements HarvestRepository {
     final now = DateTime.now();
     final farmerName = _farmerName(input.farmer);
     final cropName = _normalizeCropName(input.crop.name);
-    final calculatedBags =
-        input.bags.map((bag) => (bag, bag.calculate())).toList();
+    final calculatedBags = input.bags
+        .map((bag) => (
+              id: newUuid(),
+              input: bag,
+              weights: bag.calculate(),
+            ))
+        .toList();
     final totalGross = calculatedBags.fold<double>(
       0,
-      (sum, item) => sum + item.$2.grossWeight,
+      (sum, item) => sum + item.weights.grossWeight,
     );
     final totalNet = calculatedBags.fold<double>(
       0,
-      (sum, item) => sum + item.$2.netWeight,
+      (sum, item) => sum + item.weights.netWeight,
     );
     final totalPackaging = calculatedBags.fold<double>(
       0,
-      (sum, item) => sum + item.$2.packagingWeight,
+      (sum, item) => sum + item.weights.packagingWeight,
     );
     final totalLoad = calculatedBags.fold<double>(
       0,
-      (sum, item) => sum + item.$2.loadWeight,
+      (sum, item) => sum + item.weights.loadWeight,
     );
     final totalMoisture = calculatedBags.fold<double>(
       0,
-      (sum, item) => sum + item.$2.moistureWeight,
+      (sum, item) => sum + item.weights.moistureWeight,
     );
     final moistureContent =
         totalLoad <= 0 ? 0.0 : (totalMoisture / totalLoad) * 100;
@@ -124,10 +129,10 @@ class DriftHarvestRepository implements HarvestRepository {
     );
 
     final bagCompanions = calculatedBags.map((item) {
-      final bag = item.$1;
-      final weights = item.$2;
+      final bag = item.input;
+      final weights = item.weights;
       return FarmerHarvestBagsCompanion.insert(
-        id: newUuid(),
+        id: item.id,
         harvestUuid: harvestUuid,
         netWeight: _round(weights.netWeight),
         tag: bag.tag,
@@ -152,13 +157,11 @@ class DriftHarvestRepository implements HarvestRepository {
             uuid: harvestUuid,
             receiptNumber: receiptNumber,
             farmerName: farmerName,
-            cropName: cropName,
             totalGross: totalGross,
             totalNet: totalNet,
             totalPackaging: totalPackaging,
             moistureContent: moistureContent,
             collectionCenter: collectionCenter,
-            receivedBy: receivedBy,
             amcos: amcos,
             mcu: mcu,
             bags: calculatedBags,
@@ -428,50 +431,39 @@ class DriftHarvestRepository implements HarvestRepository {
     required String uuid,
     required String receiptNumber,
     required String farmerName,
-    required String cropName,
     required double totalGross,
     required double totalNet,
     required double totalPackaging,
     required double moistureContent,
     required int? collectionCenter,
-    required int? receivedBy,
     required int? amcos,
     required int? mcu,
-    required List<(HarvestBagInput, HarvestBagWeights)> bags,
+    required List<
+            ({String id, HarvestBagInput input, HarvestBagWeights weights})>
+        bags,
   }) {
     return {
       'uuid': uuid,
-      'farmer': input.farmer.id,
       'farmerUuid': input.farmer.uuid,
-      'farmerName': farmerName,
-      'farmerPhoneNumber': input.farmer.phoneNumber,
-      'guarantor': input.farmer.id,
+      'guarantor': input.farmer.id.toString(),
       'guarantorName': farmerName,
       'grossWeight': _round(totalGross),
       'netWeight': _round(totalNet),
       'packagingWeight': _round(totalPackaging),
       'moistureContent': _round(moistureContent),
-      'uom': input.uom?.id,
+      'uom': input.uom?.id.toString(),
       'packaging': input.packaging,
       'receiptNumber': receiptNumber,
       'amcos': amcos,
-      'amcosName': input.farmer.amcosName ?? input.warehouse.amcosName,
       'mcu': mcu,
-      'mcuName': input.farmer.mcuName,
-      'receivedBy': receivedBy,
-      'receivedByName': null,
       'crop': input.crop.id,
-      'cropName': cropName,
       'cropGrade': input.cropGrade?.id,
-      'cropGradeName': input.cropGrade?.gradeName,
-      'warehouseId': input.warehouse.id,
-      'warehouseUuid': input.warehouse.uuid,
       'collectionCenter': collectionCenter,
-      'collectionCenterName': input.warehouse.name,
       'farmerBags': bags.map((item) {
-        final bag = item.$1;
-        final weights = item.$2;
+        final bag = item.input;
+        final weights = item.weights;
         return {
+          'uuid': item.id,
           'netWeight': _round(weights.netWeight),
           'tagNumber': bag.tag,
           'loadWeight': _round(weights.loadWeight),
