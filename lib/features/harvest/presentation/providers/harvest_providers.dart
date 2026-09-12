@@ -15,6 +15,7 @@ final harvestRepositoryProvider = Provider<HarvestRepository>((ref) {
     farmerDao: ref.watch(farmerDaoProvider),
     warehouseDao: ref.watch(warehouseDaoProvider),
     cropDao: ref.watch(cropDaoProvider),
+    warehouseOperationsDao: ref.watch(warehouseOperationsDaoProvider),
     auditDao: ref.watch(auditLogDaoProvider),
     dio: ref.watch(apiClientProvider).dio,
     currentUserId: userId,

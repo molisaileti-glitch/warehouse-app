@@ -16,14 +16,18 @@ class WarehouseOperationsDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<WarehouseInventory>> watchInventory(String warehouseId) {
     return (select(warehouseInventoryItems)
-          ..where((item) => item.warehouseId.equals(warehouseId))
+          ..where((item) =>
+              item.warehouseId.equals(warehouseId) &
+              item.totalBags.isBiggerThanValue(0))
           ..orderBy([(item) => OrderingTerm.asc(item.cropName)]))
         .watch();
   }
 
   Future<List<WarehouseInventory>> getInventory(String warehouseId) {
     return (select(warehouseInventoryItems)
-          ..where((item) => item.warehouseId.equals(warehouseId))
+          ..where((item) =>
+              item.warehouseId.equals(warehouseId) &
+              item.totalBags.isBiggerThanValue(0))
           ..orderBy([(item) => OrderingTerm.asc(item.cropName)]))
         .get();
   }
@@ -34,12 +38,55 @@ class WarehouseOperationsDao extends DatabaseAccessor<AppDatabase>
   }) {
     return (select(warehouseInventoryItems)
           ..where((item) =>
-              item.warehouseId.equals(warehouseId) & item.crop.equals(cropId)))
+              item.warehouseId.equals(warehouseId) &
+              item.crop.equals(cropId) &
+              item.totalBags.isBiggerThanValue(0))
+          ..limit(1))
         .getSingleOrNull();
   }
 
   Future<void> upsertInventory(WarehouseInventoryItemsCompanion entry) {
-    return into(warehouseInventoryItems).insertOnConflictUpdate(entry);
+    final uuid = entry.uuid.value;
+    final warehouseId = entry.warehouseId.value;
+    final cropId = entry.crop.value;
+
+    return transaction(() async {
+      await (delete(warehouseInventoryItems)
+            ..where(
+              (item) =>
+                  item.warehouseId.equals(warehouseId) &
+                  item.crop.equals(cropId) &
+                  item.uuid.equals(uuid).not(),
+            ))
+          .go();
+      await into(warehouseInventoryItems).insertOnConflictUpdate(entry);
+    });
+  }
+
+  Future<void> deleteInventory(String uuid) {
+    return (delete(warehouseInventoryItems)
+          ..where((item) => item.uuid.equals(uuid)))
+        .go();
+  }
+
+  Future<List<SyncQueueData>> pendingStockBagMutationEntries() {
+    return (select(syncQueue)
+          ..where(
+            (item) =>
+                item.entityType.equals('dispatches') &
+                item.syncStatus.isIn(['pending', 'conflict']),
+          ))
+        .get();
+  }
+
+  Future<List<SyncQueueData>> pendingStockBagAdjustmentEntries() {
+    return (select(syncQueue)
+          ..where(
+            (item) =>
+                item.entityType.equals('stockAdjustments') &
+                item.syncStatus.isIn(['pending', 'conflict']),
+          ))
+        .get();
   }
 
   Stream<List<WarehouseDispatch>> watchDispatches(String warehouseId) {

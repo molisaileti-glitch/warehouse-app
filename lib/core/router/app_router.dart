@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../config/feature_flags.dart';
 import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
 import '../network/api_client.dart' show sessionExpiredProvider;
@@ -216,6 +217,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // Authenticated — redirect away from any pre-login screen.
       if (onAnyPreLoginScreen) {
+        return _homeForRole(authState.role);
+      }
+
+      if (!FeatureFlags.warehouseOperationsEnabled &&
+          _isWarehouseOperationsLocation(loc)) {
         return _homeForRole(authState.role);
       }
 
@@ -477,6 +483,11 @@ String? _roleGuard(String location, UserRole? role) {
   }
 
   return null;
+}
+
+bool _isWarehouseOperationsLocation(String location) {
+  return location.startsWith('/owner/warehouse-operations') ||
+      location.startsWith('/worker/inventory');
 }
 
 class _AppStateListenable extends ChangeNotifier {

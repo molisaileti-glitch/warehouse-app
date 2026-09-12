@@ -4,6 +4,7 @@
 // the stored session is cleared so the router can force the user to log in.
 // A 403 can also mean "logged in but not allowed", so we keep the session.
 
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -33,6 +34,23 @@ class AuthInterceptor extends Interceptor {
 
     final token = await _storage.getAccessToken();
     if (token != null) {
+      if (_isExpiredJwt(token)) {
+        _log('stored access token is expired; forcing login before request');
+        await _forceLogin();
+        handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: 401,
+              statusMessage: 'Session expired',
+            ),
+            type: DioExceptionType.badResponse,
+            error: 'Session expired',
+          ),
+        );
+        return;
+      }
       options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
@@ -58,7 +76,8 @@ class AuthInterceptor extends Interceptor {
 
   bool _shouldForceLogin(DioException err) {
     final statusCode = err.response?.statusCode;
-    return statusCode == 401;
+    return statusCode == 401 ||
+        (statusCode == 403 && _requestUsedExpiredBearer(err.requestOptions));
   }
 
   bool _isPublicAuthEndpoint(String path) {
@@ -66,6 +85,38 @@ class AuthInterceptor extends Interceptor {
         path.contains('/auth/refresh-token') ||
         path.contains('/auth/forgot-password') ||
         path.contains('/auth/reset-password');
+  }
+
+  bool _isExpiredJwt(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return false;
+
+      final payloadJson = utf8.decode(base64Url.decode(
+        base64Url.normalize(parts[1]),
+      ));
+      final payload = jsonDecode(payloadJson);
+      if (payload is! Map<String, dynamic>) return false;
+
+      final exp = payload['exp'];
+      final expSeconds = exp is num ? exp.toInt() : int.tryParse('$exp');
+      if (expSeconds == null) return false;
+
+      const leewaySeconds = 30;
+      final expiresAtMs = (expSeconds - leewaySeconds) * 1000;
+      return DateTime.now().millisecondsSinceEpoch >= expiresAtMs;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool _requestUsedExpiredBearer(RequestOptions options) {
+    final authorization = options.headers['Authorization']?.toString();
+    const prefix = 'Bearer ';
+    if (authorization == null || !authorization.startsWith(prefix)) {
+      return false;
+    }
+    return _isExpiredJwt(authorization.substring(prefix.length).trim());
   }
 
   Future<void> _forceLogin() async {

@@ -9,6 +9,7 @@ import 'package:warehouse_app/features/warehouse_operations/domain/repositories/
 class DriftWarehouseOperationsRepository
     implements WarehouseOperationsRepository {
   final WarehouseOperationsDao _dao;
+  final HarvestDao _harvestDao;
   final WarehouseDao _warehouseDao;
   final AuditLogDao _auditDao;
   final Dio _dio;
@@ -16,11 +17,13 @@ class DriftWarehouseOperationsRepository
 
   DriftWarehouseOperationsRepository({
     required WarehouseOperationsDao dao,
+    required HarvestDao harvestDao,
     required WarehouseDao warehouseDao,
     required AuditLogDao auditDao,
     required Dio dio,
     required String currentUserId,
   })  : _dao = dao,
+        _harvestDao = harvestDao,
         _warehouseDao = warehouseDao,
         _auditDao = auditDao,
         _dio = dio,
@@ -45,6 +48,69 @@ class DriftWarehouseOperationsRepository
       _dao.watchStockAdjustments(warehouseId);
 
   @override
+  Future<List<StockBag>> fetchStockBags({
+    required Warehouse warehouse,
+    required Crop crop,
+    String status = 'IN_STOCK',
+  }) async {
+    final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
+    final locallyUnavailableUuids = status == 'IN_STOCK'
+        ? await _locallyUnavailableStockBagUuids()
+        : const <String>{};
+    final localAdjustments = status == 'IN_STOCK'
+        ? await _locallyAdjustedStockBags()
+        : const <String, _StockBagAdjustmentSnapshot>{};
+    final pendingHarvestBags = status == 'IN_STOCK'
+        ? await _pendingHarvestStockBags(warehouse: warehouse, crop: crop)
+        : const <StockBag>[];
+    final remoteBags = <StockBag>[];
+
+    try {
+      final response = await _dio.get(
+        '/stock-bags/collection-center/$collectionCenterUuid/crop/${crop.id}',
+        queryParameters: {'status': status},
+      );
+      remoteBags.addAll(
+        _records(response.data)
+            .map(StockBag.fromJson)
+            .where((bag) => bag.uuid.trim().isNotEmpty),
+      );
+    } on DioException catch (error) {
+      if (!_canUseLocalStockBagFallback(error) || pendingHarvestBags.isEmpty) {
+        rethrow;
+      }
+    }
+
+    final byUuid = <String, StockBag>{};
+    for (final bag in remoteBags.followedBy(pendingHarvestBags)) {
+      if (locallyUnavailableUuids.contains(bag.uuid)) continue;
+      byUuid[bag.uuid] = _applyLocalAdjustment(bag, localAdjustments[bag.uuid]);
+    }
+    return byUuid.values.toList();
+  }
+
+  @override
+  Future<List<WarehouseOperationBag>> fetchDispatchBags(
+    String dispatchUuid,
+  ) {
+    return _fetchOperationBags('/dispatches/$dispatchUuid/bags');
+  }
+
+  @override
+  Future<List<WarehouseOperationBag>> fetchStockCountBags(
+    String stockCountUuid,
+  ) {
+    return _fetchOperationBags('/stock-counts/$stockCountUuid/bags');
+  }
+
+  @override
+  Future<List<WarehouseOperationBag>> fetchStockAdjustmentBags(
+    String adjustmentUuid,
+  ) {
+    return _fetchOperationBags('/stock-adjustments/$adjustmentUuid/bags');
+  }
+
+  @override
   Future<void> recordDispatch({
     required Warehouse warehouse,
     required Crop crop,
@@ -55,6 +121,7 @@ class DriftWarehouseOperationsRepository
     required double totalGrossWeight,
     required double totalPackagingWeight,
     required double totalNetWeight,
+    List<WarehouseOperationBagDraft>? bagDetails,
     double moistureContent = 0,
     DateTime? dispatchedAt,
   }) async {
@@ -110,12 +177,15 @@ class DriftWarehouseOperationsRepository
           'recipientName': recipientName,
           if (_nonEmpty(recipientPhone) != null)
             'recipientPhone': _nonEmpty(recipientPhone),
-          'totalBags': totalBags,
-          'totalGrossWeight': totalGrossWeight,
-          'totalPackagingWeight': totalPackagingWeight,
-          'totalNetWeight': totalNetWeight,
-          'moistureContent': moistureContent,
-          if (userId != null) 'dispatchedBy': userId,
+          'bags': _measuredBagsPayload(
+            count: totalBags,
+            grossWeight: totalGrossWeight,
+            packagingWeight: totalPackagingWeight,
+            netWeight: totalNetWeight,
+            moistureContent: moistureContent,
+            measuredAt: eventTime,
+            bagDetails: bagDetails,
+          ),
           'dispatchedAt': eventTime.toIso8601String(),
         },
       ),
@@ -144,6 +214,7 @@ class DriftWarehouseOperationsRepository
     required double countedGrossWeight,
     required double countedPackagingWeight,
     required double countedNetWeight,
+    List<WarehouseOperationBagDraft>? bagDetails,
     double moistureContent = 0,
     DateTime? countedAt,
   }) async {
@@ -188,12 +259,15 @@ class DriftWarehouseOperationsRepository
           'uuid': uuid,
           'collectionCenter': collectionCenterUuid,
           'crop': crop.id,
-          'countedBags': countedBags,
-          'countedGrossWeight': countedGrossWeight,
-          'countedPackagingWeight': countedPackagingWeight,
-          'countedNetWeight': countedNetWeight,
-          'moistureContent': moistureContent,
-          if (userId != null) 'countedBy': userId,
+          'bags': _measuredBagsPayload(
+            count: countedBags,
+            grossWeight: countedGrossWeight,
+            packagingWeight: countedPackagingWeight,
+            netWeight: countedNetWeight,
+            moistureContent: moistureContent,
+            measuredAt: eventTime,
+            bagDetails: bagDetails,
+          ),
           'countedAt': eventTime.toIso8601String(),
         },
       ),
@@ -215,6 +289,7 @@ class DriftWarehouseOperationsRepository
     required double grossWeight,
     required double packagingWeight,
     required double netWeight,
+    List<WarehouseOperationBagDraft>? bagDetails,
     double moistureContent = 0,
     DateTime? adjustedAt,
   }) async {
@@ -224,7 +299,18 @@ class DriftWarehouseOperationsRepository
     final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
     final userId = int.tryParse(_currentUserId);
     final normalizedType = adjustmentType.toUpperCase();
-    if (normalizedType == StockAdjustmentType.decrease) {
+    final adjustsExistingStockBags = _hasExistingStockBagDetails(bagDetails);
+    final measuredBags = _measuredBagsPayload(
+      count: bags,
+      grossWeight: grossWeight,
+      packagingWeight: packagingWeight,
+      netWeight: netWeight,
+      moistureContent: moistureContent,
+      measuredAt: eventTime,
+      bagDetails: bagDetails,
+    );
+    if (normalizedType == StockAdjustmentType.decrease &&
+        !adjustsExistingStockBags) {
       await _validateStockDecrease(
         warehouse: warehouse,
         crop: crop,
@@ -268,25 +354,39 @@ class DriftWarehouseOperationsRepository
           'crop': crop.id,
           'adjustmentType': normalizedType,
           'reason': reason,
-          'bags': bags,
-          'grossWeight': grossWeight,
-          'packagingWeight': packagingWeight,
-          'netWeight': netWeight,
-          'moistureContent': moistureContent,
-          if (userId != null) 'adjustedBy': userId,
+          'bags': adjustsExistingStockBags
+              ? measuredBags
+              : normalizedType == StockAdjustmentType.increase
+                  ? <Map<String, dynamic>>[]
+                  : measuredBags,
+          if (normalizedType == StockAdjustmentType.increase &&
+              !adjustsExistingStockBags)
+            'newBags': _newBagsPayload(
+              count: bags,
+              grossWeight: grossWeight,
+              packagingWeight: packagingWeight,
+              netWeight: netWeight,
+              moistureContent: moistureContent,
+              tagPrefix: uuid,
+              bagDetails: bagDetails,
+            ),
           'adjustedAt': eventTime.toIso8601String(),
         },
       ),
     );
 
+    final existingDelta = adjustsExistingStockBags
+        ? _existingStockBagAdjustmentDelta(bagDetails)
+        : null;
     final sign = normalizedType == StockAdjustmentType.decrease ? -1 : 1;
     await _applyLocalInventoryDelta(
       warehouse: warehouse,
       crop: crop,
-      bagsDelta: sign * bags,
-      grossDelta: sign * grossWeight,
-      packagingDelta: sign * packagingWeight,
-      netDelta: sign * netWeight,
+      bagsDelta: existingDelta == null ? sign * bags : 0,
+      grossDelta: existingDelta?.grossWeight ?? sign * grossWeight,
+      packagingDelta:
+          existingDelta?.packagingWeight ?? sign * packagingWeight,
+      netDelta: existingDelta?.netWeight ?? sign * netWeight,
       timestamp: now,
     );
     await _log(
@@ -349,6 +449,172 @@ class DriftWarehouseOperationsRepository
   @override
   Future<void> markStockAdjustmentConflict(String uuid) =>
       _dao.markStockAdjustmentConflict(uuid);
+
+  Future<List<WarehouseOperationBag>> _fetchOperationBags(String path) async {
+    final response = await _dio.get(path);
+    return _records(response.data)
+        .map(WarehouseOperationBag.fromJson)
+        .toList();
+  }
+
+  bool _canUseLocalStockBagFallback(DioException error) {
+    return switch (error.type) {
+      DioExceptionType.connectionError ||
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout =>
+        true,
+      _ => false,
+    };
+  }
+
+  Future<Set<String>> _locallyUnavailableStockBagUuids() async {
+    final entries = await _dao.pendingStockBagMutationEntries();
+    final uuids = <String>{};
+
+    for (final entry in entries) {
+      final payload = _decodePayload(entry.payload);
+      if (payload == null) continue;
+
+      if (entry.entityType == 'dispatches') {
+        _collectStockBagUuids(payload['bags'], uuids);
+      }
+    }
+
+    return uuids;
+  }
+
+  Future<Map<String, _StockBagAdjustmentSnapshot>>
+      _locallyAdjustedStockBags() async {
+    final entries = await _dao.pendingStockBagAdjustmentEntries();
+    final adjustments = <String, _StockBagAdjustmentSnapshot>{};
+
+    for (final entry in entries) {
+      final payload = _decodePayload(entry.payload);
+      if (payload == null) continue;
+      final bags = payload['bags'];
+      if (bags is! List) continue;
+
+      for (final bag in bags) {
+        if (bag is! Map) continue;
+        final uuid = bag['stockBagUuid']?.toString().trim();
+        if (uuid == null || uuid.isEmpty) continue;
+        adjustments[uuid] = _StockBagAdjustmentSnapshot(
+          grossWeight: _double(
+            bag['measuredGrossWeight'] ?? bag['grossWeight'],
+          ),
+          packagingWeight: _double(
+            bag['measuredPackagingWeight'] ?? bag['packagingWeight'],
+          ),
+          netWeight: _double(
+            bag['measuredNetWeight'] ?? bag['netWeight'],
+          ),
+          moistureContent: _double(bag['moistureContent']),
+        );
+      }
+    }
+
+    return adjustments;
+  }
+
+  Future<List<StockBag>> _pendingHarvestStockBags({
+    required Warehouse warehouse,
+    required Crop crop,
+  }) async {
+    final rows = await _harvestDao.pendingHarvestBagsForStock(
+      warehouseId: warehouse.id,
+      cropId: crop.id,
+    );
+
+    return rows.map((row) {
+      final harvest = row.harvest;
+      final bag = row.bag;
+      return StockBag(
+        uuid: bag.id,
+        tagNumber: bag.tag,
+        crop: harvest.crop,
+        cropName: harvest.cropName,
+        grossWeight: bag.grossWeight,
+        packagingWeight: bag.packagingWeight,
+        loadWeight: bag.loadWeight,
+        netWeight: bag.netWeight,
+        moistureContent: bag.moistureContent,
+        status: 'IN_STOCK',
+      );
+    }).toList();
+  }
+
+  StockBag _applyLocalAdjustment(
+    StockBag bag,
+    _StockBagAdjustmentSnapshot? adjustment,
+  ) {
+    if (adjustment == null) return bag;
+    return StockBag(
+      id: bag.id,
+      uuid: bag.uuid,
+      tagNumber: bag.tagNumber,
+      crop: bag.crop,
+      cropName: bag.cropName,
+      grossWeight: adjustment.grossWeight,
+      packagingWeight: adjustment.packagingWeight,
+      loadWeight: adjustment.grossWeight - adjustment.packagingWeight,
+      netWeight: adjustment.netWeight,
+      moistureContent: adjustment.moistureContent,
+      status: bag.status,
+    );
+  }
+
+  Map<String, dynamic>? _decodePayload(String payload) {
+    try {
+      final decoded = jsonDecode(payload);
+      if (decoded is! Map) return null;
+      return decoded.map((key, value) => MapEntry(key.toString(), value));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _collectStockBagUuids(Object? bags, Set<String> out) {
+    if (bags is! List) return;
+    for (final bag in bags) {
+      if (bag is! Map) continue;
+      final uuid = bag['stockBagUuid']?.toString().trim();
+      if (uuid != null && uuid.isNotEmpty) {
+        out.add(uuid);
+      }
+    }
+  }
+
+  bool _hasExistingStockBagDetails(
+    List<WarehouseOperationBagDraft>? bagDetails,
+  ) {
+    return bagDetails?.any(
+          (bag) => bag.stockBagUuid?.trim().isNotEmpty == true,
+        ) ??
+        false;
+  }
+
+  _WeightDelta _existingStockBagAdjustmentDelta(
+    List<WarehouseOperationBagDraft>? bagDetails,
+  ) {
+    var grossWeight = 0.0;
+    var packagingWeight = 0.0;
+    var netWeight = 0.0;
+
+    for (final bag in bagDetails ?? const <WarehouseOperationBagDraft>[]) {
+      if (bag.stockBagUuid?.trim().isNotEmpty != true) continue;
+      grossWeight += bag.grossWeight - (bag.recordedGrossWeight ?? 0);
+      packagingWeight +=
+          bag.packagingWeight - (bag.recordedPackagingWeight ?? 0);
+      netWeight += bag.netWeight - (bag.recordedNetWeight ?? 0);
+    }
+
+    return _WeightDelta(
+      grossWeight: _roundWeight(grossWeight),
+      packagingWeight: _roundWeight(packagingWeight),
+      netWeight: _roundWeight(netWeight),
+    );
+  }
 
   Future<int> _pullInventory(String path) async {
     try {
@@ -425,6 +691,20 @@ class DriftWarehouseOperationsRepository
       cropId: crop.id,
     );
     final totalBags = (current?.totalBags ?? 0) + bagsDelta;
+    final updatedGrossWeight =
+        _nonNegative((current?.totalGrossWeight ?? 0) + grossDelta);
+    final updatedPackagingWeight =
+        _nonNegative((current?.totalPackagingWeight ?? 0) + packagingDelta);
+    final updatedNetWeight =
+        _nonNegative((current?.totalNetWeight ?? 0) + netDelta);
+    final clampedTotalBags = totalBags < 0 ? 0 : totalBags;
+
+    if (clampedTotalBags <= 0) {
+      if (current != null) {
+        await _dao.deleteInventory(current.uuid);
+      }
+      return;
+    }
 
     await _dao.upsertInventory(
       WarehouseInventoryItemsCompanion.insert(
@@ -444,16 +724,10 @@ class DriftWarehouseOperationsRepository
         mcuName: Value(current?.mcuName),
         crop: crop.id,
         cropName: crop.name,
-        totalBags: Value(totalBags < 0 ? 0 : totalBags),
-        totalGrossWeight: Value(
-          _nonNegative((current?.totalGrossWeight ?? 0) + grossDelta),
-        ),
-        totalPackagingWeight: Value(
-          _nonNegative((current?.totalPackagingWeight ?? 0) + packagingDelta),
-        ),
-        totalNetWeight: Value(
-          _nonNegative((current?.totalNetWeight ?? 0) + netDelta),
-        ),
+        totalBags: Value(clampedTotalBags),
+        totalGrossWeight: Value(updatedGrossWeight),
+        totalPackagingWeight: Value(updatedPackagingWeight),
+        totalNetWeight: Value(updatedNetWeight),
         createdAt: Value(current?.createdAt ?? timestamp),
         updatedAt: Value(timestamp),
       ),
@@ -690,12 +964,123 @@ class DriftWarehouseOperationsRepository
     ));
   }
 
+  List<Map<String, dynamic>> _measuredBagsPayload({
+    required int count,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    required double moistureContent,
+    required DateTime measuredAt,
+    List<WarehouseOperationBagDraft>? bagDetails,
+  }) {
+    final measuredAtText = measuredAt.toIso8601String();
+    final details = bagDetails ?? const <WarehouseOperationBagDraft>[];
+    if (details.isNotEmpty) {
+      return details
+          .map(
+            (bag) => {
+              'stockBagUuid': bag.stockBagUuid ?? '',
+              if (bag.tagNumber?.trim().isNotEmpty == true)
+                'tagNumber': bag.tagNumber!.trim(),
+              'measuredGrossWeight': _roundWeight(bag.grossWeight),
+              'measuredPackagingWeight': _roundWeight(bag.packagingWeight),
+              'measuredNetWeight': _roundWeight(bag.netWeight),
+              'moistureContent': _roundWeight(bag.moistureContent),
+              'measuredAt': measuredAtText,
+            },
+          )
+          .toList();
+    }
+
+    final safeCount = count <= 0 ? 1 : count;
+    return List.generate(safeCount, (index) {
+      return {
+        'stockBagUuid': '',
+        'measuredGrossWeight': _splitWeight(grossWeight, safeCount, index),
+        'measuredPackagingWeight':
+            _splitWeight(packagingWeight, safeCount, index),
+        'measuredNetWeight': _splitWeight(netWeight, safeCount, index),
+        'moistureContent': _roundWeight(moistureContent),
+        'measuredAt': measuredAtText,
+      };
+    });
+  }
+
+  List<Map<String, dynamic>> _newBagsPayload({
+    required int count,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    required double moistureContent,
+    required String tagPrefix,
+    List<WarehouseOperationBagDraft>? bagDetails,
+  }) {
+    final details = bagDetails ?? const <WarehouseOperationBagDraft>[];
+    if (details.isNotEmpty) {
+      return List.generate(details.length, (index) {
+        final bag = details[index];
+        return _newBagPayload(
+          index: index,
+          tagPrefix: tagPrefix,
+          grossWeight: bag.grossWeight,
+          packagingWeight: bag.packagingWeight,
+          netWeight: bag.netWeight,
+          moistureContent: bag.moistureContent,
+        );
+      });
+    }
+
+    final safeCount = count <= 0 ? 1 : count;
+    return List.generate(safeCount, (index) {
+      return _newBagPayload(
+        index: index,
+        tagPrefix: tagPrefix,
+        grossWeight: _splitWeight(grossWeight, safeCount, index),
+        packagingWeight: _splitWeight(packagingWeight, safeCount, index),
+        netWeight: _splitWeight(netWeight, safeCount, index),
+        moistureContent: moistureContent,
+      );
+    });
+  }
+
+  Map<String, dynamic> _newBagPayload({
+    required int index,
+    required String tagPrefix,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    required double moistureContent,
+  }) {
+    return {
+      'uuid': newUuid(),
+      'grossWeight': _roundWeight(grossWeight),
+      'packagingWeight': _roundWeight(packagingWeight),
+      'loadWeight': _roundWeight(grossWeight - packagingWeight),
+      'netWeight': _roundWeight(netWeight),
+      'moistureContent': _roundWeight(moistureContent),
+      'tagNumber': 'ADJ-${tagPrefix.substring(0, 8)}-${index + 1}',
+      'tagType': 'GENERATED',
+    };
+  }
+
+  double _splitWeight(double total, int count, int index) {
+    if (count <= 1) return _roundWeight(total);
+    final firstPieces = _roundWeight(total / count);
+    if (index < count - 1) return firstPieces;
+    return _roundWeight(total - (firstPieces * (count - 1)));
+  }
+
+  double _roundWeight(double value) => double.parse(value.toStringAsFixed(3));
+
   List<Map<String, dynamic>> _records(Object? data) {
     final raw = data is Map<String, dynamic>
         ? data['records'] ?? data['content'] ?? data['data'] ?? data['results']
         : data;
     if (raw is! List) return const [];
-    return raw.whereType<Map<String, dynamic>>().toList();
+    return raw
+        .whereType<Map>()
+        .map((row) => row.map((key, value) => MapEntry(key.toString(), value)))
+        .toList();
   }
 
   String _requireCollectionCenterUuid(Warehouse warehouse) {
@@ -745,6 +1130,32 @@ class DriftWarehouseOperationsRepository
     if (value is DateTime) return value;
     return DateTime.tryParse(value?.toString() ?? '');
   }
+}
+
+class _WeightDelta {
+  final double grossWeight;
+  final double packagingWeight;
+  final double netWeight;
+
+  const _WeightDelta({
+    required this.grossWeight,
+    required this.packagingWeight,
+    required this.netWeight,
+  });
+}
+
+class _StockBagAdjustmentSnapshot {
+  final double grossWeight;
+  final double packagingWeight;
+  final double netWeight;
+  final double moistureContent;
+
+  const _StockBagAdjustmentSnapshot({
+    required this.grossWeight,
+    required this.packagingWeight,
+    required this.netWeight,
+    required this.moistureContent,
+  });
 }
 
 const double _weightToleranceKg = 0.01;

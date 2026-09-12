@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/components/input_field.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/repository_providers.dart';
@@ -130,18 +131,19 @@ class WarehouseDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.push(
-                      AppRoutes.ownerWarehouseOperationsFor(warehouse.id),
+              if (FeatureFlags.warehouseOperationsEnabled)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(
+                        AppRoutes.ownerWarehouseOperationsFor(warehouse.id),
+                      ),
+                      icon: const Icon(Icons.tune_rounded),
+                      label: const Text('Manage stock'),
                     ),
-                    icon: const Icon(Icons.tune_rounded),
-                    label: const Text('Manage stock'),
                   ),
                 ),
-              ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
@@ -157,13 +159,16 @@ class WarehouseDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      TextButton.icon(
-                        onPressed: () => context.push(
-                          AppRoutes.ownerWarehouseOperationsFor(warehouse.id),
+                      if (FeatureFlags.warehouseOperationsEnabled)
+                        TextButton.icon(
+                          onPressed: () => context.push(
+                            AppRoutes.ownerWarehouseOperationsFor(
+                              warehouse.id,
+                            ),
+                          ),
+                          icon: const Icon(Icons.chevron_right_rounded),
+                          label: const Text('View all'),
                         ),
-                        icon: const Icon(Icons.chevron_right_rounded),
-                        label: const Text('View all'),
-                      ),
                     ],
                   ),
                 ),

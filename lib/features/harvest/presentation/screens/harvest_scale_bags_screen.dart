@@ -588,6 +588,9 @@ class _HarvestScaleBagsScreenState
       return;
     }
 
+    ref.invalidate(harvestsByWarehouseProvider(widget.warehouseId));
+    ref.invalidate(warehouseInventoryProvider(widget.warehouseId));
+
     ref
         .read(harvestReceivingControllerProvider(widget.warehouseId).notifier)
         .markSaved(result.harvest!);

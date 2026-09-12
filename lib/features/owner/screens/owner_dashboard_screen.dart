@@ -12,6 +12,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/sync/sync_engine.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/features/warehouse_operations/presentation/providers/warehouse_operations_providers.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 
@@ -56,6 +57,14 @@ class OwnerDashboardScreen extends ConsumerWidget {
     final warehouses = warehousesAsync.valueOrNull ?? const <Warehouse>[];
     final workers = workersAsync.valueOrNull ?? const <User>[];
     final farmers = farmersAsync.valueOrNull ?? const <Farmer>[];
+    final inventoryItems = <WarehouseInventory>[];
+    for (final warehouse in warehouses) {
+      inventoryItems.addAll(
+        ref.watch(warehouseInventoryProvider(warehouse.id)).valueOrNull ??
+            const <WarehouseInventory>[],
+      );
+    }
+    final stockOverviewItems = _stockOverviewItems(inventoryItems);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -120,15 +129,6 @@ class OwnerDashboardScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _greetingFor(DateTime.now(), l10n),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
                       l10n.ownerOverview,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
@@ -137,9 +137,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 18),
                     _OverviewPanel(
-                      warehouses: warehouses.length,
-                      workers: workers.length,
-                      farmers: farmers.length,
+                      items: stockOverviewItems,
                     ),
                   ],
                 ),
@@ -226,19 +224,21 @@ class OwnerDashboardScreen extends ConsumerWidget {
 }
 
 class _OverviewPanel extends StatelessWidget {
-  final int warehouses;
-  final int workers;
-  final int farmers;
+  final List<_StockOverviewItem> items;
 
   const _OverviewPanel({
-    required this.warehouses,
-    required this.workers,
-    required this.farmers,
+    required this.items,
   });
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final visibleItems = items.take(3).toList();
+    final moreCount = items.length - visibleItems.length;
+    final totalStock = items.fold<double>(
+      0,
+      (sum, item) => sum + item.netWeight,
+    );
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -246,48 +246,94 @@ class _OverviewPanel extends StatelessWidget {
         color: AppColors.ownerColor,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.ownerOperations,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.quickStatsWarehouses(warehouses),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  l10n.quickStatsPeople(workers, farmers),
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
+          const Text(
+            'STOCK OVERVIEW',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0,
             ),
           ),
-          Container(
-            width: 86,
-            height: 86,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Icon(
-              Icons.trending_up_rounded,
+          const SizedBox(height: 10),
+          Text(
+            '${_formatStockWeight(totalStock)} kg',
+            style: const TextStyle(
               color: Colors.white,
-              size: 42,
+              fontSize: 31,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Total stock',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 18),
+          if (visibleItems.isEmpty)
+            const Text(
+              'No stock available',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            )
+          else ...[
+            for (final item in visibleItems) _StockOverviewRow(item: item),
+            if (moreCount > 0) ...[
+              const SizedBox(height: 6),
+              Text(
+                '+$moreCount more crops',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StockOverviewRow extends StatelessWidget {
+  final _StockOverviewItem item;
+
+  const _StockOverviewRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(
+            _cropIcon(item.cropName),
+            color: Colors.white,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              item.cropName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '${_formatStockWeight(item.netWeight)} kg',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -296,11 +342,60 @@ class _OverviewPanel extends StatelessWidget {
   }
 }
 
-String _greetingFor(DateTime time, AppLocalizations l10n) {
-  final hour = time.hour;
-  if (hour < 12) return l10n.goodMorning;
-  if (hour < 17) return l10n.goodAfternoon;
-  return l10n.goodEvening;
+class _StockOverviewItem {
+  final String cropName;
+  final double netWeight;
+
+  const _StockOverviewItem({
+    required this.cropName,
+    required this.netWeight,
+  });
+}
+
+List<_StockOverviewItem> _stockOverviewItems(
+  Iterable<WarehouseInventory> inventoryItems,
+) {
+  final totals = <String, double>{};
+  for (final item in inventoryItems) {
+    if (!_hasVisibleStock(item)) continue;
+    totals.update(
+      item.cropName,
+      (value) => value + item.totalNetWeight,
+      ifAbsent: () => item.totalNetWeight,
+    );
+  }
+
+  final items = totals.entries
+      .map(
+        (entry) => _StockOverviewItem(
+          cropName: entry.key,
+          netWeight: entry.value,
+        ),
+      )
+      .toList()
+    ..sort((a, b) => b.netWeight.compareTo(a.netWeight));
+  return items;
+}
+
+bool _hasVisibleStock(WarehouseInventory item) {
+  return item.totalBags > 0 &&
+      (item.totalGrossWeight > 0 ||
+          item.totalPackagingWeight > 0 ||
+          item.totalNetWeight > 0);
+}
+
+String _formatStockWeight(num value) {
+  return NumberFormat('#,##0.##').format(value);
+}
+
+IconData _cropIcon(String cropName) {
+  final normalized = cropName.toLowerCase();
+  if (normalized.contains('maize') || normalized.contains('corn')) {
+    return Icons.agriculture_rounded;
+  }
+  if (normalized.contains('rice')) return Icons.grass_rounded;
+  if (normalized.contains('potato')) return Icons.eco_rounded;
+  return Icons.inventory_2_rounded;
 }
 
 class _DashboardStatCard extends StatelessWidget {

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
@@ -12,6 +13,7 @@ import '../../../../core/sync/sync_engine.dart';
 import '../../../shared/widgets/common_widgets.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
+import '../../../warehouse_operations/presentation/providers/warehouse_operations_providers.dart';
 
 // Scoped provider — watches the current worker's User record from local DB.
 final _workerProfileProvider = StreamProvider<User?>((ref) {
@@ -154,29 +156,22 @@ class _WorkerBody extends ConsumerWidget {
     final farmersAsync = ref.watch(allFarmersProvider);
     final harvestsAsync = ref.watch(harvestsByWarehouseProvider(warehouseId));
     final whAsync = ref.watch(warehouseByIdProvider(warehouseId));
+    final inventoryAsync = ref.watch(warehouseInventoryProvider(warehouseId));
+    final stockOverviewItems = _stockOverviewItems(
+      inventoryAsync.valueOrNull ?? const <WarehouseInventory>[],
+    );
 
     return CustomScrollView(
       slivers: [
-        // Warehouse banner
+        // Warehouse stock overview
         SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.workerColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(children: [
-              const Icon(Icons.warehouse_rounded,
-                  color: Colors.white, size: 32),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l10n.assignedWarehouse,
-                        style: const TextStyle(
-                            color: Colors.white60, fontSize: 12)),
+          child: _WorkerStockOverviewPanel(
+            warehouseName: whAsync.valueOrNull?.name ?? '...',
+            items: stockOverviewItems,
+            onChangeWarehouse: () => _showWarehousePicker(context, user!),
+          ),
+        ),
+        /*
                     Text(whAsync.valueOrNull?.name ?? '…',
                         style: const TextStyle(
                             color: Colors.white,
@@ -199,6 +194,7 @@ class _WorkerBody extends ConsumerWidget {
           ),
         ),
 
+        */
         // Stats
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -206,7 +202,7 @@ class _WorkerBody extends ConsumerWidget {
             crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 1.05,
+            childAspectRatio: 1.45,
             children: [
               StatCard(
                 label: l10n.farmers,
@@ -282,6 +278,236 @@ void _showWarehousePicker(BuildContext context, User user) {
   );
 }
 
+class _WorkerStockOverviewPanel extends StatelessWidget {
+  final String warehouseName;
+  final List<_StockOverviewItem> items;
+  final VoidCallback onChangeWarehouse;
+
+  const _WorkerStockOverviewPanel({
+    required this.warehouseName,
+    required this.items,
+    required this.onChangeWarehouse,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final visibleItems = items.take(3).toList();
+    final moreCount = items.length - visibleItems.length;
+    final totalStock = items.fold<double>(
+      0,
+      (sum, item) => sum + item.netWeight,
+    );
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.workerColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.warehouse_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.assignedWarehouse,
+                      style:
+                          const TextStyle(color: Colors.white60, fontSize: 12),
+                    ),
+                    Text(
+                      warehouseName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: l10n.selectWarehouse,
+                onPressed: onChangeWarehouse,
+                icon: const Icon(Icons.swap_horiz_rounded),
+                color: Colors.white,
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'STOCK OVERVIEW',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${_formatStockWeight(totalStock)} kg',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 29,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Total stock',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          if (visibleItems.isEmpty)
+            const Text(
+              'No stock available',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            )
+          else ...[
+            for (final item in visibleItems) _StockOverviewRow(item: item),
+            if (moreCount > 0) ...[
+              const SizedBox(height: 6),
+              Text(
+                '+$moreCount more crops',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StockOverviewRow extends StatelessWidget {
+  final _StockOverviewItem item;
+
+  const _StockOverviewRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(
+            _cropIcon(item.cropName),
+            color: Colors.white,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              item.cropName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '${_formatStockWeight(item.netWeight)} kg',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StockOverviewItem {
+  final String cropName;
+  final double netWeight;
+
+  const _StockOverviewItem({
+    required this.cropName,
+    required this.netWeight,
+  });
+}
+
+List<_StockOverviewItem> _stockOverviewItems(
+  Iterable<WarehouseInventory> inventoryItems,
+) {
+  final totals = <String, double>{};
+  for (final item in inventoryItems) {
+    if (!_hasVisibleStock(item)) continue;
+    totals.update(
+      item.cropName,
+      (value) => value + item.totalNetWeight,
+      ifAbsent: () => item.totalNetWeight,
+    );
+  }
+
+  final items = totals.entries
+      .map(
+        (entry) => _StockOverviewItem(
+          cropName: entry.key,
+          netWeight: entry.value,
+        ),
+      )
+      .toList()
+    ..sort((a, b) => b.netWeight.compareTo(a.netWeight));
+  return items;
+}
+
+bool _hasVisibleStock(WarehouseInventory item) {
+  return item.totalBags > 0 &&
+      (item.totalGrossWeight > 0 ||
+          item.totalPackagingWeight > 0 ||
+          item.totalNetWeight > 0);
+}
+
+String _formatStockWeight(num value) {
+  return NumberFormat('#,##0.##').format(value);
+}
+
+IconData _cropIcon(String cropName) {
+  final normalized = cropName.toLowerCase();
+  if (normalized.contains('maize') || normalized.contains('corn')) {
+    return Icons.agriculture_rounded;
+  }
+  if (normalized.contains('rice')) return Icons.grass_rounded;
+  if (normalized.contains('potato')) return Icons.eco_rounded;
+  return Icons.inventory_2_rounded;
+}
+
+/*
+String _cropSymbol(String cropName) {
+  final normalized = cropName.toLowerCase();
+  if (normalized.contains('maize') || normalized.contains('corn')) return '🌽';
+  if (normalized.contains('rice')) return '🌾';
+  if (normalized.contains('potato')) return '🥔';
+  return '•';
+}
+
+*/
 class _WorkerWarehouseSheet extends StatelessWidget {
   final User user;
   const _WorkerWarehouseSheet({required this.user});

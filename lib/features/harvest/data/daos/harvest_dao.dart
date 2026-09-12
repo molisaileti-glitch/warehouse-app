@@ -52,6 +52,32 @@ class HarvestDao extends DatabaseAccessor<AppDatabase> with _$HarvestDaoMixin {
         .get();
   }
 
+  Future<List<({FarmerHarvest harvest, FarmerHarvestBag bag})>>
+      pendingHarvestBagsForStock({
+    required String warehouseId,
+    required int cropId,
+  }) async {
+    final query = select(farmerHarvestBags).join([
+      innerJoin(
+        farmerHarvests,
+        farmerHarvests.uuid.equalsExp(farmerHarvestBags.harvestUuid),
+      ),
+    ])
+      ..where(
+        farmerHarvests.warehouseId.equals(warehouseId) &
+            farmerHarvests.crop.equals(cropId) &
+            farmerHarvests.syncStatus.isIn(['pending', 'conflict']),
+      );
+
+    final rows = await query.get();
+    return rows.map((row) {
+      return (
+        harvest: row.readTable(farmerHarvests),
+        bag: row.readTable(farmerHarvestBags),
+      );
+    }).toList();
+  }
+
   Future<void> insertHarvestWithBags({
     required FarmerHarvestsCompanion harvest,
     required List<FarmerHarvestBagsCompanion> bags,

@@ -81,6 +81,3 @@ class SecureTokenStorage {
     return token != null && token.isNotEmpty;
   }
 }
-
-
-

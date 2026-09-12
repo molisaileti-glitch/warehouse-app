@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/config/feature_flags.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/providers/auth_provider.dart';
@@ -38,6 +39,15 @@ class WorkerShell extends ConsumerWidget {
           onTap: (i) {
             if (i == 0) context.go(AppRoutes.workerDashboard);
             if (i == 1) {
+              if (!FeatureFlags.warehouseOperationsEnabled) {
+                showTopToast(
+                  context,
+                  'Inventory operations are temporarily unavailable.',
+                  AppColors.info,
+                  icon: Icons.info_outline_rounded,
+                );
+                return;
+              }
               if (warehouseId != null) {
                 context.go(AppRoutes.workerInventoryFor(warehouseId));
               } else {

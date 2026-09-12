@@ -13,6 +13,7 @@ class DriftHarvestRepository implements HarvestRepository {
   final FarmerDao _farmerDao;
   final WarehouseDao _warehouseDao;
   final CropDao _cropDao;
+  final WarehouseOperationsDao _warehouseOperationsDao;
   final AuditLogDao _auditDao;
   final Dio _dio;
   final String _currentUserId;
@@ -22,6 +23,7 @@ class DriftHarvestRepository implements HarvestRepository {
     required FarmerDao farmerDao,
     required WarehouseDao warehouseDao,
     required CropDao cropDao,
+    required WarehouseOperationsDao warehouseOperationsDao,
     required AuditLogDao auditDao,
     required Dio dio,
     required String currentUserId,
@@ -29,6 +31,7 @@ class DriftHarvestRepository implements HarvestRepository {
         _farmerDao = farmerDao,
         _warehouseDao = warehouseDao,
         _cropDao = cropDao,
+        _warehouseOperationsDao = warehouseOperationsDao,
         _auditDao = auditDao,
         _dio = dio,
         _currentUserId = currentUserId;
@@ -168,6 +171,17 @@ class DriftHarvestRepository implements HarvestRepository {
           ),
         ),
       ),
+    );
+
+    await _applyLocalInventoryIncrease(
+      warehouse: input.warehouse,
+      crop: input.crop,
+      totalBags: input.bags.length,
+      totalGrossWeight: totalGross,
+      totalPackagingWeight: totalPackaging,
+      totalNetWeight: totalNet,
+      mcu: mcu,
+      timestamp: now,
     );
 
     await _auditDao.insertLog(
@@ -474,6 +488,63 @@ class DriftHarvestRepository implements HarvestRepository {
         };
       }).toList(),
     };
+  }
+
+  Future<void> _applyLocalInventoryIncrease({
+    required Warehouse warehouse,
+    required Crop crop,
+    required int totalBags,
+    required double totalGrossWeight,
+    required double totalPackagingWeight,
+    required double totalNetWeight,
+    required int? mcu,
+    required DateTime timestamp,
+  }) async {
+    final current = await _warehouseOperationsDao.getInventoryByCrop(
+      warehouseId: warehouse.id,
+      cropId: crop.id,
+    );
+    final collectionCenter = int.tryParse(warehouse.id);
+    final collectionCenterUuid =
+        warehouse.uuid.isNotEmpty ? warehouse.uuid : warehouse.id;
+
+    await _warehouseOperationsDao.upsertInventory(
+      WarehouseInventoryItemsCompanion.insert(
+        uuid: current?.uuid ?? newUuid(),
+        serverId: Value(current?.serverId),
+        warehouseId: warehouse.id,
+        collectionCenter: Value(current?.collectionCenter ?? collectionCenter),
+        collectionCenterUuid: current?.collectionCenterUuid.isNotEmpty == true
+            ? current!.collectionCenterUuid
+            : collectionCenterUuid,
+        collectionCenterName:
+            Value(current?.collectionCenterName ?? warehouse.name),
+        amcos: Value(current?.amcos ?? warehouse.amcos),
+        amcosName: Value(current?.amcosName ?? warehouse.amcosName),
+        mcu: Value(current?.mcu ?? mcu),
+        mcuName: Value(current?.mcuName),
+        crop: crop.id,
+        cropName: crop.name,
+        totalBags: Value((current?.totalBags ?? 0) + totalBags),
+        totalGrossWeight: Value(
+          _round((current?.totalGrossWeight ?? 0) + totalGrossWeight),
+        ),
+        totalPackagingWeight: Value(
+          _round((current?.totalPackagingWeight ?? 0) + totalPackagingWeight),
+        ),
+        totalNetWeight: Value(
+          _round((current?.totalNetWeight ?? 0) + totalNetWeight),
+        ),
+        createdAt: Value(current?.createdAt ?? timestamp),
+        updatedAt: Value(timestamp),
+      ),
+    );
+    developer.log(
+      '[HarvestInventory] warehouse=${warehouse.id} crop=${crop.id} '
+      'bags=+$totalBags gross=+${_round(totalGrossWeight)} '
+      'net=+${_round(totalNetWeight)}',
+      name: 'inventory.harvest',
+    );
   }
 
   List<Map<String, dynamic>> _readRows(dynamic data) {

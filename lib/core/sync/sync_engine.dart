@@ -66,37 +66,62 @@ class SyncManager {
     var pushed = 0;
     var pulled = 0;
     final errors = <String>[];
+    final runStartedAt = DateTime.now();
 
     void progress(int step, String message) {
       onProgress?.call(
         SyncProgress(currentStep: step, totalSteps: 5, message: message),
       );
+      developer.log(
+        '[SyncRun] step=$step/5 message="$message"',
+        name: 'sync.run',
+      );
     }
 
+    developer.log(
+      '[SyncRun] start at=${runStartedAt.toIso8601String()}',
+      name: 'sync.run',
+    );
     progress(1, 'Preparing local queue');
 
     await _syncDao.purgeUnsupportedEntityTypes();
+    final pendingAfterPurge = await _syncDao.getPendingCount();
+    developer.log(
+      '[SyncRun] pendingAfterPurge=$pendingAfterPurge',
+      name: 'sync.run',
+    );
 
     try {
       progress(2, 'Uploading pending records');
-      pushed = await _push();
+      pushed = await _push(passName: 'before-pull');
     } catch (e) {
       errors.add('Push failed: $e');
+      developer.log('[SyncRun] pushFailed error=$e', name: 'sync.run');
     }
 
     try {
       progress(3, 'Downloading latest records');
       pulled = await _roleStrategy.pull(await _getLastSyncTime());
+      developer.log('[SyncRun] pulled=$pulled', name: 'sync.run');
+      final retriedAfterPull = await _push(passName: 'after-pull');
+      pushed += retriedAfterPull;
       progress(4, 'Saving sync checkpoint');
       await _saveLastSyncTime(DateTime.now());
     } catch (e) {
       errors.add('Pull failed: $e');
+      developer.log('[SyncRun] pullFailed error=$e', name: 'sync.run');
     }
 
     progress(5, 'Finishing sync');
     await _syncDao.purgeSync();
     final remainingPending = await _syncDao.getPendingCount();
     final conflictCount = (await _syncDao.getConflicts()).length;
+    developer.log(
+      '[SyncRun] finish pushed=$pushed pulled=$pulled '
+      'remainingPending=$remainingPending conflicts=$conflictCount '
+      'errors=$errors',
+      name: 'sync.run',
+    );
     return SyncResult(
       pushed: pushed,
       pulled: pulled,
@@ -110,16 +135,49 @@ class SyncManager {
     return _roleStrategy.pullReferenceData(since: since);
   }
 
-  Future<int> _push() async {
+  Future<int> _push({required String passName}) async {
     final batch = await _syncDao.getNextBatch(
       limit: _batchSize,
       entityTypes: backendSupportedSyncEntityTypes,
     );
     var successCount = 0;
+    final adjustedStockBagUuidsThisPass = <String>{};
 
+    developer.log(
+      '[SyncPush] pass=$passName batchSize=${batch.length} '
+      'order=${batch.map(_queueEntrySummary).join(' -> ')}',
+      name: 'sync.push',
+    );
+
+    var index = 0;
     for (final entry in batch) {
+      index++;
+      developer.log(
+        '[SyncPush] pass=$passName start $index/${batch.length} '
+        '${_queueEntrySummary(entry)} payload=${_logPreview(_safeQueuedPayloadForLog(entry.payload))}',
+        name: 'sync.push',
+      );
+
       if (entry.retryCount >= _maxRetries) {
         await _syncDao.markConflict(entry.id);
+        developer.log(
+          '[SyncPush] pass=$passName conflict ${_queueEntrySummary(entry)} '
+          'reason=maxRetries retry=${entry.retryCount}',
+          name: 'sync.push',
+        );
+        continue;
+      }
+
+      if (_dispatchUsesAdjustedStockBag(
+        entry,
+        adjustedStockBagUuidsThisPass,
+      )) {
+        developer.log(
+          '[SyncPush] pass=$passName deferred ${_queueEntrySummary(entry)} '
+          'because a selected stock bag was adjusted earlier in this sync pass. '
+          'adjustedStockBagUuids=$adjustedStockBagUuidsThisPass',
+          name: 'sync.push',
+        );
         continue;
       }
 
@@ -127,11 +185,20 @@ class SyncManager {
         await _pushEntry(entry);
         await _syncDao.markSynced(entry.id);
         await _markEntitySynced(entry.entityType, entry.entityId);
+        if (entry.entityType == 'stockAdjustments') {
+          adjustedStockBagUuidsThisPass.addAll(
+            _stockBagUuidsFromQueuedPayload(entry.payload),
+          );
+        }
         successCount++;
+        developer.log(
+          '[SyncPush] pass=$passName success ${_queueEntrySummary(entry)}',
+          name: 'sync.push',
+        );
       } on DioException catch (e) {
         final status = e.response?.statusCode;
         developer.log(
-          '[SyncPush] entity=${entry.entityType} operation=${entry.operation} '
+          '[SyncPush] pass=$passName failure ${_queueEntrySummary(entry)} '
           'path=${e.requestOptions.path} status=$status '
           'retry=${entry.retryCount + 1} '
           'response=${e.response?.data} '
@@ -149,7 +216,8 @@ class SyncManager {
         }
       } catch (e, stackTrace) {
         developer.log(
-          '[SyncPush] entity=${entry.entityType} operation=${entry.operation} failed=$e',
+          '[SyncPush] pass=$passName failure ${_queueEntrySummary(entry)} '
+          'error=$e',
           name: 'sync.push',
           error: e,
           stackTrace: stackTrace,
@@ -159,6 +227,40 @@ class SyncManager {
     }
 
     return successCount;
+  }
+
+  String _queueEntrySummary(SyncQueueData entry) {
+    return '#${entry.id}:${entry.entityType}/${entry.operation}'
+        ':${entry.entityId}:retry=${entry.retryCount}';
+  }
+
+  bool _dispatchUsesAdjustedStockBag(
+    SyncQueueData entry,
+    Set<String> adjustedStockBagUuids,
+  ) {
+    if (entry.entityType != 'dispatches' || adjustedStockBagUuids.isEmpty) {
+      return false;
+    }
+
+    final dispatchBagUuids = _stockBagUuidsFromQueuedPayload(entry.payload);
+    return dispatchBagUuids.any(adjustedStockBagUuids.contains);
+  }
+
+  Set<String> _stockBagUuidsFromQueuedPayload(String payload) {
+    try {
+      final decoded = jsonDecode(payload);
+      final data = _asMap(decoded);
+      final bags = data['bags'];
+      if (bags is! List) return const <String>{};
+
+      return bags
+          .whereType<Map>()
+          .map((bag) => bag['stockBagUuid']?.toString().trim() ?? '')
+          .where((uuid) => uuid.isNotEmpty)
+          .toSet();
+    } catch (_) {
+      return const <String>{};
+    }
   }
 
   Future<void> _pushEntry(SyncQueueData entry) async {
@@ -195,6 +297,14 @@ class SyncManager {
       await _resolveHarvestFarmer(payload);
       _normalizeHarvestBagTags(payload);
       _normalizeHarvestPayloadForPost(payload);
+    }
+    if (_isWarehouseOperation(entry.entityType) &&
+        entry.operation != 'delete') {
+      await _normalizeWarehouseOperationPayload(
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        payload: payload,
+      );
     }
     final path = _entityPath(entry.entityType, entry.entityId);
     if (entry.entityType == 'farmerHarvests' && entry.operation == 'create') {
@@ -249,6 +359,13 @@ class SyncManager {
             operation: 'create',
             payload: payload,
             responseData: response.data,
+          );
+        } else if (_isWarehouseOperation(entry.entityType)) {
+          developer.log(
+            '[WarehouseOperationSync] create entity=${entry.entityType} '
+            'uuid=${entry.entityId} payload=${_logPreview(payload)} '
+            'response=${_logPreview(response.data)}',
+            name: 'sync.warehouse.operation',
           );
         }
         break;
@@ -692,6 +809,11 @@ class SyncManager {
     return int.tryParse(value?.toString() ?? '');
   }
 
+  double _double(Object? value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   Future<void> _markEntitySynced(String entityType, String entityId) async {
     switch (entityType) {
       case 'amcos':
@@ -808,6 +930,190 @@ class SyncManager {
     payload.remove('collectionCenterId');
     payload.remove('collectionCenterName');
   }
+
+  bool _isWarehouseOperation(String entityType) {
+    return entityType == 'dispatches' ||
+        entityType == 'stockCounts' ||
+        entityType == 'stockAdjustments';
+  }
+
+  Future<void> _normalizeWarehouseOperationPayload({
+    required String entityType,
+    required String entityId,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (entityType == 'dispatches') {
+      _ensureMeasuredBags(
+        payload,
+        count: _int(payload['totalBags']),
+        grossWeight: _double(payload['totalGrossWeight']),
+        packagingWeight: _double(payload['totalPackagingWeight']),
+        netWeight: _double(payload['totalNetWeight']),
+        moistureContent: _double(payload['moistureContent']),
+        measuredAt: payload['dispatchedAt']?.toString(),
+      );
+      _assertMeasuredBagsHaveStockBagUuids(payload);
+      payload.remove('totalBags');
+      payload.remove('totalGrossWeight');
+      payload.remove('totalPackagingWeight');
+      payload.remove('totalNetWeight');
+      payload.remove('moistureContent');
+      payload.remove('dispatchedBy');
+      return;
+    }
+
+    if (entityType == 'stockCounts') {
+      _ensureMeasuredBags(
+        payload,
+        count: _int(payload['countedBags']),
+        grossWeight: _double(payload['countedGrossWeight']),
+        packagingWeight: _double(payload['countedPackagingWeight']),
+        netWeight: _double(payload['countedNetWeight']),
+        moistureContent: _double(payload['moistureContent']),
+        measuredAt: payload['countedAt']?.toString(),
+      );
+      _assertMeasuredBagsHaveStockBagUuids(payload);
+      payload.remove('countedBags');
+      payload.remove('countedGrossWeight');
+      payload.remove('countedPackagingWeight');
+      payload.remove('countedNetWeight');
+      payload.remove('moistureContent');
+      payload.remove('countedBy');
+      return;
+    }
+
+    if (entityType == 'stockAdjustments') {
+      final count = _int(payload['totalBags'] ?? payload['bags']);
+      final grossWeight = _double(payload['grossWeight']);
+      final packagingWeight = _double(payload['packagingWeight']);
+      final netWeight = _double(payload['netWeight']);
+      final moistureContent = _double(payload['moistureContent']);
+
+      _ensureMeasuredBags(
+        payload,
+        count: count,
+        grossWeight: grossWeight,
+        packagingWeight: packagingWeight,
+        netWeight: netWeight,
+        moistureContent: moistureContent,
+        measuredAt: payload['adjustedAt']?.toString(),
+      );
+
+      final adjustmentType = payload['adjustmentType']?.toString().toUpperCase();
+      if (adjustmentType == 'INCREASE') {
+        final adjustsExistingStockBags = _measuredBagsHaveStockBagUuids(payload);
+        if (adjustsExistingStockBags) {
+          payload.remove('newBags');
+        } else if (!_hasNonEmptyList(payload['newBags'])) {
+          payload['newBags'] = _newWarehouseBags(
+            entityId: entityId,
+            count: count,
+            grossWeight: grossWeight,
+            packagingWeight: packagingWeight,
+            netWeight: netWeight,
+            moistureContent: moistureContent,
+          );
+        }
+        if (!adjustsExistingStockBags) {
+          payload['bags'] = <Map<String, dynamic>>[];
+        }
+      } else {
+        _assertMeasuredBagsHaveStockBagUuids(payload);
+      }
+      payload.remove('totalBags');
+      payload.remove('grossWeight');
+      payload.remove('packagingWeight');
+      payload.remove('netWeight');
+      payload.remove('moistureContent');
+      payload.remove('adjustedBy');
+    }
+  }
+
+  void _ensureMeasuredBags(
+    Map<String, dynamic> payload, {
+    required int? count,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    required double moistureContent,
+    required String? measuredAt,
+  }) {
+    if (_hasNonEmptyList(payload['bags'])) return;
+
+    final safeCount = count == null || count <= 0 ? 1 : count;
+    payload['bags'] = List.generate(safeCount, (index) {
+      return {
+        'stockBagUuid': '',
+        'measuredGrossWeight': _splitWeight(grossWeight, safeCount, index),
+        'measuredPackagingWeight':
+            _splitWeight(packagingWeight, safeCount, index),
+        'measuredNetWeight': _splitWeight(netWeight, safeCount, index),
+        'moistureContent': _roundWeight(moistureContent),
+        'measuredAt': measuredAt ?? DateTime.now().toIso8601String(),
+      };
+    });
+  }
+
+  void _assertMeasuredBagsHaveStockBagUuids(Map<String, dynamic> payload) {
+    if (_measuredBagsHaveStockBagUuids(payload)) return;
+    throw StateError(
+      'Select the exact stock bag by visible tag before syncing this warehouse operation.',
+    );
+  }
+
+  bool _measuredBagsHaveStockBagUuids(Map<String, dynamic> payload) {
+    final bags = payload['bags'];
+    if (bags is! List || bags.isEmpty) return false;
+
+    for (var index = 0; index < bags.length; index++) {
+      final bag = bags[index];
+      if (bag is! Map) return false;
+
+      final stockBagUuid = bag['stockBagUuid']?.toString().trim();
+      if (stockBagUuid == null || stockBagUuid.isEmpty) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  List<Map<String, dynamic>> _newWarehouseBags({
+    required String entityId,
+    required int? count,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    required double moistureContent,
+  }) {
+    final safeCount = count == null || count <= 0 ? 1 : count;
+    return List.generate(safeCount, (index) {
+      final perGross = _splitWeight(grossWeight, safeCount, index);
+      final perPackaging = _splitWeight(packagingWeight, safeCount, index);
+      return {
+        'uuid': '$entityId-bag-${index + 1}',
+        'grossWeight': perGross,
+        'packagingWeight': perPackaging,
+        'loadWeight': _roundWeight(perGross - perPackaging),
+        'netWeight': _splitWeight(netWeight, safeCount, index),
+        'moistureContent': _roundWeight(moistureContent),
+        'tagNumber': 'ADJ-${entityId.substring(0, 8)}-${index + 1}',
+        'tagType': 'GENERATED',
+      };
+    });
+  }
+
+  bool _hasNonEmptyList(Object? value) {
+    return value is List && value.isNotEmpty;
+  }
+
+  double _splitWeight(double total, int count, int index) {
+    if (count <= 1) return _roundWeight(total);
+    final firstPieces = _roundWeight(total / count);
+    if (index < count - 1) return firstPieces;
+    return _roundWeight(total - (firstPieces * (count - 1)));
+  }
+
+  double _roundWeight(double value) => double.parse(value.toStringAsFixed(3));
 
   String _logPreview(Object? data) {
     final text = data.toString();

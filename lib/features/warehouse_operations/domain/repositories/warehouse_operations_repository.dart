@@ -1,4 +1,5 @@
 import 'package:warehouse_app/core/database/app_database.dart';
+import 'package:warehouse_app/features/warehouse_operations/domain/models/warehouse_operation_models.dart';
 
 abstract class WarehouseOperationsRepository {
   Stream<List<WarehouseInventory>> watchInventory(String warehouseId);
@@ -6,6 +7,22 @@ abstract class WarehouseOperationsRepository {
   Stream<List<WarehouseStockCount>> watchStockCounts(String warehouseId);
   Stream<List<WarehouseStockAdjustment>> watchStockAdjustments(
     String warehouseId,
+  );
+
+  Future<List<StockBag>> fetchStockBags({
+    required Warehouse warehouse,
+    required Crop crop,
+    String status = 'IN_STOCK',
+  });
+
+  Future<List<WarehouseOperationBag>> fetchDispatchBags(String dispatchUuid);
+
+  Future<List<WarehouseOperationBag>> fetchStockCountBags(
+    String stockCountUuid,
+  );
+
+  Future<List<WarehouseOperationBag>> fetchStockAdjustmentBags(
+    String adjustmentUuid,
   );
 
   Future<void> recordDispatch({
@@ -18,6 +35,7 @@ abstract class WarehouseOperationsRepository {
     required double totalGrossWeight,
     required double totalPackagingWeight,
     required double totalNetWeight,
+    List<WarehouseOperationBagDraft>? bagDetails,
     double moistureContent,
     DateTime? dispatchedAt,
   });
@@ -29,6 +47,7 @@ abstract class WarehouseOperationsRepository {
     required double countedGrossWeight,
     required double countedPackagingWeight,
     required double countedNetWeight,
+    List<WarehouseOperationBagDraft>? bagDetails,
     double moistureContent,
     DateTime? countedAt,
   });
@@ -42,6 +61,7 @@ abstract class WarehouseOperationsRepository {
     required double grossWeight,
     required double packagingWeight,
     required double netWeight,
+    List<WarehouseOperationBagDraft>? bagDetails,
     double moistureContent,
     DateTime? adjustedAt,
   });

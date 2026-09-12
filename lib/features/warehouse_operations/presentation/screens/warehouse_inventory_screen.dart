@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/input_field.dart';
+import 'package:warehouse_app/core/config/feature_flags.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
@@ -14,7 +16,7 @@ import 'package:warehouse_app/features/warehouse_operations/domain/models/wareho
 
 enum _WarehouseAction { dispatch, count, adjustment }
 
-enum _OperationStep { weighing, details, review }
+enum _OperationStep { selection, weighing, details, review }
 
 class WarehouseInventoryScreen extends ConsumerStatefulWidget {
   final String warehouseId;
@@ -929,42 +931,44 @@ class CropStockDetailsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _CurrentStockCard(item: item),
-              const SizedBox(height: 18),
-              const Text(
-                'Manage Stock',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 10),
-              _OperationGrid(
-                onDispatch: () => context.push(
-                  _operationPath(
-                    ownerFlow: ownerFlow,
-                    warehouseId: warehouseId,
-                    cropId: cropId,
-                    operation: 'dispatch',
+              if (FeatureFlags.warehouseOperationsEnabled) ...[
+                const SizedBox(height: 18),
+                const Text(
+                  'Manage Stock',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                onCount: () => context.push(
-                  _operationPath(
-                    ownerFlow: ownerFlow,
-                    warehouseId: warehouseId,
-                    cropId: cropId,
-                    operation: 'count',
+                const SizedBox(height: 10),
+                _OperationGrid(
+                  onDispatch: () => context.push(
+                    _operationPath(
+                      ownerFlow: ownerFlow,
+                      warehouseId: warehouseId,
+                      cropId: cropId,
+                      operation: 'dispatch',
+                    ),
+                  ),
+                  onCount: () => context.push(
+                    _operationPath(
+                      ownerFlow: ownerFlow,
+                      warehouseId: warehouseId,
+                      cropId: cropId,
+                      operation: 'count',
+                    ),
+                  ),
+                  onAdjustment: () => context.push(
+                    _operationPath(
+                      ownerFlow: ownerFlow,
+                      warehouseId: warehouseId,
+                      cropId: cropId,
+                      operation: 'adjustment',
+                    ),
                   ),
                 ),
-                onAdjustment: () => context.push(
-                  _operationPath(
-                    ownerFlow: ownerFlow,
-                    warehouseId: warehouseId,
-                    cropId: cropId,
-                    operation: 'adjustment',
-                  ),
-                ),
-              ),
+              ],
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -1029,22 +1033,38 @@ class _WarehouseOperationFormScreenState
   final _formKey = GlobalKey<FormState>();
   final _recipientName = TextEditingController();
   final _recipientPhone = TextEditingController();
+  final _bagSearch = TextEditingController();
   final List<_OperationBag> _bags = [];
+  final List<StockBag> _availableStockBags = [];
+  final List<StockBag> _selectedStockBags = [];
   _OperationStep _step = _OperationStep.weighing;
+  String _bagQuery = '';
   String _recipientType = WarehouseRecipientType.buyer;
   String _adjustmentType = StockAdjustmentType.increase;
   String _reason = StockAdjustmentReason.correction;
   bool _saving = false;
+  bool _loadingStockBags = false;
+  String? _stockBagError;
+  String? _stockBagsKey;
 
   @override
   void initState() {
     super.initState();
+    final action = _actionFromPath(widget.operation);
+    if (action == _WarehouseAction.dispatch ||
+        action == _WarehouseAction.adjustment) {
+      _step = _OperationStep.selection;
+    }
+    _bagSearch.addListener(() {
+      setState(() => _bagQuery = _bagSearch.text.trim().toLowerCase());
+    });
   }
 
   @override
   void dispose() {
     _recipientName.dispose();
     _recipientPhone.dispose();
+    _bagSearch.dispose();
     super.dispose();
   }
 
@@ -1079,7 +1099,10 @@ class _WarehouseOperationFormScreenState
                 _OperationInfoCard(action: action),
                 const SizedBox(height: 14),
                 ...switch (_step) {
-                  _OperationStep.weighing => _weighingStep(crop, scaleState),
+                  _OperationStep.selection =>
+                    _stockBagSelectionStep(action, warehouse, inventory, crop),
+                  _OperationStep.weighing =>
+                    _weighingStep(action, warehouse, crop, scaleState),
                   _OperationStep.details => _detailsStep(action),
                   _OperationStep.review =>
                     _reviewStep(action, warehouse, inventory, crop),
@@ -1101,7 +1124,17 @@ class _WarehouseOperationFormScreenState
     );
   }
 
-  List<Widget> _weighingStep(Crop crop, WeightScaleState scaleState) {
+  List<Widget> _weighingStep(
+    _WarehouseAction action,
+    Warehouse warehouse,
+    Crop crop,
+    WeightScaleState scaleState,
+  ) {
+    if (action == _WarehouseAction.dispatch ||
+        action == _WarehouseAction.adjustment) {
+      return _selectedBagWeighingStep(action, crop, scaleState);
+    }
+
     return [
       const _SectionHeader(
         title: 'Weigh bags',
@@ -1130,13 +1163,32 @@ class _WarehouseOperationFormScreenState
           fontSize: 12,
         ),
       ),
+      if (_usesExistingStockBag(action)) ...[
+        const SizedBox(height: 12),
+        _StockBagSourceCard(
+          selectedCount: _bags.length,
+          availableCount: _availableStockBags.length,
+          loading: _loadingStockBags,
+          error: _stockBagError,
+          onRefresh: () => _loadStockBags(
+            warehouse: warehouse,
+            crop: crop,
+            force: true,
+          ),
+        ),
+      ],
       const SizedBox(height: 16),
       Row(
         children: [
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _canAddBag(scaleState)
-                  ? () => _addBagFromScale(crop, scaleState)
+                  ? () => _addBagFromScale(
+                        action,
+                        warehouse,
+                        crop,
+                        scaleState,
+                      )
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.workerColor,
@@ -1159,6 +1211,206 @@ class _WarehouseOperationFormScreenState
             ),
           ),
         ],
+      ),
+    ];
+  }
+
+  List<Widget> _stockBagSelectionStep(
+    _WarehouseAction action,
+    Warehouse warehouse,
+    WarehouseInventory inventory,
+    Crop crop,
+  ) {
+    _requestStockBagsIfNeeded(warehouse: warehouse, crop: crop);
+
+    final selectedUuids = _selectedStockBags.map((bag) => bag.uuid).toSet();
+    final visibleBags = _filteredStockBags();
+
+    return [
+      _SectionHeader(
+        title: action == _WarehouseAction.dispatch
+            ? 'Select bags to dispatch'
+            : 'Select bags to adjust',
+        subtitle: '${inventory.totalBags} bags available for '
+            '${inventory.cropName}. Choose the visible bag tags.',
+      ),
+      const SizedBox(height: 10),
+      AppLabeledField(
+        labelText: 'Search by tag number',
+        child: TextField(
+          controller: _bagSearch,
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.search_rounded),
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      _DispatchSelectionSummary(
+        selectedCount: _selectedStockBags.length,
+        availableCount: _availableStockBags.length,
+        loading: _loadingStockBags,
+        error: _stockBagError,
+        onRefresh: () => _loadStockBags(
+          warehouse: warehouse,
+          crop: crop,
+          force: true,
+        ),
+      ),
+      const SizedBox(height: 12),
+      if (_loadingStockBags)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 28),
+          child: Center(child: CircularProgressIndicator()),
+        )
+      else if (_stockBagError != null)
+        AppCard(
+          child: Text(
+            'Could not load stock bags. ${_stockBagError ?? ''}',
+            style: const TextStyle(color: AppColors.error),
+          ),
+        )
+      else if (visibleBags.isEmpty)
+        const AppCard(
+          child: EmptyState(
+            icon: Icons.inventory_2_outlined,
+            title: 'No matching bags',
+            subtitle: 'Try another tag number or refresh available stock.',
+          ),
+        )
+      else
+        ...visibleBags.map(
+          (bag) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _SelectableStockBagTile(
+              bag: bag,
+              selected: selectedUuids.contains(bag.uuid),
+              onChanged: (selected) => _toggleSelectedStockBag(bag, selected),
+            ),
+          ),
+        ),
+    ];
+  }
+
+  List<Widget> _selectedBagWeighingStep(
+    _WarehouseAction action,
+    Crop crop,
+    WeightScaleState scaleState,
+  ) {
+    final pendingBag = _nextDispatchBagToWeigh();
+    final packagingWeight = _nextPackagingWeight(crop);
+    final dispatchGross = scaleState.weight;
+    final dispatchNet =
+        dispatchGross <= packagingWeight ? 0.0 : dispatchGross - packagingWeight;
+
+    return [
+      _SectionHeader(
+        title: action == _WarehouseAction.dispatch
+            ? 'Weigh selected bags'
+            : 'Reweigh selected bags',
+        subtitle: action == _WarehouseAction.dispatch
+            ? 'Weigh each selected tagged bag before confirming dispatch.'
+            : 'Reweigh each selected tagged bag before entering adjustment details.',
+      ),
+      const SizedBox(height: 10),
+      _ScaleReadingCard(
+        scaleState: scaleState,
+        onConnect: _showScalePicker,
+      ),
+      const SizedBox(height: 12),
+      _DispatchProgressCard(
+        selectedCount: _selectedStockBags.length,
+        weighedCount: _bags.length,
+      ),
+      const SizedBox(height: 12),
+      if (pendingBag == null)
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                action == _WarehouseAction.dispatch
+                    ? 'Dispatch bags ready'
+                    : 'Adjustment bags ready',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ..._bags.map(
+                (bag) => _DispatchReadyRow(
+                  tagNumber: bag.tagNumber ?? bag.stockBagUuid ?? '',
+                  netWeight: bag.netWeight,
+                ),
+              ),
+              const Divider(height: 20),
+              _TotalRow(label: 'Total bags', value: '${_bags.length}'),
+              _TotalRow(
+                label: action == _WarehouseAction.dispatch
+                    ? 'Total dispatch weight'
+                    : 'Total measured weight',
+                value: '${_formatNumber(_totalNetWeight)} kg',
+              ),
+            ],
+          ),
+        )
+      else
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                pendingBag.tagNumber.trim().isNotEmpty
+                    ? pendingBag.tagNumber
+                    : pendingBag.uuid,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _TotalRow(
+                label: 'Receiving',
+                value: '${_formatNumber(pendingBag.netWeight)} kg',
+              ),
+              _TotalRow(
+                label: action == _WarehouseAction.dispatch
+                    ? 'Dispatch'
+                    : 'Current',
+                value: '${_formatNumber(dispatchNet)} kg',
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _canAddBag(scaleState)
+                      ? () => _addSelectedStockBag(
+                            action: action,
+                            stockBag: pendingBag,
+                            crop: crop,
+                            grossWeight: dispatchGross,
+                          )
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.workerColor,
+                  ),
+                  icon: const Icon(Icons.add_shopping_cart_rounded),
+                  label: Text(
+                    action == _WarehouseAction.dispatch
+                        ? 'Add to Dispatch'
+                        : 'Add to Adjustment',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: _showBagsSheet,
+        icon: const Icon(Icons.inventory_2_outlined),
+        label: Text('Review ${_bags.length} weighed bags'),
       ),
     ];
   }
@@ -1227,7 +1479,7 @@ class _WarehouseOperationFormScreenState
       );
     }
 
-    final isFirstStep = _step == _OperationStep.weighing;
+    final isFirstStep = _step == _firstStepFor(action);
     final isReviewStep = _step == _OperationStep.review;
 
     return Row(
@@ -1324,9 +1576,18 @@ class _WarehouseOperationFormScreenState
                   (value) => DropdownMenuItem(value: value, child: Text(value)),
                 )
                 .toList(),
-            onChanged: (value) => setState(
-              () => _adjustmentType = value ?? StockAdjustmentType.increase,
-            ),
+            onChanged: (value) {
+              final wasDecrease =
+                  _adjustmentType == StockAdjustmentType.decrease;
+              final nextValue = value ?? StockAdjustmentType.increase;
+              final isDecrease = nextValue == StockAdjustmentType.decrease;
+              setState(() {
+                _adjustmentType = nextValue;
+                if (wasDecrease != isDecrease) {
+                  _bags.clear();
+                }
+              });
+            },
           ),
         ),
         const SizedBox(height: 10),
@@ -1356,9 +1617,28 @@ class _WarehouseOperationFormScreenState
     required WarehouseInventory inventory,
   }) {
     switch (_step) {
+      case _OperationStep.selection:
+        if (_selectedStockBags.isEmpty) {
+          _showError('Select at least one bag before continuing.');
+          return;
+        }
+        if (_selectedStockBags.length > inventory.totalBags) {
+          _showError(
+            'You selected ${_selectedStockBags.length} bags. Only ${inventory.totalBags} bags are available.',
+          );
+          return;
+        }
+        setState(() => _step = _OperationStep.weighing);
+        return;
       case _OperationStep.weighing:
         if (_bags.isEmpty) {
           _showError('Add at least one bag before continuing.');
+          return;
+        }
+        if ((action == _WarehouseAction.dispatch ||
+                action == _WarehouseAction.adjustment) &&
+            _bags.length < _selectedStockBags.length) {
+          _showError('Weigh all selected bags before continuing.');
           return;
         }
         final stockError = _validateStockOperation(
@@ -1381,13 +1661,22 @@ class _WarehouseOperationFormScreenState
   }
 
   void _previousStep() {
+    final action = _actionFromPath(widget.operation);
     setState(() {
       _step = switch (_step) {
-        _OperationStep.weighing => _OperationStep.weighing,
+        _OperationStep.selection => _OperationStep.selection,
+        _OperationStep.weighing => _firstStepFor(action),
         _OperationStep.details => _OperationStep.weighing,
         _OperationStep.review => _OperationStep.details,
       };
     });
+  }
+
+  _OperationStep _firstStepFor(_WarehouseAction action) {
+    return action == _WarehouseAction.dispatch ||
+            action == _WarehouseAction.adjustment
+        ? _OperationStep.selection
+        : _OperationStep.weighing;
   }
 
   String _detailsTitle(_WarehouseAction action) {
@@ -1530,6 +1819,15 @@ class _WarehouseOperationFormScreenState
     required _WarehouseAction action,
     required WarehouseInventory inventory,
   }) {
+    final usesSelectedStockBags = _bags.isNotEmpty &&
+        _bags.every((bag) => bag.stockBagUuid?.trim().isNotEmpty == true);
+
+    if ((action == _WarehouseAction.dispatch ||
+            action == _WarehouseAction.adjustment) &&
+        usesSelectedStockBags) {
+      return null;
+    }
+
     final decreasesStock = action == _WarehouseAction.dispatch ||
         (action == _WarehouseAction.adjustment &&
             _adjustmentType == StockAdjustmentType.decrease);
@@ -1574,7 +1872,114 @@ class _WarehouseOperationFormScreenState
         scaleState.weight > 0;
   }
 
-  Future<void> _addBagFromScale(Crop crop, WeightScaleState scaleState) async {
+  void _requestStockBagsIfNeeded({
+    required Warehouse warehouse,
+    required Crop crop,
+  }) {
+    final key = '${warehouse.uuid}|${warehouse.id}|${crop.id}|IN_STOCK';
+    if (_stockBagsKey == key || _loadingStockBags) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _loadStockBags(warehouse: warehouse, crop: crop);
+    });
+  }
+
+  List<StockBag> _filteredStockBags() {
+    if (_bagQuery.isEmpty) return _availableStockBags;
+    return _availableStockBags.where((bag) {
+      return bag.tagNumber.toLowerCase().contains(_bagQuery) ||
+          bag.uuid.toLowerCase().contains(_bagQuery);
+    }).toList();
+  }
+
+  void _toggleSelectedStockBag(StockBag bag, bool selected) {
+    setState(() {
+      if (selected) {
+        if (_selectedStockBags.every((item) => item.uuid != bag.uuid)) {
+          _selectedStockBags.add(bag);
+        }
+      } else {
+        _selectedStockBags.removeWhere((item) => item.uuid == bag.uuid);
+        _bags.removeWhere((item) => item.stockBagUuid == bag.uuid);
+      }
+    });
+  }
+
+  StockBag? _nextDispatchBagToWeigh() {
+    final weighedUuids = _bags
+        .map((bag) => bag.stockBagUuid)
+        .whereType<String>()
+        .toSet();
+    for (final bag in _selectedStockBags) {
+      if (!weighedUuids.contains(bag.uuid)) return bag;
+    }
+    return null;
+  }
+
+  Future<void> _addSelectedStockBag({
+    required _WarehouseAction action,
+    required StockBag stockBag,
+    required Crop crop,
+    required double grossWeight,
+  }) async {
+    if (_bags.any((bag) => bag.stockBagUuid == stockBag.uuid)) return;
+
+    final packagingWeight = _nextPackagingWeight(crop);
+    if (grossWeight <= 0) {
+      _showError('Scale weight must be greater than zero.');
+      return;
+    }
+    if (packagingWeight >= grossWeight) {
+      _showError('Packaging weight must be less than gross weight.');
+      return;
+    }
+
+    final netWeight = grossWeight - packagingWeight;
+    final difference = netWeight - stockBag.netWeight;
+    if (action == _WarehouseAction.dispatch &&
+        !_withinDispatchReweighTolerance(
+          recordedNetWeight: stockBag.netWeight,
+          measuredNetWeight: netWeight,
+        )) {
+      final tag = stockBag.tagNumber.trim().isNotEmpty
+          ? stockBag.tagNumber
+          : stockBag.uuid;
+      final adjustmentType = difference > 0
+          ? StockAdjustmentType.increase
+          : StockAdjustmentType.decrease;
+      _showError(
+        'Bag $tag changed from ${_formatWeightDetail(stockBag.netWeight)} kg to ${_formatWeightDetail(netWeight)} kg. Perform a $adjustmentType stock adjustment first, then dispatch.',
+      );
+      return;
+    }
+
+    if (action == _WarehouseAction.adjustment && !_nearlyEqual(difference, 0)) {
+      setState(() {
+        _adjustmentType = difference > 0
+            ? StockAdjustmentType.increase
+            : StockAdjustmentType.decrease;
+      });
+    }
+
+    final added = await _addBag(
+      action,
+      null,
+      crop,
+      grossWeight,
+      selectedStockBag: stockBag,
+    );
+    if (added) {
+      ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
+    }
+  }
+
+  Future<void> _addBagFromScale(
+    _WarehouseAction action,
+    Warehouse warehouse,
+    Crop crop,
+    WeightScaleState scaleState,
+  ) async {
     if (!scaleState.isConnected || !scaleState.isStreaming) {
       _showError('Connect scale before adding a bag.');
       return;
@@ -1588,13 +1993,19 @@ class _WarehouseOperationFormScreenState
       return;
     }
 
-    final added = await _addBag(crop, scaleState.weight);
+    final added = await _addBag(action, warehouse, crop, scaleState.weight);
     if (added) {
       ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
     }
   }
 
-  Future<bool> _addBag(Crop crop, double grossWeight) async {
+  Future<bool> _addBag(
+    _WarehouseAction action,
+    Warehouse? warehouse,
+    Crop crop,
+    double grossWeight, {
+    StockBag? selectedStockBag,
+  }) async {
     final packagingWeight = _nextPackagingWeight(crop);
 
     if (grossWeight <= 0) {
@@ -1605,6 +2016,15 @@ class _WarehouseOperationFormScreenState
       _showError('Packaging weight must be less than gross weight.');
       return false;
     }
+
+    final stockBag = selectedStockBag ??
+        (_usesExistingStockBag(action) && warehouse != null
+            ? await _selectStockBag(warehouse: warehouse, crop: crop)
+            : null);
+    if (_usesExistingStockBag(action) && stockBag == null) {
+      return false;
+    }
+
     final moistureContent = await askAndMeasureMoisture(
       context: context,
       cropName: crop.name,
@@ -1615,6 +2035,11 @@ class _WarehouseOperationFormScreenState
     setState(() {
       _bags.add(
         _OperationBag(
+          stockBagUuid: stockBag?.uuid,
+          tagNumber: stockBag?.tagNumber,
+          recordedGrossWeight: stockBag?.grossWeight,
+          recordedPackagingWeight: stockBag?.packagingWeight,
+          recordedNetWeight: stockBag?.netWeight,
           grossWeight: grossWeight,
           packagingWeight: packagingWeight,
           netWeight: grossWeight - packagingWeight,
@@ -1627,6 +2052,139 @@ class _WarehouseOperationFormScreenState
 
   void _removeBag(int index) {
     setState(() => _bags.removeAt(index));
+  }
+
+  bool _usesExistingStockBag(_WarehouseAction action) {
+    return action == _WarehouseAction.dispatch ||
+        action == _WarehouseAction.count ||
+        action == _WarehouseAction.adjustment;
+  }
+
+  Future<List<StockBag>> _loadStockBags({
+    required Warehouse warehouse,
+    required Crop crop,
+    bool force = false,
+  }) async {
+    final key = '${warehouse.uuid}|${warehouse.id}|${crop.id}|IN_STOCK';
+    if (!force && _stockBagsKey == key) return _availableStockBags;
+
+    setState(() {
+      _loadingStockBags = true;
+      _stockBagError = null;
+    });
+
+    try {
+      final bags = await ref.read(warehouseOperationsRepoProvider).fetchStockBags(
+            warehouse: warehouse,
+            crop: crop,
+            status: 'IN_STOCK',
+          );
+      if (!mounted) return bags;
+      setState(() {
+        _availableStockBags
+          ..clear()
+          ..addAll(bags);
+        _stockBagsKey = key;
+        _loadingStockBags = false;
+      });
+      return bags;
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _stockBagsKey = key;
+          _stockBagError = _friendlyStockBagError(error);
+          _loadingStockBags = false;
+        });
+      }
+      return const [];
+    }
+  }
+
+  String _friendlyStockBagError(Object error) {
+    if (error is DioException) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode == 403) {
+        return 'Your account is not allowed to view stock bags for this warehouse/crop. Ask backend to enable stock-bag access for this role and collection center.';
+      }
+      if (statusCode == 401) {
+        return 'Your session has expired. Login again and retry.';
+      }
+      if (statusCode != null) {
+        return 'Server rejected the request with status $statusCode.';
+      }
+      if (error.type == DioExceptionType.connectionError ||
+          error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout) {
+        return 'Could not reach the server. Check internet connection and retry.';
+      }
+    }
+    return error.toString();
+  }
+
+  Future<StockBag?> _selectStockBag({
+    required Warehouse warehouse,
+    required Crop crop,
+  }) async {
+    final bags = await _loadStockBags(warehouse: warehouse, crop: crop);
+    if (!mounted) return null;
+
+    final selectedUuids = _bags
+        .map((bag) => bag.stockBagUuid)
+        .whereType<String>()
+        .toSet();
+    final available =
+        bags.where((bag) => !selectedUuids.contains(bag.uuid)).toList();
+
+    if (available.isEmpty) {
+      _showError('No available stock bags found for this crop.');
+      return null;
+    }
+
+    return showModalBottomSheet<StockBag>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Select stock bag',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: available.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final bag = available[index];
+                      return _StockBagTile(
+                        bag: bag,
+                        onTap: () => Navigator.of(sheetContext).pop(bag),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showBagsSheet() {
@@ -1743,8 +2301,10 @@ class _WarehouseOperationFormScreenState
             totalGrossWeight: _totalGrossWeight,
             totalPackagingWeight: _totalPackagingWeight,
             totalNetWeight: _totalNetWeight,
+            bagDetails: _operationBagDrafts(),
             moistureContent: _averageMoistureContent,
           );
+          ref.invalidate(warehouseDispatchesProvider(warehouse.id));
         case _WarehouseAction.count:
           await repo.recordStockCount(
             warehouse: warehouse,
@@ -1753,8 +2313,10 @@ class _WarehouseOperationFormScreenState
             countedGrossWeight: _totalGrossWeight,
             countedPackagingWeight: _totalPackagingWeight,
             countedNetWeight: _totalNetWeight,
+            bagDetails: _operationBagDrafts(),
             moistureContent: _averageMoistureContent,
           );
+          ref.invalidate(warehouseStockCountsProvider(warehouse.id));
         case _WarehouseAction.adjustment:
           await repo.recordStockAdjustment(
             warehouse: warehouse,
@@ -1765,9 +2327,12 @@ class _WarehouseOperationFormScreenState
             grossWeight: _totalGrossWeight,
             packagingWeight: _totalPackagingWeight,
             netWeight: _totalNetWeight,
+            bagDetails: _operationBagDrafts(),
             moistureContent: _averageMoistureContent,
           );
+          ref.invalidate(warehouseStockAdjustmentsProvider(warehouse.id));
       }
+      ref.invalidate(warehouseInventoryProvider(warehouse.id));
       if (!mounted) return;
       setState(() => _saving = false);
       await showSuccessDialog(
@@ -1794,6 +2359,351 @@ class _WarehouseOperationFormScreenState
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.error),
+    );
+  }
+
+  List<WarehouseOperationBagDraft> _operationBagDrafts() {
+    return _bags
+        .map(
+          (bag) => WarehouseOperationBagDraft(
+            stockBagUuid: bag.stockBagUuid,
+            tagNumber: bag.tagNumber,
+            recordedGrossWeight: bag.recordedGrossWeight,
+            recordedPackagingWeight: bag.recordedPackagingWeight,
+            recordedNetWeight: bag.recordedNetWeight,
+            grossWeight: bag.grossWeight,
+            packagingWeight: bag.packagingWeight,
+            netWeight: bag.netWeight,
+            moistureContent: bag.moistureContent,
+          ),
+        )
+        .toList();
+  }
+}
+
+class _DispatchSelectionSummary extends StatelessWidget {
+  final int selectedCount;
+  final int availableCount;
+  final bool loading;
+  final String? error;
+  final VoidCallback onRefresh;
+
+  const _DispatchSelectionSummary({
+    required this.selectedCount,
+    required this.availableCount,
+    required this.loading,
+    required this.error,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasError = error != null && error!.trim().isNotEmpty;
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          const Icon(Icons.checklist_rounded, color: AppColors.workerColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              hasError
+                  ? 'Stock bags could not be loaded.'
+                  : 'Selected: $selectedCount bags',
+              style: TextStyle(
+                color: hasError ? AppColors.error : AppColors.textPrimary,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          Text(
+            '$availableCount available',
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            tooltip: 'Refresh bags',
+            onPressed: loading ? null : onRefresh,
+            icon: loading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectableStockBagTile extends StatelessWidget {
+  final StockBag bag;
+  final bool selected;
+  final ValueChanged<bool> onChanged;
+
+  const _SelectableStockBagTile({
+    required this.bag,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = bag.tagNumber.trim().isNotEmpty ? bag.tagNumber : bag.uuid;
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => onChanged(!selected),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            children: [
+              Checkbox(
+                value: selected,
+                onChanged: (value) => onChanged(value ?? false),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tag: $title',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 3,
+                      children: [
+                        Text('Current weight: ${_formatNumber(bag.netWeight)} kg'),
+                        if (bag.moistureContent > 0)
+                          Text('Moisture: ${_formatNumber(bag.moistureContent)}%'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DispatchProgressCard extends StatelessWidget {
+  final int selectedCount;
+  final int weighedCount;
+
+  const _DispatchProgressCard({
+    required this.selectedCount,
+    required this.weighedCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          const Icon(Icons.local_shipping_outlined, color: AppColors.workerColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Selected Bags',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          Text(
+            '$weighedCount / $selectedCount weighed',
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DispatchReadyRow extends StatelessWidget {
+  final String tagNumber;
+  final double netWeight;
+
+  const _DispatchReadyRow({
+    required this.tagNumber,
+    required this.netWeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              tagNumber,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+          Text(
+            '${_formatNumber(netWeight)} kg',
+            style: const TextStyle(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.check_circle_rounded,
+            color: AppColors.workerColor,
+            size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StockBagSourceCard extends StatelessWidget {
+  final int selectedCount;
+  final int availableCount;
+  final bool loading;
+  final String? error;
+  final VoidCallback onRefresh;
+
+  const _StockBagSourceCard({
+    required this.selectedCount,
+    required this.availableCount,
+    required this.loading,
+    required this.error,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasError = error != null && error!.trim().isNotEmpty;
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.workerColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              color: AppColors.workerColor,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Stock bag selection',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  hasError
+                      ? 'Could not load available stock bags.'
+                      : '$selectedCount selected from $availableCount available',
+                  style: TextStyle(
+                    color: hasError ? AppColors.error : AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Refresh stock bags',
+            onPressed: loading ? null : onRefresh,
+            icon: loading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StockBagTile extends StatelessWidget {
+  final StockBag bag;
+  final VoidCallback onTap;
+
+  const _StockBagTile({
+    required this.bag,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = bag.tagNumber.trim().isNotEmpty ? bag.tagNumber : bag.uuid;
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: ListTile(
+        onTap: onTap,
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xFFE7F2EA),
+          foregroundColor: AppColors.workerColor,
+          child: Icon(Icons.inventory_2_outlined),
+        ),
+        title: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 3,
+            children: [
+              Text('Gross ${_formatNumber(bag.grossWeight)} kg'),
+              Text('Net ${_formatNumber(bag.netWeight)} kg'),
+              if (bag.moistureContent > 0)
+                Text('Moisture ${_formatNumber(bag.moistureContent)}%'),
+            ],
+          ),
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+      ),
     );
   }
 }
@@ -1878,27 +2788,48 @@ class _OperationBagTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 4,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _SmallBagMetric(
-                  label: 'Gross',
-                  value: '${_formatNumber(bag.grossWeight)} kg',
-                ),
-                _SmallBagMetric(
-                  label: 'Packaging',
-                  value: '${_formatNumber(bag.packagingWeight)} kg',
-                ),
-                _SmallBagMetric(
-                  label: 'Net',
-                  value: '${_formatNumber(bag.netWeight)} kg',
-                ),
-                if (bag.moistureContent > 0)
-                  _SmallBagMetric(
-                    label: 'Moisture',
-                    value: '${_formatNumber(bag.moistureContent)}%',
+                if (bag.tagNumber?.trim().isNotEmpty == true ||
+                    bag.stockBagUuid?.trim().isNotEmpty == true) ...[
+                  Text(
+                    bag.tagNumber?.trim().isNotEmpty == true
+                        ? bag.tagNumber!.trim()
+                        : bag.stockBagUuid!.trim(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                ],
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 4,
+                  children: [
+                    _SmallBagMetric(
+                      label: 'Gross',
+                      value: '${_formatNumber(bag.grossWeight)} kg',
+                    ),
+                    _SmallBagMetric(
+                      label: 'Packaging',
+                      value: '${_formatNumber(bag.packagingWeight)} kg',
+                    ),
+                    _SmallBagMetric(
+                      label: 'Net',
+                      value: '${_formatNumber(bag.netWeight)} kg',
+                    ),
+                    if (bag.moistureContent > 0)
+                      _SmallBagMetric(
+                        label: 'Moisture',
+                        value: '${_formatNumber(bag.moistureContent)}%',
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -1939,12 +2870,22 @@ class _SmallBagMetric extends StatelessWidget {
 }
 
 class _OperationBag {
+  final String? stockBagUuid;
+  final String? tagNumber;
+  final double? recordedGrossWeight;
+  final double? recordedPackagingWeight;
+  final double? recordedNetWeight;
   final double grossWeight;
   final double packagingWeight;
   final double netWeight;
   final double moistureContent;
 
   const _OperationBag({
+    this.stockBagUuid,
+    this.tagNumber,
+    this.recordedGrossWeight,
+    this.recordedPackagingWeight,
+    this.recordedNetWeight,
     required this.grossWeight,
     required this.packagingWeight,
     required this.netWeight,
@@ -2228,6 +3169,8 @@ String _formatNumber(num value) {
 }
 
 const double _weightToleranceKg = 0.01;
+const double _dispatchReweighMinimumToleranceKg = 0.02;
+const double _dispatchReweighToleranceRatio = 0.001;
 
 bool _greaterThan(num value, num limit) {
   return value > limit + _weightToleranceKg;
@@ -2235,4 +3178,25 @@ bool _greaterThan(num value, num limit) {
 
 bool _nearlyEqual(num left, num right) {
   return (left - right).abs() <= _weightToleranceKg;
+}
+
+bool _withinDispatchReweighTolerance({
+  required num recordedNetWeight,
+  required num measuredNetWeight,
+}) {
+  final tolerance = _dispatchReweighToleranceKg(recordedNetWeight);
+  return (recordedNetWeight - measuredNetWeight).abs() <= tolerance;
+}
+
+double _dispatchReweighToleranceKg(num recordedNetWeight) {
+  final relativeTolerance =
+      recordedNetWeight.abs() * _dispatchReweighToleranceRatio;
+  return relativeTolerance > _dispatchReweighMinimumToleranceKg
+      ? relativeTolerance
+      : _dispatchReweighMinimumToleranceKg;
+}
+
+String _formatWeightDetail(num value) {
+  if (value.isNaN || value.isInfinite) return '0.00';
+  return value.toStringAsFixed(2);
 }
