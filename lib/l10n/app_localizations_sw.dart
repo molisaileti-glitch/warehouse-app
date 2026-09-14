@@ -290,6 +290,100 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
+  String get noInternetConnectionTitle => 'Hakuna intaneti';
+
+  @override
+  String get noInternetConnectionDescription =>
+      'Hakuna intaneti. Washa data ya simu au Wi-Fi kisha jaribu tena.';
+
+  @override
+  String get syncNeedsRetryTitle => 'Usawazishaji unahitaji kurudiwa';
+
+  @override
+  String get syncCompleteTitle => 'Usawazishaji umekamilika';
+
+  @override
+  String get syncFailedTitle => 'Usawazishaji umeshindikana';
+
+  @override
+  String get syncingData => 'Inasawazisha data';
+
+  @override
+  String get dataSync => 'Usawazishaji wa Data';
+
+  @override
+  String get syncPreparingQueue => 'Inaandaa foleni ya taarifa za kifaa';
+
+  @override
+  String get syncUploadingPending => 'Inapakia rekodi zinazosubiri';
+
+  @override
+  String get syncDownloadingLatest => 'Inapakua rekodi mpya';
+
+  @override
+  String get syncSavingCheckpoint => 'Inahifadhi hatua ya usawazishaji';
+
+  @override
+  String get syncFinishing => 'Inakamilisha usawazishaji';
+
+  @override
+  String syncStepProgress(int current, int total) {
+    return 'Hatua $current/$total';
+  }
+
+  @override
+  String syncKeepAppOpen(int total) {
+    return 'Inasawazisha hatua $total. Tafadhali acha app ikiwa wazi.';
+  }
+
+  @override
+  String syncPendingRecords(int count) {
+    return 'Rekodi $count bado zinasubiri kusawazishwa';
+  }
+
+  @override
+  String syncConflictRecords(int count) {
+    return 'Rekodi $count zinahitaji kukaguliwa';
+  }
+
+  @override
+  String syncPendingAndConflict(String pending, String conflicts) {
+    return '$pending na $conflicts';
+  }
+
+  @override
+  String get syncSomeRecordsStillNeedSync =>
+      'Baadhi ya rekodi bado zinahitaji kusawazishwa';
+
+  @override
+  String syncReviewAffectedRecords(String remaining) {
+    return '$remaining. Tafadhali kagua rekodi zilizoathirika kabla ya kusawazisha tena.';
+  }
+
+  @override
+  String syncRetryPendingReviewConflicts(String remaining) {
+    return '$remaining. Tafadhali rudia rekodi zinazosubiri na kagua rekodi zilizo na mgongano.';
+  }
+
+  @override
+  String syncTryAgainStrongConnection(String remaining) {
+    return '$remaining. Tafadhali jaribu kusawazisha tena intaneti ikiwa imara zaidi.';
+  }
+
+  @override
+  String syncMoreRecords(int count) {
+    return '+rekodi $count zaidi';
+  }
+
+  @override
+  String get syncGenericFailure =>
+      'Kuna tatizo limetokea wakati wa kusawazisha.';
+
+  @override
+  String get syncCheckConnectionRetry =>
+      'Tafadhali angalia intaneti yako kisha jaribu tena.';
+
+  @override
   String get notAssignedWarehouse => 'Hujapangiwa kwenye ghala';
 
   @override
@@ -609,6 +703,323 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get moisture => 'Unyevu';
+
+  @override
+  String get optional => 'Si lazima';
+
+  @override
+  String get measureMoistureTitle => 'Pima unyevu?';
+
+  @override
+  String get measureMoistureQuestion => 'Unataka kupima unyevu wa mfuko huu?';
+
+  @override
+  String measureMoistureQuestionWithMax(String max) {
+    return 'Unataka kupima unyevu wa mfuko huu? Kiwango cha juu kinachoruhusiwa ni $max%.';
+  }
+
+  @override
+  String get measure => 'Pima';
+
+  @override
+  String get baudRateChangedReconnectMeter =>
+      'Baud rate imebadilishwa. Unganisha tena kipima unyevu.';
+
+  @override
+  String noSerialMoistureMeterFound(int count) {
+    return 'Hakuna kipima unyevu cha serial kilichopatikana. Vifaa $count vya USB visivyo serial vimepuuzwa.';
+  }
+
+  @override
+  String get noMoistureMeterFound =>
+      'Hakuna kipima unyevu kilichopatikana. Unganisha kipima kwa USB OTG, kisha tafuta tena.';
+
+  @override
+  String get connectUsbMoistureMeter => 'Unganisha kipima unyevu cha USB.';
+
+  @override
+  String meterGrainCodeMismatch(
+      String code, String crop, String material, String materialCode) {
+    return 'Kodi ya nafaka kwenye kipima $code hailingani na $crop. Weka kipima kwenye $material ($materialCode) kisha soma tena.';
+  }
+
+  @override
+  String get enterMoistureRange => 'Ingiza unyevu kuanzia 0 hadi 100.';
+
+  @override
+  String get moistureTooHighTitle => 'Unyevu umezidi';
+
+  @override
+  String moistureTooHighDescription(String average, String max) {
+    return 'Wastani wa unyevu ni $average%, juu ya kiwango kinachoruhusiwa cha $max%. Mfuko huu hauwezi kuhifadhiwa.';
+  }
+
+  @override
+  String get moistureRecordedTitle => 'Unyevu umerekodiwa';
+
+  @override
+  String moistureRecordedDescription(String average) {
+    return 'Wastani wa unyevu ni $average%. Mfuko huu unafaa.';
+  }
+
+  @override
+  String cropMoistureTitle(String crop) {
+    return 'Unyevu wa $crop';
+  }
+
+  @override
+  String get resetReadings => 'Futa vipimo';
+
+  @override
+  String manualReadingForZone(String zone) {
+    return 'Kipimo cha kuandika kwa $zone';
+  }
+
+  @override
+  String get useMoistureReading => 'Tumia kipimo cha unyevu';
+
+  @override
+  String get noReadingReceived =>
+      'Hakuna kipimo kilichopokelewa. Bonyeza kitufe cha kusoma/kutuma kwenye kipima kisha jaribu tena, au ingiza thamani mwenyewe.';
+
+  @override
+  String get usbPermissionDenied =>
+      'Ruhusa ya USB haijatolewa. Ruhusu matumizi ya USB kisha jaribu tena.';
+
+  @override
+  String get notSerialMoistureMeter =>
+      'Kifaa hicho cha USB si kipima unyevu cha serial. Unganisha kipima unyevu kwa USB OTG, kisha tafuta tena.';
+
+  @override
+  String get averageMoisture => 'Wastani wa unyevu';
+
+  @override
+  String maxAllowed(String max) {
+    return 'Kiwango cha juu $max%';
+  }
+
+  @override
+  String get moistureMeter => 'Kipima unyevu';
+
+  @override
+  String get scanMoistureMeter => 'Tafuta kipima unyevu';
+
+  @override
+  String get connectLandtekThenScan =>
+      'Unganisha kipima unyevu cha Landtek kwa USB OTG, kisha tafuta.';
+
+  @override
+  String moistureMeterCandidates(int count) {
+    return 'Vifaa $count vinavyoweza kuwa vipima unyevu vimepatikana.';
+  }
+
+  @override
+  String get baudRate => 'Baud rate';
+
+  @override
+  String baudRateValue(int rate) {
+    return '$rate baud';
+  }
+
+  @override
+  String nonSerialUsbDevicesIgnored(int count) {
+    return 'Vifaa $count vya USB visivyo serial vimepuuzwa.';
+  }
+
+  @override
+  String get scanning => 'Inatafuta...';
+
+  @override
+  String get reading => 'Inasoma';
+
+  @override
+  String get readPhase => 'Soma sehemu';
+
+  @override
+  String grainCodeNotConfigured(String crop) {
+    return 'Uhakiki wa kodi ya nafaka haujawekwa kwa $crop.';
+  }
+
+  @override
+  String meterMustBeSetTo(String material, String code) {
+    return 'Kipima kiwekwe kwenye $material ($code).';
+  }
+
+  @override
+  String get reReadPhase => 'Soma tena sehemu';
+
+  @override
+  String get zoneTop => 'Juu';
+
+  @override
+  String get zoneLowerTop => 'Juu ya kati';
+
+  @override
+  String get zoneHighBottom => 'Chini ya kati';
+
+  @override
+  String get zoneBottom => 'Chini';
+
+  @override
+  String get stockOverview => 'Muhtasari wa stoki';
+
+  @override
+  String get totalStock => 'Jumla ya stoki';
+
+  @override
+  String get noStockAvailable => 'Hakuna stoki iliyopo';
+
+  @override
+  String moreCrops(int count) {
+    return '+mazao $count zaidi';
+  }
+
+  @override
+  String get moistureReadingRequestedOnAddBag =>
+      'Usomaji wa unyevu utaombwa utakapo ongeza kila gunia.';
+
+  @override
+  String get recipientName => 'Jina la mpokeaji';
+
+  @override
+  String get recipientPhone => 'Simu ya mpokeaji';
+
+  @override
+  String get weighBags => 'Pima magunia';
+
+  @override
+  String get addOneBagAtTimeForCrop => 'Ongeza gunia moja moja kwa zao hili.';
+
+  @override
+  String get confirmPackagingAddBag =>
+      'Hakiki kifungashio cha zao na ongeza kila gunia lililopimwa.';
+
+  @override
+  String get noStockAvailableForCrop => 'Hakuna stoki ya zao hili.';
+
+  @override
+  String cannotRemoveBags(int count, int available) {
+    return 'Huwezi kuondoa magunia $count. Yapo magunia $available tu.';
+  }
+
+  @override
+  String get grossWeightExceedsAvailableStock =>
+      'Uzito wa jumla hauwezi kuzidi stoki iliyopo.';
+
+  @override
+  String get packagingWeightExceedsAvailableStock =>
+      'Uzito wa kifungashio hauwezi kuzidi stoki iliyopo.';
+
+  @override
+  String get netWeightExceedsAvailableStock =>
+      'Uzito halisi hauwezi kuzidi stoki iliyopo.';
+
+  @override
+  String get dispatchRequiresStockAdjustment =>
+      'Usafirishaji hutumia magunia kamili. Kama uzito wa stoki umebadilika, fanya marekebisho ya stoki kwanza kisha safirisha.';
+
+  @override
+  String get removingAllBagsRequiresFullStock =>
+      'Kuondoa magunia yote lazima kuondoe stoki yote iliyorekodiwa ya zao hili.';
+
+  @override
+  String get addAtLeastOneBagBeforeContinuing =>
+      'Ongeza angalau gunia moja kabla ya kuendelea.';
+
+  @override
+  String get selectAtLeastOneBagBeforeContinuing =>
+      'Chagua angalau gunia moja kabla ya kuendelea.';
+
+  @override
+  String selectedBagsExceedAvailable(int count, int available) {
+    return 'Umechagua magunia $count. Yapo magunia $available tu.';
+  }
+
+  @override
+  String get weighAllSelectedBagsBeforeContinuing =>
+      'Pima magunia yote uliyochagua kabla ya kuendelea.';
+
+  @override
+  String get addAtLeastOneBagBeforeSaving =>
+      'Ongeza angalau gunia moja kabla ya kuhifadhi.';
+
+  @override
+  String get currentWeight => 'Uzito wa sasa';
+
+  @override
+  String get selectedBags => 'Magunia yaliyochaguliwa';
+
+  @override
+  String weighedProgress(int weighed, int total) {
+    return '$weighed / $total yamepimwa';
+  }
+
+  @override
+  String get placeOneBagOnScale =>
+      'Weka gunia moja kwenye mzani, subiri kipimo kitulie, kisha bonyeza Ongeza gunia.';
+
+  @override
+  String get receiving => 'Mapokezi';
+
+  @override
+  String get current => 'Sasa';
+
+  @override
+  String get dispatch => 'Usafirishaji';
+
+  @override
+  String get addToDispatch => 'Ongeza kwenye usafirishaji';
+
+  @override
+  String get addToAdjustment => 'Ongeza kwenye marekebisho';
+
+  @override
+  String reviewWeighedBags(int count) {
+    return 'Hakiki magunia $count yaliyopimwa';
+  }
+
+  @override
+  String get confirmStockRecordBeforeSync =>
+      'Hakiki rekodi ya stoki kabla ya kuihifadhi kwa ajili ya kusawazisha.';
+
+  @override
+  String reviewBagsCount(int count) {
+    return 'Hakiki magunia $count';
+  }
+
+  @override
+  String get dispatchDetails => 'Taarifa za usafirishaji';
+
+  @override
+  String get stockCountDetails => 'Taarifa za kuhesabu stoki';
+
+  @override
+  String get adjustmentDetails => 'Taarifa za marekebisho';
+
+  @override
+  String get dispatchDetailsSubtitle =>
+      'Ongeza taarifa za mpokeaji kwa usafirishaji huu.';
+
+  @override
+  String get stockCountDetailsSubtitle =>
+      'Jumla ya magunia yaliyohesabiwa iko tayari. Hii haitabadilisha stoki.';
+
+  @override
+  String get adjustmentDetailsSubtitle =>
+      'Chagua kama stoki iongezeke au ipungue.';
+
+  @override
+  String get refreshBags => 'Pakua upya magunia';
+
+  @override
+  String bagWeightChangedNeedsAdjustment(String tag, String recordedWeight,
+      String measuredWeight, String adjustmentType) {
+    return 'Gunia $tag limebadilika kutoka kilo $recordedWeight hadi kilo $measuredWeight. Fanya marekebisho ya stoki ya $adjustmentType kwanza, kisha safirisha.';
+  }
+
+  @override
+  String get enterPositiveGrossWeightBeforeAddingBag =>
+      'Ingiza uzito wa jumla ulio zaidi ya sifuri kabla ya kuongeza gunia.';
 
   @override
   String get phone => 'Simu';
@@ -1037,9 +1448,6 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get scanNearbyScale =>
       'Tafuta vifaa vilivyo karibu ili kupata mizani yako.';
-
-  @override
-  String get scanning => 'Inatafuta...';
 
   @override
   String get scanDevices => 'Tafuta Vifaa';

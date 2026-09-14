@@ -232,6 +232,7 @@ class _OverviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final visibleItems = items.take(3).toList();
     final moreCount = items.length - visibleItems.length;
     final totalStock = items.fold<double>(
@@ -249,9 +250,9 @@ class _OverviewPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'STOCK OVERVIEW',
-            style: TextStyle(
+          Text(
+            l10n.stockOverview.toUpperCase(),
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -268,22 +269,22 @@ class _OverviewPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          const Text(
-            'Total stock',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+          Text(
+            l10n.totalStock,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 18),
           if (visibleItems.isEmpty)
-            const Text(
-              'No stock available',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+            Text(
+              l10n.noStockAvailable,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
             )
           else ...[
             for (final item in visibleItems) _StockOverviewRow(item: item),
             if (moreCount > 0) ...[
               const SizedBox(height: 6),
               Text(
-                '+$moreCount more crops',
+                l10n.moreCrops(moreCount),
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 12,

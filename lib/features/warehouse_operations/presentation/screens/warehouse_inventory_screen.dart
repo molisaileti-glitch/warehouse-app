@@ -13,6 +13,7 @@ import 'package:warehouse_app/features/moisture/presentation/screens/moisture_re
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/features/warehouse_operations/domain/models/warehouse_operation_models.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 enum _WarehouseAction { dispatch, count, adjustment }
 
@@ -595,6 +596,7 @@ class _ScaleReadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = scaleState.isConnected && scaleState.isStable
         ? AppColors.success
         : scaleState.isConnected
@@ -602,12 +604,12 @@ class _ScaleReadingCard extends StatelessWidget {
             : AppColors.textMuted;
     final statusText = scaleState.isConnected
         ? scaleState.isStable
-            ? 'Stable'
-            : 'Unstable'
-        : 'Not connected';
+            ? l10n.stable
+            : l10n.unstable
+        : l10n.notConnected;
     final subtitle = scaleState.isConnected
         ? scaleState.deviceName
-        : 'Connect scale before weighing.';
+        : l10n.connectScaleBeforeWeighing;
     final isBusy = scaleState.isScanning || scaleState.isConnecting;
 
     return AppCard(
@@ -633,9 +635,9 @@ class _ScaleReadingCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Scale Reading',
-                      style: TextStyle(
+                    Text(
+                      l10n.scaleReading,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
                       ),
@@ -682,11 +684,14 @@ class _ScaleReadingCard extends StatelessWidget {
             ],
           ),
           if (scaleState.isConnected)
-            const Padding(
-              padding: EdgeInsets.only(top: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
               child: Text(
-                'Place one bag on the scale, wait for a stable reading, then tap Add bag.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                l10n.placeOneBagOnScale,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
               ),
             )
           else ...[
@@ -702,7 +707,7 @@ class _ScaleReadingCard extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.bluetooth_searching_rounded),
-                label: Text(isBusy ? 'Searching...' : 'Connect scale'),
+                label: Text(isBusy ? l10n.scanning : l10n.connectScale),
               ),
             ),
           ],
@@ -1130,15 +1135,16 @@ class _WarehouseOperationFormScreenState
     Crop crop,
     WeightScaleState scaleState,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     if (action == _WarehouseAction.dispatch ||
         action == _WarehouseAction.adjustment) {
       return _selectedBagWeighingStep(action, crop, scaleState);
     }
 
     return [
-      const _SectionHeader(
-        title: 'Weigh bags',
-        subtitle: 'Add one bag at a time for this crop.',
+      _SectionHeader(
+        title: l10n.weighBags,
+        subtitle: l10n.addOneBagAtTimeForCrop,
       ),
       const SizedBox(height: 10),
       _ScaleReadingCard(
@@ -1146,9 +1152,9 @@ class _WarehouseOperationFormScreenState
         onConnect: _showScalePicker,
       ),
       const SizedBox(height: 18),
-      const _SectionHeader(
-        title: 'Bag',
-        subtitle: 'Confirm crop packaging and add each weighed bag.',
+      _SectionHeader(
+        title: l10n.bag,
+        subtitle: l10n.confirmPackagingAddBag,
       ),
       const SizedBox(height: 10),
       _PackagingWeightSummary(
@@ -1156,9 +1162,9 @@ class _WarehouseOperationFormScreenState
         unit: scaleState.uom,
       ),
       const SizedBox(height: 14),
-      const Text(
-        'Moisture reading will be requested when you add each bag.',
-        style: TextStyle(
+      Text(
+        l10n.moistureReadingRequestedOnAddBag,
+        style: const TextStyle(
           color: AppColors.textSecondary,
           fontSize: 12,
         ),
@@ -1296,6 +1302,7 @@ class _WarehouseOperationFormScreenState
     Crop crop,
     WeightScaleState scaleState,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final pendingBag = _nextDispatchBagToWeigh();
     final packagingWeight = _nextPackagingWeight(crop);
     final dispatchGross = scaleState.weight;
@@ -1331,7 +1338,7 @@ class _WarehouseOperationFormScreenState
                 action == _WarehouseAction.dispatch
                     ? 'Dispatch bags ready'
                     : 'Adjustment bags ready',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
@@ -1371,13 +1378,13 @@ class _WarehouseOperationFormScreenState
               ),
               const SizedBox(height: 12),
               _TotalRow(
-                label: 'Receiving',
+                label: l10n.receiving,
                 value: '${_formatNumber(pendingBag.netWeight)} kg',
               ),
               _TotalRow(
                 label: action == _WarehouseAction.dispatch
-                    ? 'Dispatch'
-                    : 'Current',
+                    ? l10n.dispatch
+                    : l10n.current,
                 value: '${_formatNumber(dispatchNet)} kg',
               ),
               const SizedBox(height: 12),
@@ -1398,8 +1405,8 @@ class _WarehouseOperationFormScreenState
                   icon: const Icon(Icons.add_shopping_cart_rounded),
                   label: Text(
                     action == _WarehouseAction.dispatch
-                        ? 'Add to Dispatch'
-                        : 'Add to Adjustment',
+                        ? l10n.addToDispatch
+                        : l10n.addToAdjustment,
                   ),
                 ),
               ),
@@ -1410,7 +1417,7 @@ class _WarehouseOperationFormScreenState
       OutlinedButton.icon(
         onPressed: _showBagsSheet,
         icon: const Icon(Icons.inventory_2_outlined),
-        label: Text('Review ${_bags.length} weighed bags'),
+        label: Text(l10n.reviewWeighedBags(_bags.length)),
       ),
     ];
   }
@@ -1434,10 +1441,11 @@ class _WarehouseOperationFormScreenState
     WarehouseInventory inventory,
     Crop crop,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return [
-      const _SectionHeader(
-        title: 'Review',
-        subtitle: 'Confirm the stock record before saving it for sync.',
+      _SectionHeader(
+        title: l10n.review,
+        subtitle: l10n.confirmStockRecordBeforeSync,
       ),
       const SizedBox(height: 10),
       _ReviewSummaryCard(
@@ -1462,7 +1470,7 @@ class _WarehouseOperationFormScreenState
       OutlinedButton.icon(
         onPressed: _showBagsSheet,
         icon: const Icon(Icons.inventory_2_outlined),
-        label: Text('Review ${_bags.length} bags'),
+        label: Text(l10n.reviewBagsCount(_bags.length)),
       ),
     ];
   }
@@ -1515,12 +1523,13 @@ class _WarehouseOperationFormScreenState
   }
 
   Widget _dispatchFields() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         AppLabeledField(
           labelText: 'Recipient type',
           child: DropdownButtonFormField<String>(
-            initialValue: _recipientType,
+            value: _recipientType,
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.person_pin_outlined),
             ),
@@ -1536,7 +1545,7 @@ class _WarehouseOperationFormScreenState
         ),
         const SizedBox(height: 10),
         AppLabeledField(
-          labelText: 'Recipient name',
+          labelText: l10n.recipientName,
           child: TextFormField(
             controller: _recipientName,
             decoration: const InputDecoration(
@@ -1547,7 +1556,7 @@ class _WarehouseOperationFormScreenState
         ),
         const SizedBox(height: 10),
         AppLabeledField(
-          labelText: 'Recipient phone (Optional)',
+          labelText: optionalLabel(l10n.recipientPhone, l10n.optional),
           child: TextFormField(
             controller: _recipientPhone,
             decoration: const InputDecoration(
@@ -1567,7 +1576,7 @@ class _WarehouseOperationFormScreenState
         AppLabeledField(
           labelText: 'Adjustment type',
           child: DropdownButtonFormField<String>(
-            initialValue: _adjustmentType,
+            value: _adjustmentType,
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.swap_vert_rounded),
             ),
@@ -1594,7 +1603,7 @@ class _WarehouseOperationFormScreenState
         AppLabeledField(
           labelText: 'Reason',
           child: DropdownButtonFormField<String>(
-            initialValue: _reason,
+            value: _reason,
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.info_outline),
             ),
@@ -1616,15 +1625,19 @@ class _WarehouseOperationFormScreenState
     required _WarehouseAction action,
     required WarehouseInventory inventory,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     switch (_step) {
       case _OperationStep.selection:
         if (_selectedStockBags.isEmpty) {
-          _showError('Select at least one bag before continuing.');
+          _showError(l10n.selectAtLeastOneBagBeforeContinuing);
           return;
         }
         if (_selectedStockBags.length > inventory.totalBags) {
           _showError(
-            'You selected ${_selectedStockBags.length} bags. Only ${inventory.totalBags} bags are available.',
+            l10n.selectedBagsExceedAvailable(
+              _selectedStockBags.length,
+              inventory.totalBags,
+            ),
           );
           return;
         }
@@ -1632,13 +1645,13 @@ class _WarehouseOperationFormScreenState
         return;
       case _OperationStep.weighing:
         if (_bags.isEmpty) {
-          _showError('Add at least one bag before continuing.');
+          _showError(l10n.addAtLeastOneBagBeforeContinuing);
           return;
         }
         if ((action == _WarehouseAction.dispatch ||
                 action == _WarehouseAction.adjustment) &&
             _bags.length < _selectedStockBags.length) {
-          _showError('Weigh all selected bags before continuing.');
+          _showError(l10n.weighAllSelectedBagsBeforeContinuing);
           return;
         }
         final stockError = _validateStockOperation(
@@ -1680,25 +1693,25 @@ class _WarehouseOperationFormScreenState
   }
 
   String _detailsTitle(_WarehouseAction action) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (action) {
-      _WarehouseAction.dispatch => 'Dispatch details',
-      _WarehouseAction.count => 'Stock count details',
-      _WarehouseAction.adjustment => 'Adjustment details',
+      _WarehouseAction.dispatch => l10n.dispatchDetails,
+      _WarehouseAction.count => l10n.stockCountDetails,
+      _WarehouseAction.adjustment => l10n.adjustmentDetails,
     };
   }
 
   String _detailsSubtitle(_WarehouseAction action) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (action) {
-      _WarehouseAction.dispatch =>
-        'Add recipient information for this dispatch.',
-      _WarehouseAction.count =>
-        'The counted bag totals are ready. This will not change inventory.',
-      _WarehouseAction.adjustment =>
-        'Choose whether inventory should increase or decrease.',
+      _WarehouseAction.dispatch => l10n.dispatchDetailsSubtitle,
+      _WarehouseAction.count => l10n.stockCountDetailsSubtitle,
+      _WarehouseAction.adjustment => l10n.adjustmentDetailsSubtitle,
     };
   }
 
   Future<void> _showScalePicker() async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(weightScaleControllerProvider.notifier);
     var devices = await controller.scanForScales();
     if (!mounted) return;
@@ -1729,10 +1742,10 @@ class _WarehouseOperationFormScreenState
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Connect scale',
-                            style: TextStyle(
+                            l10n.connectScale,
+                            style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
@@ -1819,6 +1832,7 @@ class _WarehouseOperationFormScreenState
     required _WarehouseAction action,
     required WarehouseInventory inventory,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     final usesSelectedStockBags = _bags.isNotEmpty &&
         _bags.every((bag) => bag.stockBagUuid?.trim().isNotEmpty == true);
 
@@ -1834,19 +1848,19 @@ class _WarehouseOperationFormScreenState
     if (!decreasesStock) return null;
 
     if (inventory.totalBags <= 0) {
-      return 'No stock available for this crop.';
+      return l10n.noStockAvailableForCrop;
     }
     if (_bags.length > inventory.totalBags) {
-      return 'You cannot remove ${_bags.length} bags. Only ${inventory.totalBags} bags are available.';
+      return l10n.cannotRemoveBags(_bags.length, inventory.totalBags);
     }
     if (_greaterThan(_totalGrossWeight, inventory.totalGrossWeight)) {
-      return 'Gross weight cannot exceed available stock.';
+      return l10n.grossWeightExceedsAvailableStock;
     }
     if (_greaterThan(_totalPackagingWeight, inventory.totalPackagingWeight)) {
-      return 'Packaging weight cannot exceed available stock.';
+      return l10n.packagingWeightExceedsAvailableStock;
     }
     if (_greaterThan(_totalNetWeight, inventory.totalNetWeight)) {
-      return 'Net weight cannot exceed available stock.';
+      return l10n.netWeightExceedsAvailableStock;
     }
 
     final removesAllBags = _bags.length == inventory.totalBags;
@@ -1859,8 +1873,8 @@ class _WarehouseOperationFormScreenState
         ) ||
         !_nearlyEqual(_totalNetWeight, inventory.totalNetWeight)) {
       return action == _WarehouseAction.dispatch
-          ? 'Dispatch uses full bags. If stock weight has changed, perform a stock adjustment first, then dispatch.'
-          : 'Removing all bags must remove the full recorded stock for this crop.';
+          ? l10n.dispatchRequiresStockAdjustment
+          : l10n.removingAllBagsRequiresFullStock;
     }
     return null;
   }
@@ -1923,15 +1937,16 @@ class _WarehouseOperationFormScreenState
     required Crop crop,
     required double grossWeight,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_bags.any((bag) => bag.stockBagUuid == stockBag.uuid)) return;
 
     final packagingWeight = _nextPackagingWeight(crop);
     if (grossWeight <= 0) {
-      _showError('Scale weight must be greater than zero.');
+      _showError(l10n.weightGreaterThanZero);
       return;
     }
     if (packagingWeight >= grossWeight) {
-      _showError('Packaging weight must be less than gross weight.');
+      _showError(l10n.packagingLessThanGross);
       return;
     }
 
@@ -1949,7 +1964,12 @@ class _WarehouseOperationFormScreenState
           ? StockAdjustmentType.increase
           : StockAdjustmentType.decrease;
       _showError(
-        'Bag $tag changed from ${_formatWeightDetail(stockBag.netWeight)} kg to ${_formatWeightDetail(netWeight)} kg. Perform a $adjustmentType stock adjustment first, then dispatch.',
+        l10n.bagWeightChangedNeedsAdjustment(
+          tag,
+          _formatWeightDetail(stockBag.netWeight),
+          _formatWeightDetail(netWeight),
+          adjustmentType,
+        ),
       );
       return;
     }
@@ -1980,16 +2000,17 @@ class _WarehouseOperationFormScreenState
     Crop crop,
     WeightScaleState scaleState,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (!scaleState.isConnected || !scaleState.isStreaming) {
-      _showError('Connect scale before adding a bag.');
+      _showError(l10n.connectScaleBeforeBag);
       return;
     }
     if (!scaleState.isStable) {
-      _showError('Wait for a stable scale reading.');
+      _showError(l10n.waitForStableScale);
       return;
     }
     if (scaleState.weight <= 0) {
-      _showError('Scale weight must be greater than zero.');
+      _showError(l10n.weightGreaterThanZero);
       return;
     }
 
@@ -2006,14 +2027,15 @@ class _WarehouseOperationFormScreenState
     double grossWeight, {
     StockBag? selectedStockBag,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final packagingWeight = _nextPackagingWeight(crop);
 
     if (grossWeight <= 0) {
-      _showError('Enter a positive gross weight before adding a bag.');
+      _showError(l10n.enterPositiveGrossWeightBeforeAddingBag);
       return false;
     }
     if (packagingWeight >= grossWeight) {
-      _showError('Packaging weight must be less than gross weight.');
+      _showError(l10n.packagingLessThanGross);
       return false;
     }
 
@@ -2272,7 +2294,8 @@ class _WarehouseOperationFormScreenState
   }) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_bags.isEmpty) {
-      _showError('Add at least one bag before saving.');
+      final l10n = AppLocalizations.of(context)!;
+      _showError(l10n.addAtLeastOneBagBeforeSaving);
       return;
     }
     final stockError = _validateStockOperation(
@@ -2305,6 +2328,7 @@ class _WarehouseOperationFormScreenState
             moistureContent: _averageMoistureContent,
           );
           ref.invalidate(warehouseDispatchesProvider(warehouse.id));
+          break;
         case _WarehouseAction.count:
           await repo.recordStockCount(
             warehouse: warehouse,
@@ -2317,6 +2341,7 @@ class _WarehouseOperationFormScreenState
             moistureContent: _averageMoistureContent,
           );
           ref.invalidate(warehouseStockCountsProvider(warehouse.id));
+          break;
         case _WarehouseAction.adjustment:
           await repo.recordStockAdjustment(
             warehouse: warehouse,
@@ -2331,6 +2356,7 @@ class _WarehouseOperationFormScreenState
             moistureContent: _averageMoistureContent,
           );
           ref.invalidate(warehouseStockAdjustmentsProvider(warehouse.id));
+          break;
       }
       ref.invalidate(warehouseInventoryProvider(warehouse.id));
       if (!mounted) return;
@@ -2398,6 +2424,7 @@ class _DispatchSelectionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasError = error != null && error!.trim().isNotEmpty;
     return AppCard(
       padding: const EdgeInsets.all(12),
@@ -2426,7 +2453,7 @@ class _DispatchSelectionSummary extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           IconButton(
-            tooltip: 'Refresh bags',
+            tooltip: l10n.refreshBags,
             onPressed: loading ? null : onRefresh,
             icon: loading
                 ? const SizedBox(
@@ -2455,6 +2482,7 @@ class _SelectableStockBagTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final title = bag.tagNumber.trim().isNotEmpty ? bag.tagNumber : bag.uuid;
     return AppCard(
       padding: EdgeInsets.zero,
@@ -2488,9 +2516,13 @@ class _SelectableStockBagTile extends StatelessWidget {
                       spacing: 12,
                       runSpacing: 3,
                       children: [
-                        Text('Current weight: ${_formatNumber(bag.netWeight)} kg'),
+                        Text(
+                          '${l10n.currentWeight}: ${_formatNumber(bag.netWeight)} kg',
+                        ),
                         if (bag.moistureContent > 0)
-                          Text('Moisture: ${_formatNumber(bag.moistureContent)}%'),
+                          Text(
+                            '${l10n.moisture}: ${_formatNumber(bag.moistureContent)}%',
+                          ),
                       ],
                     ),
                   ],
@@ -2515,6 +2547,7 @@ class _DispatchProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -2523,7 +2556,7 @@ class _DispatchProgressCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Selected Bags',
+              l10n.selectedBags,
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w900,
@@ -2531,7 +2564,7 @@ class _DispatchProgressCard extends StatelessWidget {
             ),
           ),
           Text(
-            '$weighedCount / $selectedCount weighed',
+            l10n.weighedProgress(weighedCount, selectedCount),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w700,

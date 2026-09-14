@@ -392,7 +392,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           const SizedBox(height: 16),
           AppDropdownFormField<String>(
-            labelText: optionalLabel(l10n.businessType),
+            labelText: optionalLabel(l10n.businessType, l10n.optional),
             icon: Icons.category_outlined,
             value: _selectedType,
             hintText: l10n.selectBusinessType,
@@ -424,7 +424,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _registrationNumberCtrl,
-            labelText: optionalLabel(l10n.registrationNumber),
+            labelText: optionalLabel(l10n.registrationNumber, l10n.optional),
             icon: Icons.numbers_outlined,
             hintText: l10n.enterRegistrationNumber,
           ),
@@ -440,7 +440,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _emailCtrl,
-            labelText: optionalLabel(l10n.businessEmail),
+            labelText: optionalLabel(l10n.businessEmail, l10n.optional),
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
@@ -454,14 +454,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _tinNumberCtrl,
-            labelText: optionalLabel(l10n.tinNumber),
+            labelText: optionalLabel(l10n.tinNumber, l10n.optional),
             icon: Icons.badge_outlined,
             hintText: l10n.enterTinNumber,
           ),
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _websiteCtrl,
-            labelText: optionalLabel(l10n.website),
+            labelText: optionalLabel(l10n.website, l10n.optional),
             icon: Icons.language_outlined,
             keyboardType: TextInputType.url,
             autocorrect: false,
@@ -480,7 +480,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         children: [
           AppTextFormField(
             controller: _contactPersonNameCtrl,
-            labelText: optionalLabel(l10n.contactName),
+            labelText: optionalLabel(l10n.contactName, l10n.optional),
             icon: Icons.person_outline_rounded,
             textCapitalization: TextCapitalization.words,
             hintText: l10n.enterContactName,
@@ -488,7 +488,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _contactPersonPhoneNumberCtrl,
-            labelText: optionalLabel(l10n.contactPhone),
+            labelText: optionalLabel(l10n.contactPhone, l10n.optional),
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             hintText: l10n.enterContactPhone,
@@ -496,7 +496,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _contactPersonEmailCtrl,
-            labelText: optionalLabel(l10n.contactEmail),
+            labelText: optionalLabel(l10n.contactEmail, l10n.optional),
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
@@ -510,7 +510,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _contactPersonTitleCtrl,
-            labelText: optionalLabel(l10n.contactTitle),
+            labelText: optionalLabel(l10n.contactTitle, l10n.optional),
             icon: Icons.work_outline_rounded,
             hintText: l10n.enterJobTitle,
           ),

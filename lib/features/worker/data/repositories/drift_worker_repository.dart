@@ -115,14 +115,32 @@ class DriftWorkerRepository implements WorkerRepository {
 
   @override
   Future<WorkerCreateResult> createWorker(WorkerModel worker) async {
+    final email = worker.email.trim();
+    final phoneNumber = worker.phoneNumber.trim();
+    final existingByEmail = await _dao.getUserByEmail(email);
+    if (existingByEmail != null && existingByEmail.deletedAt == null) {
+      return WorkerCreateResult.failure(
+        'A worker with this email already exists. Use a different email address.',
+      );
+    }
+    final existingByPhone = await _dao.getUserByPhoneNumber(phoneNumber);
+    if (existingByPhone != null) {
+      return WorkerCreateResult.failure(
+        'A worker with this phone number already exists. Use a different phone number.',
+      );
+    }
+
     final id = newUuid();
-    final payload = worker.toJson()..['uuid'] = id;
+    final payload = worker.toJson()
+      ..['uuid'] = id
+      ..['email'] = email
+      ..['phoneNumber'] = phoneNumber;
 
     final user = UsersCompanion.insert(
       id: id,
       fullName: worker.fullName,
-      email: worker.email,
-      phoneNumber: Value(worker.phoneNumber),
+      email: email,
+      phoneNumber: Value(phoneNumber),
       password: Value(worker.password),
       role: Value(worker.role),
       mcu: Value(worker.mcu),
@@ -155,7 +173,7 @@ class DriftWorkerRepository implements WorkerRepository {
 
     return WorkerCreateResult.success(
       message: 'Worker created locally. Sync to upload.',
-      email: worker.email,
+      email: email,
       status: 'PENDING SYNC',
     );
   }

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/repository_providers.dart';
-import '../../../core/network/connectivity_interceptor.dart';
 import '../../../core/sync/sync_engine.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -743,6 +742,7 @@ class PendingSyncFloatingBanner extends StatelessWidget {
 Future<void> runSyncWithProgressDialog(
     BuildContext context, WidgetRef ref) async {
   if (ref.read(syncNotifierProvider).isSyncing) return;
+  final l10n = AppLocalizations.of(context)!;
 
   final results = await Connectivity().checkConnectivity();
   final hasNetwork = results.any((result) => result != ConnectivityResult.none);
@@ -750,8 +750,8 @@ Future<void> runSyncWithProgressDialog(
     if (!context.mounted) return;
     await showErrorDialog(
       context,
-      title: 'No internet connection',
-      description: ConnectivityInterceptor.noConnectionMessage,
+      title: l10n.noInternetConnectionTitle,
+      description: l10n.noInternetConnectionDescription,
     );
     return;
   }
@@ -781,14 +781,13 @@ Future<void> runSyncWithProgressDialog(
     if (state.hasRemainingWork) {
       await showWarningDialog(
         context,
-        title: 'Sync needs retry',
-        description: _syncRetryMessage(state),
+        title: l10n.syncNeedsRetryTitle,
+        description: _syncRetryMessage(state, l10n),
       );
     } else {
-      final l10n = AppLocalizations.of(context)!;
       await showSuccessDialog(
         context,
-        title: 'Sync complete',
+        title: l10n.syncCompleteTitle,
         description: l10n.syncedSummary(
           state.pushed.toString(),
           state.pulled.toString(),
@@ -798,48 +797,50 @@ Future<void> runSyncWithProgressDialog(
   } else if (state.error != null) {
     await showErrorDialog(
       context,
-      title: 'Sync failed',
-      description: _syncErrorMessage(state),
+      title: l10n.syncFailedTitle,
+      description: _syncErrorMessage(state, l10n),
     );
   }
 }
 
-String _syncRetryMessage(SyncState state) {
+String _syncRetryMessage(SyncState state, AppLocalizations l10n) {
   final parts = <String>[];
   if (state.remainingPending > 0) {
-    final recordLabel = _pluralize(state.remainingPending, 'record');
-    parts.add(
-      '${state.remainingPending} $recordLabel still waiting to sync',
-    );
+    parts.add(l10n.syncPendingRecords(state.remainingPending));
   }
   if (state.conflicts > 0) {
-    final recordLabel = _pluralize(state.conflicts, 'record');
-    parts.add(
-      '${state.conflicts} $recordLabel need review',
-    );
+    parts.add(l10n.syncConflictRecords(state.conflicts));
   }
 
-  final remaining =
-      parts.isEmpty ? 'Some records still need sync' : parts.join(' and ');
+  final remaining = parts.isEmpty
+      ? l10n.syncSomeRecordsStillNeedSync
+      : parts.length == 1
+          ? parts.first
+          : l10n.syncPendingAndConflict(parts.first, parts.last);
+  final details = _syncConflictDetails(state, l10n);
   if (state.conflicts > 0 && state.remainingPending == 0) {
-    return '$remaining. Please review the affected records before syncing again.';
+    return '${l10n.syncReviewAffectedRecords(remaining)}$details';
   }
   if (state.conflicts > 0) {
-    return '$remaining. Please retry the pending records and review any records marked as conflicts.';
+    return '${l10n.syncRetryPendingReviewConflicts(remaining)}$details';
   }
-  return '$remaining. Please try syncing again when the internet connection is stronger.';
+  return l10n.syncTryAgainStrongConnection(remaining);
 }
 
-String _syncErrorMessage(SyncState state) {
-  final error = state.error ?? 'Something went wrong while syncing.';
+String _syncConflictDetails(SyncState state, AppLocalizations l10n) {
+  if (state.conflictDetails.isEmpty) return '';
+  final visible = state.conflictDetails.take(3).join('\n');
+  final hidden = state.conflictDetails.length - 3;
+  final suffix = hidden > 0 ? '\n${l10n.syncMoreRecords(hidden)}' : '';
+  return '\n\n$visible$suffix';
+}
+
+String _syncErrorMessage(SyncState state, AppLocalizations l10n) {
+  final error = state.error ?? l10n.syncGenericFailure;
   if (!state.hasRemainingWork) {
-    return '$error\n\nPlease check your internet connection and try again.';
+    return '$error\n\n${l10n.syncCheckConnectionRetry}';
   }
-  return '$error\n\n${_syncRetryMessage(state)}';
-}
-
-String _pluralize(int count, String word) {
-  return count == 1 ? word : '${word}s';
+  return '$error\n\n${_syncRetryMessage(state, l10n)}';
 }
 
 class _SyncProgressDialog extends ConsumerWidget {
@@ -852,9 +853,10 @@ class _SyncProgressDialog extends ConsumerWidget {
     final currentStep = state.currentStep.clamp(0, totalSteps).toInt();
     final progress = state.progressFraction;
     final percent = (progress * 100).round();
+    final l10n = AppLocalizations.of(context)!;
     final message = state.progressMessage.trim().isEmpty
-        ? 'Syncing data'
-        : state.progressMessage;
+        ? l10n.syncingData
+        : _localizedSyncProgressMessage(state.progressMessage, l10n);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -903,9 +905,9 @@ class _SyncProgressDialog extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Data Sync',
-                      style: TextStyle(
+                    Text(
+                      l10n.dataSync,
+                      style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
@@ -939,7 +941,7 @@ class _SyncProgressDialog extends ConsumerWidget {
           Row(
             children: [
               Text(
-                'Step $currentStep/$totalSteps',
+                l10n.syncStepProgress(currentStep, totalSteps),
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
               const Spacer(),
@@ -951,7 +953,7 @@ class _SyncProgressDialog extends ConsumerWidget {
           ),
           const SizedBox(height: 22),
           Text(
-            'Syncing $totalSteps steps. Please keep the app open.',
+            l10n.syncKeepAppOpen(totalSteps),
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.textSecondary),
           ),
@@ -959,6 +961,21 @@ class _SyncProgressDialog extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _localizedSyncProgressMessage(
+  String message,
+  AppLocalizations l10n,
+) {
+  return switch (message) {
+    'Preparing local queue' => l10n.syncPreparingQueue,
+    'Uploading pending records' => l10n.syncUploadingPending,
+    'Downloading latest records' => l10n.syncDownloadingLatest,
+    'Saving sync checkpoint' => l10n.syncSavingCheckpoint,
+    'Finishing sync' => l10n.syncFinishing,
+    'Syncing data' => l10n.syncingData,
+    _ => message,
+  };
 }
 
 void showTopToast(

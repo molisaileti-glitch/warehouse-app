@@ -36,7 +36,7 @@ abstract class WarehouseOperationsRepository {
     required double totalPackagingWeight,
     required double totalNetWeight,
     List<WarehouseOperationBagDraft>? bagDetails,
-    double moistureContent,
+    double moistureContent = 0,
     DateTime? dispatchedAt,
   });
 
@@ -48,7 +48,7 @@ abstract class WarehouseOperationsRepository {
     required double countedPackagingWeight,
     required double countedNetWeight,
     List<WarehouseOperationBagDraft>? bagDetails,
-    double moistureContent,
+    double moistureContent = 0,
     DateTime? countedAt,
   });
 
@@ -62,7 +62,7 @@ abstract class WarehouseOperationsRepository {
     required double packagingWeight,
     required double netWeight,
     List<WarehouseOperationBagDraft>? bagDetails,
-    double moistureContent,
+    double moistureContent = 0,
     DateTime? adjustedAt,
   });
 

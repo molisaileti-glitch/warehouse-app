@@ -198,7 +198,7 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _middleNameCtrl,
-            labelText: optionalLabel(l10n.middleName),
+            labelText: optionalLabel(l10n.middleName, l10n.optional),
             icon: Icons.person_outline,
             textCapitalization: TextCapitalization.words,
           ),
@@ -225,7 +225,7 @@ class _FarmerRegistrationScreenState
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: optionalLabel(l10n.idType),
+            labelText: optionalLabel(l10n.idType, l10n.optional),
             icon: Icons.badge_outlined,
             value: _idType,
             hintText: 'Select ID type',
@@ -243,7 +243,7 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _idNumberCtrl,
-            labelText: optionalLabel(l10n.idNumber),
+            labelText: optionalLabel(l10n.idNumber, l10n.optional),
             icon: Icons.numbers_outlined,
           ),
           const SizedBox(height: 14),
@@ -326,7 +326,7 @@ class _FarmerRegistrationScreenState
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: optionalLabel(l10n.memberType),
+            labelText: optionalLabel(l10n.memberType, l10n.optional),
             icon: Icons.groups_outlined,
             value: _memberType,
             hintText: 'Select member type',
@@ -344,7 +344,7 @@ class _FarmerRegistrationScreenState
           ),
           const SizedBox(height: 14),
           AppDropdownFormField<String>(
-            labelText: optionalLabel(l10n.maritalStatus),
+            labelText: optionalLabel(l10n.maritalStatus, l10n.optional),
             icon: Icons.favorite_border_rounded,
             value: _maritalStatus,
             hintText: 'Select marital status',
@@ -363,43 +363,43 @@ class _FarmerRegistrationScreenState
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _amcosMemberCtrl,
-            labelText: optionalLabel(l10n.amcosMemberId),
+            labelText: optionalLabel(l10n.amcosMemberId, l10n.optional),
             icon: Icons.assignment_ind_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _tumeCtrl,
-            labelText: optionalLabel(l10n.tumeNumber),
+            labelText: optionalLabel(l10n.tumeNumber, l10n.optional),
             icon: Icons.confirmation_number_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _ttbCtrl,
-            labelText: optionalLabel(l10n.ttbNumber),
+            labelText: optionalLabel(l10n.ttbNumber, l10n.optional),
             icon: Icons.receipt_long_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _tinCtrl,
-            labelText: optionalLabel(l10n.tinNumber),
+            labelText: optionalLabel(l10n.tinNumber, l10n.optional),
             icon: Icons.badge_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _voterCtrl,
-            labelText: optionalLabel(l10n.voterId),
+            labelText: optionalLabel(l10n.voterId, l10n.optional),
             icon: Icons.how_to_vote_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _driversLicenseCtrl,
-            labelText: optionalLabel(l10n.driversLicense),
+            labelText: optionalLabel(l10n.driversLicense, l10n.optional),
             icon: Icons.credit_card_outlined,
           ),
           const SizedBox(height: 14),
           AppTextFormField(
             controller: _sharesCtrl,
-            labelText: optionalLabel(l10n.numberOfShares),
+            labelText: optionalLabel(l10n.numberOfShares, l10n.optional),
             icon: Icons.pie_chart_outline,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: (value) {

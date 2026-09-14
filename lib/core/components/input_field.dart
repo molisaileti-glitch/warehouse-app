@@ -4,7 +4,9 @@
 
 import 'package:flutter/material.dart';
 
-String optionalLabel(String label) => '$label (Optional)';
+String optionalLabel(String label, [String optionalText = 'Optional']) {
+  return '$label ($optionalText)';
+}
 
 class AppLabeledField extends StatelessWidget {
   final String labelText;

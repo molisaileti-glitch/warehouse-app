@@ -58,6 +58,16 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
         .getSingleOrNull();
   }
 
+  Future<User?> getUserByPhoneNumber(String phoneNumber) {
+    return (select(users)
+          ..where(
+            (u) =>
+                u.phoneNumber.equals(phoneNumber) &
+                u.deletedAt.isNull(),
+          ))
+        .getSingleOrNull();
+  }
+
   Future<void> deleteUserById(String id) {
     return (delete(users)..where((u) => u.id.equals(id))).go();
   }

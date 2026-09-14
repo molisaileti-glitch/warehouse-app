@@ -202,7 +202,7 @@ class _HarvestScaleBagsScreenState
           ),
           const SizedBox(height: 14),
           Text(
-            'Moisture reading will be requested when you add each bag.',
+            l10n.moistureReadingRequestedOnAddBag,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,

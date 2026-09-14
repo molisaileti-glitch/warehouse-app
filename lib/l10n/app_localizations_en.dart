@@ -290,6 +290,98 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get noInternetConnectionTitle => 'No internet connection';
+
+  @override
+  String get noInternetConnectionDescription =>
+      'No internet connection. Turn on mobile data or Wi-Fi and try again.';
+
+  @override
+  String get syncNeedsRetryTitle => 'Sync needs retry';
+
+  @override
+  String get syncCompleteTitle => 'Sync complete';
+
+  @override
+  String get syncFailedTitle => 'Sync failed';
+
+  @override
+  String get syncingData => 'Syncing data';
+
+  @override
+  String get dataSync => 'Data Sync';
+
+  @override
+  String get syncPreparingQueue => 'Preparing local queue';
+
+  @override
+  String get syncUploadingPending => 'Uploading pending records';
+
+  @override
+  String get syncDownloadingLatest => 'Downloading latest records';
+
+  @override
+  String get syncSavingCheckpoint => 'Saving sync checkpoint';
+
+  @override
+  String get syncFinishing => 'Finishing sync';
+
+  @override
+  String syncStepProgress(int current, int total) {
+    return 'Step $current/$total';
+  }
+
+  @override
+  String syncKeepAppOpen(int total) {
+    return 'Syncing $total steps. Please keep the app open.';
+  }
+
+  @override
+  String syncPendingRecords(int count) {
+    return '$count record(s) still waiting to sync';
+  }
+
+  @override
+  String syncConflictRecords(int count) {
+    return '$count record(s) need review';
+  }
+
+  @override
+  String syncPendingAndConflict(String pending, String conflicts) {
+    return '$pending and $conflicts';
+  }
+
+  @override
+  String get syncSomeRecordsStillNeedSync => 'Some records still need sync';
+
+  @override
+  String syncReviewAffectedRecords(String remaining) {
+    return '$remaining. Please review the affected records before syncing again.';
+  }
+
+  @override
+  String syncRetryPendingReviewConflicts(String remaining) {
+    return '$remaining. Please retry the pending records and review any records marked as conflicts.';
+  }
+
+  @override
+  String syncTryAgainStrongConnection(String remaining) {
+    return '$remaining. Please try syncing again when the internet connection is stronger.';
+  }
+
+  @override
+  String syncMoreRecords(int count) {
+    return '+$count more record(s)';
+  }
+
+  @override
+  String get syncGenericFailure => 'Something went wrong while syncing.';
+
+  @override
+  String get syncCheckConnectionRetry =>
+      'Please check your internet connection and try again.';
+
+  @override
   String get notAssignedWarehouse => 'Not assigned to a warehouse';
 
   @override
@@ -605,6 +697,324 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moisture => 'Moisture';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get measureMoistureTitle => 'Measure moisture?';
+
+  @override
+  String get measureMoistureQuestion =>
+      'Do you want to measure moisture for this bag?';
+
+  @override
+  String measureMoistureQuestionWithMax(String max) {
+    return 'Do you want to measure moisture for this bag? Maximum allowed is $max%.';
+  }
+
+  @override
+  String get measure => 'Measure';
+
+  @override
+  String get baudRateChangedReconnectMeter =>
+      'Baud rate changed. Connect the moisture meter again.';
+
+  @override
+  String noSerialMoistureMeterFound(int count) {
+    return 'No serial moisture meter found. $count non-serial USB device(s) were ignored.';
+  }
+
+  @override
+  String get noMoistureMeterFound =>
+      'No moisture meter found. Connect the meter with USB OTG, then scan again.';
+
+  @override
+  String get connectUsbMoistureMeter => 'Connect the USB moisture meter.';
+
+  @override
+  String meterGrainCodeMismatch(
+      String code, String crop, String material, String materialCode) {
+    return 'Meter grain code $code does not match $crop. Set the meter to $material ($materialCode) and read again.';
+  }
+
+  @override
+  String get enterMoistureRange => 'Enter moisture from 0 to 100.';
+
+  @override
+  String get moistureTooHighTitle => 'Moisture too high';
+
+  @override
+  String moistureTooHighDescription(String average, String max) {
+    return 'Average moisture is $average%, above the allowed $max%. This bag cannot be saved.';
+  }
+
+  @override
+  String get moistureRecordedTitle => 'Moisture recorded';
+
+  @override
+  String moistureRecordedDescription(String average) {
+    return 'Average moisture is $average%. This bag is suitable.';
+  }
+
+  @override
+  String cropMoistureTitle(String crop) {
+    return '$crop moisture';
+  }
+
+  @override
+  String get resetReadings => 'Reset readings';
+
+  @override
+  String manualReadingForZone(String zone) {
+    return 'Manual reading for $zone';
+  }
+
+  @override
+  String get useMoistureReading => 'Use moisture reading';
+
+  @override
+  String get noReadingReceived =>
+      'No reading received. Press the meter read/send button and try again, or enter the value manually.';
+
+  @override
+  String get usbPermissionDenied =>
+      'USB permission was not granted. Allow USB access and try again.';
+
+  @override
+  String get notSerialMoistureMeter =>
+      'That USB device is not a serial moisture meter. Connect the moisture meter using USB OTG, then scan again.';
+
+  @override
+  String get averageMoisture => 'Average moisture';
+
+  @override
+  String maxAllowed(String max) {
+    return 'Max allowed $max%';
+  }
+
+  @override
+  String get moistureMeter => 'Moisture meter';
+
+  @override
+  String get scanMoistureMeter => 'Scan moisture meter';
+
+  @override
+  String get connectLandtekThenScan =>
+      'Connect the Landtek moisture meter with USB OTG, then scan.';
+
+  @override
+  String moistureMeterCandidates(int count) {
+    return '$count moisture meter candidate(s) found.';
+  }
+
+  @override
+  String get baudRate => 'Baud rate';
+
+  @override
+  String baudRateValue(int rate) {
+    return '$rate baud';
+  }
+
+  @override
+  String nonSerialUsbDevicesIgnored(int count) {
+    return '$count non-serial USB device(s) ignored.';
+  }
+
+  @override
+  String get scanning => 'Scanning...';
+
+  @override
+  String get reading => 'Reading';
+
+  @override
+  String get readPhase => 'Read phase';
+
+  @override
+  String grainCodeNotConfigured(String crop) {
+    return 'Grain code verification is not configured for $crop.';
+  }
+
+  @override
+  String meterMustBeSetTo(String material, String code) {
+    return 'Meter must be set to $material ($code).';
+  }
+
+  @override
+  String get reReadPhase => 'Re-read phase';
+
+  @override
+  String get zoneTop => 'Top';
+
+  @override
+  String get zoneLowerTop => 'Lower top';
+
+  @override
+  String get zoneHighBottom => 'High bottom';
+
+  @override
+  String get zoneBottom => 'Bottom';
+
+  @override
+  String get stockOverview => 'Stock Overview';
+
+  @override
+  String get totalStock => 'Total stock';
+
+  @override
+  String get noStockAvailable => 'No stock available';
+
+  @override
+  String moreCrops(int count) {
+    return '+$count more crops';
+  }
+
+  @override
+  String get moistureReadingRequestedOnAddBag =>
+      'Moisture reading will be requested when you add each bag.';
+
+  @override
+  String get recipientName => 'Recipient name';
+
+  @override
+  String get recipientPhone => 'Recipient phone';
+
+  @override
+  String get weighBags => 'Weigh bags';
+
+  @override
+  String get addOneBagAtTimeForCrop => 'Add one bag at a time for this crop.';
+
+  @override
+  String get confirmPackagingAddBag =>
+      'Confirm crop packaging and add each weighed bag.';
+
+  @override
+  String get noStockAvailableForCrop => 'No stock available for this crop.';
+
+  @override
+  String cannotRemoveBags(int count, int available) {
+    return 'You cannot remove $count bags. Only $available bags are available.';
+  }
+
+  @override
+  String get grossWeightExceedsAvailableStock =>
+      'Gross weight cannot exceed available stock.';
+
+  @override
+  String get packagingWeightExceedsAvailableStock =>
+      'Packaging weight cannot exceed available stock.';
+
+  @override
+  String get netWeightExceedsAvailableStock =>
+      'Net weight cannot exceed available stock.';
+
+  @override
+  String get dispatchRequiresStockAdjustment =>
+      'Dispatch uses full bags. If stock weight has changed, perform a stock adjustment first, then dispatch.';
+
+  @override
+  String get removingAllBagsRequiresFullStock =>
+      'Removing all bags must remove the full recorded stock for this crop.';
+
+  @override
+  String get addAtLeastOneBagBeforeContinuing =>
+      'Add at least one bag before continuing.';
+
+  @override
+  String get selectAtLeastOneBagBeforeContinuing =>
+      'Select at least one bag before continuing.';
+
+  @override
+  String selectedBagsExceedAvailable(int count, int available) {
+    return 'You selected $count bags. Only $available bags are available.';
+  }
+
+  @override
+  String get weighAllSelectedBagsBeforeContinuing =>
+      'Weigh all selected bags before continuing.';
+
+  @override
+  String get addAtLeastOneBagBeforeSaving =>
+      'Add at least one bag before saving.';
+
+  @override
+  String get currentWeight => 'Current weight';
+
+  @override
+  String get selectedBags => 'Selected Bags';
+
+  @override
+  String weighedProgress(int weighed, int total) {
+    return '$weighed / $total weighed';
+  }
+
+  @override
+  String get placeOneBagOnScale =>
+      'Place one bag on the scale, wait for a stable reading, then tap Add bag.';
+
+  @override
+  String get receiving => 'Receiving';
+
+  @override
+  String get current => 'Current';
+
+  @override
+  String get dispatch => 'Dispatch';
+
+  @override
+  String get addToDispatch => 'Add to Dispatch';
+
+  @override
+  String get addToAdjustment => 'Add to Adjustment';
+
+  @override
+  String reviewWeighedBags(int count) {
+    return 'Review $count weighed bags';
+  }
+
+  @override
+  String get confirmStockRecordBeforeSync =>
+      'Confirm the stock record before saving it for sync.';
+
+  @override
+  String reviewBagsCount(int count) {
+    return 'Review $count bags';
+  }
+
+  @override
+  String get dispatchDetails => 'Dispatch details';
+
+  @override
+  String get stockCountDetails => 'Stock count details';
+
+  @override
+  String get adjustmentDetails => 'Adjustment details';
+
+  @override
+  String get dispatchDetailsSubtitle =>
+      'Add recipient information for this dispatch.';
+
+  @override
+  String get stockCountDetailsSubtitle =>
+      'The counted bag totals are ready. This will not change inventory.';
+
+  @override
+  String get adjustmentDetailsSubtitle =>
+      'Choose whether inventory should increase or decrease.';
+
+  @override
+  String get refreshBags => 'Refresh bags';
+
+  @override
+  String bagWeightChangedNeedsAdjustment(String tag, String recordedWeight,
+      String measuredWeight, String adjustmentType) {
+    return 'Bag $tag changed from $recordedWeight kg to $measuredWeight kg. Perform a $adjustmentType stock adjustment first, then dispatch.';
+  }
+
+  @override
+  String get enterPositiveGrossWeightBeforeAddingBag =>
+      'Enter a positive gross weight before adding a bag.';
 
   @override
   String get phone => 'Phone';
@@ -1028,9 +1438,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanNearbyScale => 'Scan nearby devices to find your scale.';
-
-  @override
-  String get scanning => 'Scanning...';
 
   @override
   String get scanDevices => 'Scan Devices';

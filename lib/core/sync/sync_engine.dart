@@ -66,6 +66,7 @@ class SyncManager {
     var pushed = 0;
     var pulled = 0;
     final errors = <String>[];
+    final conflictDetails = <String>[];
     final runStartedAt = DateTime.now();
 
     void progress(int step, String message) {
@@ -93,7 +94,10 @@ class SyncManager {
 
     try {
       progress(2, 'Uploading pending records');
-      pushed = await _push(passName: 'before-pull');
+      pushed = await _push(
+        passName: 'before-pull',
+        conflictDetails: conflictDetails,
+      );
     } catch (e) {
       errors.add('Push failed: $e');
       developer.log('[SyncRun] pushFailed error=$e', name: 'sync.run');
@@ -103,7 +107,10 @@ class SyncManager {
       progress(3, 'Downloading latest records');
       pulled = await _roleStrategy.pull(await _getLastSyncTime());
       developer.log('[SyncRun] pulled=$pulled', name: 'sync.run');
-      final retriedAfterPull = await _push(passName: 'after-pull');
+      final retriedAfterPull = await _push(
+        passName: 'after-pull',
+        conflictDetails: conflictDetails,
+      );
       pushed += retriedAfterPull;
       progress(4, 'Saving sync checkpoint');
       await _saveLastSyncTime(DateTime.now());
@@ -115,7 +122,14 @@ class SyncManager {
     progress(5, 'Finishing sync');
     await _syncDao.purgeSync();
     final remainingPending = await _syncDao.getPendingCount();
-    final conflictCount = (await _syncDao.getConflicts()).length;
+    final conflicts = await _syncDao.getConflicts();
+    final conflictCount = conflicts.length;
+    for (final conflict in conflicts) {
+      final description = _describeQueuedConflict(conflict);
+      if (!conflictDetails.contains(description)) {
+        conflictDetails.add(description);
+      }
+    }
     developer.log(
       '[SyncRun] finish pushed=$pushed pulled=$pulled '
       'remainingPending=$remainingPending conflicts=$conflictCount '
@@ -128,6 +142,7 @@ class SyncManager {
       errors: errors,
       remainingPending: remainingPending,
       conflicts: conflictCount,
+      conflictDetails: conflictDetails,
     );
   }
 
@@ -135,7 +150,10 @@ class SyncManager {
     return _roleStrategy.pullReferenceData(since: since);
   }
 
-  Future<int> _push({required String passName}) async {
+  Future<int> _push({
+    required String passName,
+    required List<String> conflictDetails,
+  }) async {
     final batch = await _syncDao.getNextBatch(
       limit: _batchSize,
       entityTypes: backendSupportedSyncEntityTypes,
@@ -208,6 +226,10 @@ class SyncManager {
         if (status == 409 || _isPermanentValidationConflict(e)) {
           await _syncDao.markConflict(entry.id);
           await _markEntityConflict(entry.entityType, entry.entityId);
+          final detail = _describeDioConflict(entry, e);
+          if (!conflictDetails.contains(detail)) {
+            conflictDetails.add(detail);
+          }
         } else {
           // 400/422 are validation errors - the payload may be fixable on the
           // next sync (e.g. a parent reference that wasn't synced yet).
@@ -790,6 +812,84 @@ class SyncManager {
         text.contains('duplicate');
   }
 
+  String _describeDioConflict(SyncQueueData entry, DioException error) {
+    final backendMessage = _extractBackendMessage(error.response?.data);
+    final queuedRecord = _describeQueuedConflict(entry);
+    if (backendMessage.isEmpty) return queuedRecord;
+
+    final normalized = backendMessage.toLowerCase();
+    if (entry.entityType == 'users' &&
+        (normalized.contains('email') || normalized.contains('phone'))) {
+      return '$queuedRecord Server says the email or phone number already exists.';
+    }
+    if (normalized.contains('already') || normalized.contains('duplicate')) {
+      return '$queuedRecord Server says this record already exists.';
+    }
+    return '$queuedRecord Server message: $backendMessage';
+  }
+
+  String _describeQueuedConflict(SyncQueueData entry) {
+    final payload = _decodePayloadMap(entry.payload);
+    final name = _string(
+      payload['fullName'] ??
+          payload['name'] ??
+          payload['farmerName'] ??
+          payload['businessName'],
+    );
+    final email = _string(payload['email']);
+    final phone = _string(payload['phoneNumber'] ?? payload['phone']);
+    final entity = _entityLabel(entry.entityType);
+    final parts = <String>[
+      if (name.isNotEmpty) name,
+      if (email.isNotEmpty) email,
+      if (phone.isNotEmpty) phone,
+    ];
+    final identity = parts.isEmpty ? entry.entityId : parts.join(' / ');
+    return '$entity "$identity" could not sync.';
+  }
+
+  Map<String, dynamic> _decodePayloadMap(String payload) {
+    try {
+      return _asMap(jsonDecode(payload));
+    } catch (_) {
+      return const <String, dynamic>{};
+    }
+  }
+
+  String _extractBackendMessage(Object? data) {
+    if (data == null) return '';
+    if (data is String) return data.trim();
+    if (data is Map) {
+      for (final key in const ['message', 'detail', 'error', 'errors']) {
+        final value = data[key];
+        if (value == null) continue;
+        if (value is List) {
+          return value.map((item) => item.toString()).join(', ').trim();
+        }
+        if (value is Map) {
+          return value.values.map((item) => item.toString()).join(', ').trim();
+        }
+        return value.toString().trim();
+      }
+    }
+    return data.toString().trim();
+  }
+
+  String _entityLabel(String entityType) {
+    return switch (entityType) {
+      'users' => 'Worker',
+      'farmers' => 'Farmer',
+      'farmerDependants' => 'Farmer dependant',
+      'farmerHarvests' => 'Harvest',
+      'warehouses' => 'Warehouse',
+      'amcos' => 'AMCOS',
+      'dispatches' => 'Dispatch',
+      'stockCounts' => 'Stock count',
+      'stockAdjustments' => 'Stock adjustment',
+      _ => 'Record',
+    };
+  }
+
   List<Map<String, dynamic>> _asList(Object? value) {
     final raw = value is Map<String, dynamic>
         ? value['content'] ??
@@ -812,6 +912,11 @@ class SyncManager {
   double _double(Object? value) {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  String _string(Object? value, {String fallback = ''}) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? fallback : text;
   }
 
   Future<void> _markEntitySynced(String entityType, String entityId) async {
@@ -1332,6 +1437,7 @@ class SyncResult {
   final List<String> errors;
   final int remainingPending;
   final int conflicts;
+  final List<String> conflictDetails;
   bool get hasErrors => errors.isNotEmpty;
   bool get hasRemainingWork => remainingPending > 0 || conflicts > 0;
 
@@ -1341,6 +1447,7 @@ class SyncResult {
     required this.errors,
     required this.remainingPending,
     required this.conflicts,
+    this.conflictDetails = const [],
   });
 }
 
@@ -1414,12 +1521,14 @@ class SyncNotifier extends StateNotifier<SyncState> {
               result.errors.first,
               remainingPending: result.remainingPending,
               conflicts: result.conflicts,
+              conflictDetails: result.conflictDetails,
             )
           : SyncState.done(
               pushed: result.pushed,
               pulled: result.pulled,
               remainingPending: result.remainingPending,
               conflicts: result.conflicts,
+              conflictDetails: result.conflictDetails,
             );
     } catch (e) {
       if (!mounted) return;
@@ -1436,6 +1545,7 @@ class SyncState {
   final int pulled;
   final int remainingPending;
   final int conflicts;
+  final List<String> conflictDetails;
   final int currentStep;
   final int totalSteps;
   final String progressMessage;
@@ -1448,6 +1558,7 @@ class SyncState {
     this.pulled = 0,
     this.remainingPending = 0,
     this.conflicts = 0,
+    this.conflictDetails = const [],
     this.currentStep = 0,
     this.totalSteps = 5,
     this.progressMessage = '',
@@ -1469,6 +1580,7 @@ class SyncState {
     required int pulled,
     int remainingPending = 0,
     int conflicts = 0,
+    List<String> conflictDetails = const [],
   }) =>
       SyncState(
         isDone: true,
@@ -1476,16 +1588,19 @@ class SyncState {
         pulled: pulled,
         remainingPending: remainingPending,
         conflicts: conflicts,
+        conflictDetails: conflictDetails,
       );
   factory SyncState.error(
     String error, {
     int remainingPending = 0,
     int conflicts = 0,
+    List<String> conflictDetails = const [],
   }) =>
       SyncState(
         error: error,
         remainingPending: remainingPending,
         conflicts: conflicts,
+        conflictDetails: conflictDetails,
       );
   bool get hasErrors => error != null;
   bool get hasRemainingWork => remainingPending > 0 || conflicts > 0;

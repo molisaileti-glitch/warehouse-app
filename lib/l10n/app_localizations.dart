@@ -638,6 +638,150 @@ abstract class AppLocalizations {
   /// **'Synced: {pushed} pushed, {pulled} pulled'**
   String syncedSummary(String pushed, String pulled);
 
+  /// No description provided for @noInternetConnectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get noInternetConnectionTitle;
+
+  /// No description provided for @noInternetConnectionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Turn on mobile data or Wi-Fi and try again.'**
+  String get noInternetConnectionDescription;
+
+  /// No description provided for @syncNeedsRetryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync needs retry'**
+  String get syncNeedsRetryTitle;
+
+  /// No description provided for @syncCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync complete'**
+  String get syncCompleteTitle;
+
+  /// No description provided for @syncFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed'**
+  String get syncFailedTitle;
+
+  /// No description provided for @syncingData.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing data'**
+  String get syncingData;
+
+  /// No description provided for @dataSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Sync'**
+  String get dataSync;
+
+  /// No description provided for @syncPreparingQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing local queue'**
+  String get syncPreparingQueue;
+
+  /// No description provided for @syncUploadingPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading pending records'**
+  String get syncUploadingPending;
+
+  /// No description provided for @syncDownloadingLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading latest records'**
+  String get syncDownloadingLatest;
+
+  /// No description provided for @syncSavingCheckpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving sync checkpoint'**
+  String get syncSavingCheckpoint;
+
+  /// No description provided for @syncFinishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing sync'**
+  String get syncFinishing;
+
+  /// No description provided for @syncStepProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current}/{total}'**
+  String syncStepProgress(int current, int total);
+
+  /// No description provided for @syncKeepAppOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing {total} steps. Please keep the app open.'**
+  String syncKeepAppOpen(int total);
+
+  /// No description provided for @syncPendingRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} record(s) still waiting to sync'**
+  String syncPendingRecords(int count);
+
+  /// No description provided for @syncConflictRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} record(s) need review'**
+  String syncConflictRecords(int count);
+
+  /// No description provided for @syncPendingAndConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'{pending} and {conflicts}'**
+  String syncPendingAndConflict(String pending, String conflicts);
+
+  /// No description provided for @syncSomeRecordsStillNeedSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Some records still need sync'**
+  String get syncSomeRecordsStillNeedSync;
+
+  /// No description provided for @syncReviewAffectedRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining}. Please review the affected records before syncing again.'**
+  String syncReviewAffectedRecords(String remaining);
+
+  /// No description provided for @syncRetryPendingReviewConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining}. Please retry the pending records and review any records marked as conflicts.'**
+  String syncRetryPendingReviewConflicts(String remaining);
+
+  /// No description provided for @syncTryAgainStrongConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining}. Please try syncing again when the internet connection is stronger.'**
+  String syncTryAgainStrongConnection(String remaining);
+
+  /// No description provided for @syncMoreRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more record(s)'**
+  String syncMoreRecords(int count);
+
+  /// No description provided for @syncGenericFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while syncing.'**
+  String get syncGenericFailure;
+
+  /// No description provided for @syncCheckConnectionRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your internet connection and try again.'**
+  String get syncCheckConnectionRetry;
+
   /// No description provided for @notAssignedWarehouse.
   ///
   /// In en, this message translates to:
@@ -1255,6 +1399,512 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Moisture'**
   String get moisture;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @measureMoistureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure moisture?'**
+  String get measureMoistureTitle;
+
+  /// No description provided for @measureMoistureQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to measure moisture for this bag?'**
+  String get measureMoistureQuestion;
+
+  /// No description provided for @measureMoistureQuestionWithMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to measure moisture for this bag? Maximum allowed is {max}%.'**
+  String measureMoistureQuestionWithMax(String max);
+
+  /// No description provided for @measure.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure'**
+  String get measure;
+
+  /// No description provided for @baudRateChangedReconnectMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Baud rate changed. Connect the moisture meter again.'**
+  String get baudRateChangedReconnectMeter;
+
+  /// No description provided for @noSerialMoistureMeterFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No serial moisture meter found. {count} non-serial USB device(s) were ignored.'**
+  String noSerialMoistureMeterFound(int count);
+
+  /// No description provided for @noMoistureMeterFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No moisture meter found. Connect the meter with USB OTG, then scan again.'**
+  String get noMoistureMeterFound;
+
+  /// No description provided for @connectUsbMoistureMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect the USB moisture meter.'**
+  String get connectUsbMoistureMeter;
+
+  /// No description provided for @meterGrainCodeMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Meter grain code {code} does not match {crop}. Set the meter to {material} ({materialCode}) and read again.'**
+  String meterGrainCodeMismatch(
+      String code, String crop, String material, String materialCode);
+
+  /// No description provided for @enterMoistureRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter moisture from 0 to 100.'**
+  String get enterMoistureRange;
+
+  /// No description provided for @moistureTooHighTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moisture too high'**
+  String get moistureTooHighTitle;
+
+  /// No description provided for @moistureTooHighDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Average moisture is {average}%, above the allowed {max}%. This bag cannot be saved.'**
+  String moistureTooHighDescription(String average, String max);
+
+  /// No description provided for @moistureRecordedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moisture recorded'**
+  String get moistureRecordedTitle;
+
+  /// No description provided for @moistureRecordedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Average moisture is {average}%. This bag is suitable.'**
+  String moistureRecordedDescription(String average);
+
+  /// No description provided for @cropMoistureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{crop} moisture'**
+  String cropMoistureTitle(String crop);
+
+  /// No description provided for @resetReadings.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset readings'**
+  String get resetReadings;
+
+  /// No description provided for @manualReadingForZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual reading for {zone}'**
+  String manualReadingForZone(String zone);
+
+  /// No description provided for @useMoistureReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Use moisture reading'**
+  String get useMoistureReading;
+
+  /// No description provided for @noReadingReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No reading received. Press the meter read/send button and try again, or enter the value manually.'**
+  String get noReadingReceived;
+
+  /// No description provided for @usbPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'USB permission was not granted. Allow USB access and try again.'**
+  String get usbPermissionDenied;
+
+  /// No description provided for @notSerialMoistureMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'That USB device is not a serial moisture meter. Connect the moisture meter using USB OTG, then scan again.'**
+  String get notSerialMoistureMeter;
+
+  /// No description provided for @averageMoisture.
+  ///
+  /// In en, this message translates to:
+  /// **'Average moisture'**
+  String get averageMoisture;
+
+  /// No description provided for @maxAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Max allowed {max}%'**
+  String maxAllowed(String max);
+
+  /// No description provided for @moistureMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Moisture meter'**
+  String get moistureMeter;
+
+  /// No description provided for @scanMoistureMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan moisture meter'**
+  String get scanMoistureMeter;
+
+  /// No description provided for @connectLandtekThenScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect the Landtek moisture meter with USB OTG, then scan.'**
+  String get connectLandtekThenScan;
+
+  /// No description provided for @moistureMeterCandidates.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} moisture meter candidate(s) found.'**
+  String moistureMeterCandidates(int count);
+
+  /// No description provided for @baudRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Baud rate'**
+  String get baudRate;
+
+  /// No description provided for @baudRateValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate} baud'**
+  String baudRateValue(int rate);
+
+  /// No description provided for @nonSerialUsbDevicesIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} non-serial USB device(s) ignored.'**
+  String nonSerialUsbDevicesIgnored(int count);
+
+  /// No description provided for @scanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning...'**
+  String get scanning;
+
+  /// No description provided for @reading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get reading;
+
+  /// No description provided for @readPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Read phase'**
+  String get readPhase;
+
+  /// No description provided for @grainCodeNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Grain code verification is not configured for {crop}.'**
+  String grainCodeNotConfigured(String crop);
+
+  /// No description provided for @meterMustBeSetTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Meter must be set to {material} ({code}).'**
+  String meterMustBeSetTo(String material, String code);
+
+  /// No description provided for @reReadPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-read phase'**
+  String get reReadPhase;
+
+  /// No description provided for @zoneTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get zoneTop;
+
+  /// No description provided for @zoneLowerTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower top'**
+  String get zoneLowerTop;
+
+  /// No description provided for @zoneHighBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'High bottom'**
+  String get zoneHighBottom;
+
+  /// No description provided for @zoneBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom'**
+  String get zoneBottom;
+
+  /// No description provided for @stockOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Overview'**
+  String get stockOverview;
+
+  /// No description provided for @totalStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Total stock'**
+  String get totalStock;
+
+  /// No description provided for @noStockAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No stock available'**
+  String get noStockAvailable;
+
+  /// No description provided for @moreCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more crops'**
+  String moreCrops(int count);
+
+  /// No description provided for @moistureReadingRequestedOnAddBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Moisture reading will be requested when you add each bag.'**
+  String get moistureReadingRequestedOnAddBag;
+
+  /// No description provided for @recipientName.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient name'**
+  String get recipientName;
+
+  /// No description provided for @recipientPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient phone'**
+  String get recipientPhone;
+
+  /// No description provided for @weighBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh bags'**
+  String get weighBags;
+
+  /// No description provided for @addOneBagAtTimeForCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one bag at a time for this crop.'**
+  String get addOneBagAtTimeForCrop;
+
+  /// No description provided for @confirmPackagingAddBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm crop packaging and add each weighed bag.'**
+  String get confirmPackagingAddBag;
+
+  /// No description provided for @noStockAvailableForCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'No stock available for this crop.'**
+  String get noStockAvailableForCrop;
+
+  /// No description provided for @cannotRemoveBags.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot remove {count} bags. Only {available} bags are available.'**
+  String cannotRemoveBags(int count, int available);
+
+  /// No description provided for @grossWeightExceedsAvailableStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross weight cannot exceed available stock.'**
+  String get grossWeightExceedsAvailableStock;
+
+  /// No description provided for @packagingWeightExceedsAvailableStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Packaging weight cannot exceed available stock.'**
+  String get packagingWeightExceedsAvailableStock;
+
+  /// No description provided for @netWeightExceedsAvailableStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Net weight cannot exceed available stock.'**
+  String get netWeightExceedsAvailableStock;
+
+  /// No description provided for @dispatchRequiresStockAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatch uses full bags. If stock weight has changed, perform a stock adjustment first, then dispatch.'**
+  String get dispatchRequiresStockAdjustment;
+
+  /// No description provided for @removingAllBagsRequiresFullStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Removing all bags must remove the full recorded stock for this crop.'**
+  String get removingAllBagsRequiresFullStock;
+
+  /// No description provided for @addAtLeastOneBagBeforeContinuing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one bag before continuing.'**
+  String get addAtLeastOneBagBeforeContinuing;
+
+  /// No description provided for @selectAtLeastOneBagBeforeContinuing.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one bag before continuing.'**
+  String get selectAtLeastOneBagBeforeContinuing;
+
+  /// No description provided for @selectedBagsExceedAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'You selected {count} bags. Only {available} bags are available.'**
+  String selectedBagsExceedAvailable(int count, int available);
+
+  /// No description provided for @weighAllSelectedBagsBeforeContinuing.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh all selected bags before continuing.'**
+  String get weighAllSelectedBagsBeforeContinuing;
+
+  /// No description provided for @addAtLeastOneBagBeforeSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one bag before saving.'**
+  String get addAtLeastOneBagBeforeSaving;
+
+  /// No description provided for @currentWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight'**
+  String get currentWeight;
+
+  /// No description provided for @selectedBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Bags'**
+  String get selectedBags;
+
+  /// No description provided for @weighedProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{weighed} / {total} weighed'**
+  String weighedProgress(int weighed, int total);
+
+  /// No description provided for @placeOneBagOnScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Place one bag on the scale, wait for a stable reading, then tap Add bag.'**
+  String get placeOneBagOnScale;
+
+  /// No description provided for @receiving.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiving'**
+  String get receiving;
+
+  /// No description provided for @current.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get current;
+
+  /// No description provided for @dispatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatch'**
+  String get dispatch;
+
+  /// No description provided for @addToDispatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Dispatch'**
+  String get addToDispatch;
+
+  /// No description provided for @addToAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Adjustment'**
+  String get addToAdjustment;
+
+  /// No description provided for @reviewWeighedBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Review {count} weighed bags'**
+  String reviewWeighedBags(int count);
+
+  /// No description provided for @confirmStockRecordBeforeSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the stock record before saving it for sync.'**
+  String get confirmStockRecordBeforeSync;
+
+  /// No description provided for @reviewBagsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Review {count} bags'**
+  String reviewBagsCount(int count);
+
+  /// No description provided for @dispatchDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatch details'**
+  String get dispatchDetails;
+
+  /// No description provided for @stockCountDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock count details'**
+  String get stockCountDetails;
+
+  /// No description provided for @adjustmentDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustment details'**
+  String get adjustmentDetails;
+
+  /// No description provided for @dispatchDetailsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add recipient information for this dispatch.'**
+  String get dispatchDetailsSubtitle;
+
+  /// No description provided for @stockCountDetailsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The counted bag totals are ready. This will not change inventory.'**
+  String get stockCountDetailsSubtitle;
+
+  /// No description provided for @adjustmentDetailsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether inventory should increase or decrease.'**
+  String get adjustmentDetailsSubtitle;
+
+  /// No description provided for @refreshBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh bags'**
+  String get refreshBags;
+
+  /// No description provided for @bagWeightChangedNeedsAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Bag {tag} changed from {recordedWeight} kg to {measuredWeight} kg. Perform a {adjustmentType} stock adjustment first, then dispatch.'**
+  String bagWeightChangedNeedsAdjustment(String tag, String recordedWeight,
+      String measuredWeight, String adjustmentType);
+
+  /// No description provided for @enterPositiveGrossWeightBeforeAddingBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive gross weight before adding a bag.'**
+  String get enterPositiveGrossWeightBeforeAddingBag;
 
   /// No description provided for @phone.
   ///
@@ -2053,12 +2703,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan nearby devices to find your scale.'**
   String get scanNearbyScale;
-
-  /// No description provided for @scanning.
-  ///
-  /// In en, this message translates to:
-  /// **'Scanning...'**
-  String get scanning;
 
   /// No description provided for @scanDevices.
   ///

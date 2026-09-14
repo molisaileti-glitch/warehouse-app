@@ -349,9 +349,9 @@ class _WorkerStockOverviewPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          const Text(
-            'STOCK OVERVIEW',
-            style: TextStyle(
+          Text(
+            l10n.stockOverview.toUpperCase(),
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -368,22 +368,22 @@ class _WorkerStockOverviewPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          const Text(
-            'Total stock',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+          Text(
+            l10n.totalStock,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 16),
           if (visibleItems.isEmpty)
-            const Text(
-              'No stock available',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+            Text(
+              l10n.noStockAvailable,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
             )
           else ...[
             for (final item in visibleItems) _StockOverviewRow(item: item),
             if (moreCount > 0) ...[
               const SizedBox(height: 6),
               Text(
-                '+$moreCount more crops',
+                l10n.moreCrops(moreCount),
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 12,

@@ -231,7 +231,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               ),
               const SizedBox(height: 14),
               AppDropdownFormField<String>(
-                labelText: optionalLabel(l10n.memberCategory),
+                labelText: optionalLabel(l10n.memberCategory, l10n.optional),
                 icon: Icons.category_outlined,
                 value: _category,
                 hintText: l10n.selectMemberCategory,
@@ -248,18 +248,18 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _registrationNumber,
-                labelText: optionalLabel(l10n.registrationNumber),
+                labelText: optionalLabel(l10n.registrationNumber, l10n.optional),
                 icon: Icons.numbers_outlined,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _tinNumber,
-                labelText: optionalLabel(l10n.tinNumber),
+                labelText: optionalLabel(l10n.tinNumber, l10n.optional),
                 icon: Icons.badge_outlined,
               ),
               const SizedBox(height: 14),
               AppDropdownFormField<Crop>(
-                labelText: optionalLabel(l10n.crop),
+                labelText: optionalLabel(l10n.crop, l10n.optional),
                 icon: Icons.agriculture_outlined,
                 value: _crop,
                 hintText: l10n.selectCrop,
@@ -344,7 +344,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _email,
-                labelText: optionalLabel(l10n.businessEmail),
+                labelText: optionalLabel(l10n.businessEmail, l10n.optional),
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -357,7 +357,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _website,
-                labelText: optionalLabel(l10n.website),
+                labelText: optionalLabel(l10n.website, l10n.optional),
                 icon: Icons.language_outlined,
                 keyboardType: TextInputType.url,
               ),
@@ -373,21 +373,21 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactName,
-                labelText: optionalLabel(l10n.contactName),
+                labelText: optionalLabel(l10n.contactName, l10n.optional),
                 icon: Icons.person_outline_rounded,
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactPhone,
-                labelText: optionalLabel(l10n.contactPhone),
+                labelText: optionalLabel(l10n.contactPhone, l10n.optional),
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactEmail,
-                labelText: optionalLabel(l10n.contactEmail),
+                labelText: optionalLabel(l10n.contactEmail, l10n.optional),
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -400,7 +400,7 @@ class _AmcosFormScreenState extends ConsumerState<AmcosFormScreen> {
               const SizedBox(height: 14),
               AppTextFormField(
                 controller: _contactTitle,
-                labelText: optionalLabel(l10n.contactTitle),
+                labelText: optionalLabel(l10n.contactTitle, l10n.optional),
                 icon: Icons.work_outline_rounded,
               ),
               const SizedBox(height: 24),

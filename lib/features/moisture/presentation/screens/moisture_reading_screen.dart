@@ -6,24 +6,26 @@ import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/moisture/data/services/landtek_moisture_meter_service.dart';
 import 'package:warehouse_app/features/moisture/domain/models/moisture_reading.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
+import 'package:warehouse_app/l10n/app_localizations.dart';
 
 Future<double?> askAndMeasureMoisture({
   required BuildContext context,
   required String cropName,
   double? maxMoistureContent,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final max = _positiveMax(maxMoistureContent);
   final shouldMeasure = await showAppFeedbackDialog<bool>(
     context,
-    title: 'Measure moisture?',
+    title: l10n.measureMoistureTitle,
     description: max == null
-        ? 'Do you want to measure moisture for this bag?'
-        : 'Do you want to measure moisture for this bag? Maximum allowed is ${_format(max)}%.',
+        ? l10n.measureMoistureQuestion
+        : l10n.measureMoistureQuestionWithMax(_format(max)),
     type: AppFeedbackType.confirmation,
-    actions: const [
-      AppFeedbackAction<bool>(label: 'Skip', result: false),
+    actions: [
+      AppFeedbackAction<bool>(label: l10n.skip, result: false),
       AppFeedbackAction<bool>(
-        label: 'Measure',
+        label: l10n.measure,
         result: true,
         isPrimary: true,
       ),
@@ -100,9 +102,10 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
     if (value == null || value == _baudRate) return;
     await _service.disconnect();
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _baudRate = value;
-      _error = 'Baud rate changed. Connect the moisture meter again.';
+      _error = l10n.baudRateChangedReconnectMeter;
     });
   }
 
@@ -119,9 +122,10 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
         _ignoredDeviceCount = result.ignoredDeviceCount;
         _selectedDevice = result.devices.isEmpty ? null : result.devices.first;
         if (result.devices.isEmpty) {
+          final l10n = AppLocalizations.of(context)!;
           _error = result.ignoredDeviceCount > 0
-              ? 'No serial moisture meter found. ${result.ignoredDeviceCount} non-serial USB device(s) were ignored.'
-              : 'No moisture meter found. Connect the meter with USB OTG, then scan again.';
+              ? l10n.noSerialMoistureMeterFound(result.ignoredDeviceCount)
+              : l10n.noMoistureMeterFound;
         }
       });
     } catch (error) {
@@ -135,7 +139,8 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
   Future<void> _connect() async {
     final device = _selectedDevice;
     if (device == null) {
-      setState(() => _error = 'Connect the USB moisture meter.');
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _error = l10n.connectUsbMoistureMeter);
       return;
     }
     setState(() {
@@ -165,9 +170,14 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
       final expectedMaterial = _expectedMaterial;
       if (expectedMaterial != null &&
           !expectedMaterial.matchesCode(reading.materialCode)) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
-          _error =
-              'Meter grain code ${_meterCodeLabel(reading.materialCode)} does not match ${widget.cropName}. Set the meter to ${expectedMaterial.name} (${expectedMaterial.codeLabel}) and read again.';
+          _error = l10n.meterGrainCodeMismatch(
+            _meterCodeLabel(reading.materialCode),
+            widget.cropName,
+            expectedMaterial.name,
+            expectedMaterial.codeLabel,
+          );
         });
         return;
       }
@@ -183,7 +193,8 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
   void _saveManualValue() {
     final value = double.tryParse(_manual.text.trim());
     if (value == null || value < 0 || value > 100) {
-      setState(() => _error = 'Enter moisture from 0 to 100.');
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _error = l10n.enterMoistureRange);
       return;
     }
     _manual.clear();
@@ -246,24 +257,27 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
   Future<void> _proceed() async {
     if (!_complete) return;
     if (!_withinMax) {
+      final l10n = AppLocalizations.of(context)!;
       await showAppFeedbackDialog<void>(
         context,
-        title: 'Moisture too high',
-        description:
-            'Average moisture is ${_format(_average)}%, above the allowed ${_format(widget.maxMoistureContent)}%. This bag cannot be saved.',
+        title: l10n.moistureTooHighTitle,
+        description: l10n.moistureTooHighDescription(
+          _format(_average),
+          _format(widget.maxMoistureContent),
+        ),
         type: AppFeedbackType.error,
         actions: [
-          const AppFeedbackAction<void>(label: 'OK'),
+          AppFeedbackAction<void>(label: l10n.ok),
         ],
       );
       return;
     }
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     await showSuccessDialog(
       context,
-      title: 'Moisture recorded',
-      description:
-          'Average moisture is ${_format(_average)}%. This bag is suitable.',
+      title: l10n.moistureRecordedTitle,
+      description: l10n.moistureRecordedDescription(_format(_average)),
     );
     if (!mounted) return;
     Navigator.of(context).pop(_average);
@@ -271,10 +285,11 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final max = widget.maxMoistureContent;
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(title: Text('${widget.cropName} moisture')),
+      appBar: AppBar(title: Text(l10n.cropMoistureTitle(widget.cropName))),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -327,12 +342,13 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
                     ? _resetReadings
                     : null,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Reset readings'),
+                label: Text(l10n.resetReadings),
               ),
             ),
             const SizedBox(height: 16),
             AppLabeledField(
-              labelText: 'Manual reading for ${_zoneLabel(_activeZone)}',
+              labelText:
+                  l10n.manualReadingForZone(_zoneLabel(l10n, _activeZone)),
               child: TextFormField(
                 controller: _manual,
                 decoration: InputDecoration(
@@ -356,7 +372,7 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.workerColor,
               ),
-              child: const Text('Use moisture reading'),
+              child: Text(l10n.useMoistureReading),
             ),
           ],
         ),
@@ -365,17 +381,18 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
   }
 
   String _friendlyError(Object error) {
+    final l10n = AppLocalizations.of(context)!;
     final text = error.toString().replaceFirst('Exception: ', '');
     if (text.contains('timeout') || text.contains('TimeoutException')) {
-      return 'No reading received. Press the meter read/send button and try again, or enter the value manually.';
+      return l10n.noReadingReceived;
     }
     if (text.contains('permission')) {
-      return 'USB permission was not granted. Allow USB access and try again.';
+      return l10n.usbPermissionDenied;
     }
     if (text.contains('UsbSerialPortAdapter') ||
         text.contains('Not an serial device') ||
         text.contains('not a serial device')) {
-      return 'That USB device is not a serial moisture meter. Connect the moisture meter using USB OTG, then scan again.';
+      return l10n.notSerialMoistureMeter;
     }
     return text;
   }
@@ -396,6 +413,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = !complete
         ? AppColors.textMuted
         : withinMax
@@ -422,8 +440,8 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 Text(
                   maxMoistureContent == null
-                      ? 'Average moisture'
-                      : 'Max allowed ${_format(maxMoistureContent)}%',
+                      ? l10n.averageMoisture
+                      : l10n.maxAllowed(_format(maxMoistureContent)),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -484,20 +502,24 @@ class _MeterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Moisture meter',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  l10n.moistureMeter,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               IconButton(
-                tooltip: 'Scan moisture meter',
+                tooltip: l10n.scanMoistureMeter,
                 onPressed: scanning ? null : onScan,
                 icon: scanning
                     ? const SizedBox(
@@ -512,8 +534,8 @@ class _MeterCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             devices.isEmpty
-                ? 'Connect the Landtek moisture meter with USB OTG, then scan.'
-                : '${devices.length} moisture meter candidate(s) found.',
+                ? l10n.connectLandtekThenScan
+                : l10n.moistureMeterCandidates(devices.length),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -526,7 +548,7 @@ class _MeterCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           AppLabeledField(
-            labelText: 'Baud rate',
+            labelText: l10n.baudRate,
             child: DropdownButtonFormField<int>(
               value: baudRate,
               decoration: const InputDecoration(
@@ -536,7 +558,7 @@ class _MeterCard extends StatelessWidget {
                   .map(
                     (rate) => DropdownMenuItem<int>(
                       value: rate,
-                      child: Text('$rate baud'),
+                      child: Text(l10n.baudRateValue(rate)),
                     ),
                   )
                   .toList(),
@@ -546,7 +568,7 @@ class _MeterCard extends StatelessWidget {
           if (ignoredDeviceCount > 0) ...[
             const SizedBox(height: 4),
             Text(
-              '$ignoredDeviceCount non-serial USB device(s) ignored.',
+              l10n.nonSerialUsbDevicesIgnored(ignoredDeviceCount),
               style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 12,
@@ -565,7 +587,9 @@ class _MeterCard extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.manage_search_rounded),
-              label: Text(scanning ? 'Scanning...' : 'Scan moisture meter'),
+              label: Text(
+                scanning ? l10n.scanning : l10n.scanMoistureMeter,
+              ),
             ),
           ),
           if (devices.isNotEmpty) ...[
@@ -597,7 +621,7 @@ class _MeterCard extends StatelessWidget {
                               ? Icons.check_circle_outline_rounded
                               : Icons.usb_rounded,
                         ),
-                  label: Text(connected ? 'Connected' : 'Connect'),
+                  label: Text(connected ? l10n.connected : l10n.connect),
                 ),
               ),
               const SizedBox(width: 10),
@@ -614,7 +638,7 @@ class _MeterCard extends StatelessWidget {
                           ),
                         )
                       : const Icon(Icons.sensors_rounded),
-                  label: Text(reading ? 'Reading' : 'Read phase'),
+                  label: Text(reading ? l10n.reading : l10n.readPhase),
                 ),
               ),
             ],
@@ -703,10 +727,11 @@ class _MaterialVerificationHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final material = expectedMaterial;
     final text = material == null
-        ? 'Grain code verification is not configured for $cropName.'
-        : 'Meter must be set to ${material.name} (${material.codeLabel}).';
+        ? l10n.grainCodeNotConfigured(cropName)
+        : l10n.meterMustBeSetTo(material.name, material.codeLabel);
     final color = material == null ? AppColors.warning : AppColors.success;
 
     return Row(
@@ -745,6 +770,7 @@ class _ZonesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       child: Column(
         children: MoistureZone.values.map((zone) {
@@ -766,7 +792,7 @@ class _ZonesCard extends StatelessWidget {
               ),
             ),
             title: Text(
-              _zoneLabel(zone),
+              _zoneLabel(l10n, zone),
               style: TextStyle(
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
@@ -781,7 +807,7 @@ class _ZonesCard extends StatelessWidget {
                 if (hasValue) ...[
                   const SizedBox(width: 4),
                   IconButton(
-                    tooltip: 'Re-read phase',
+                    tooltip: l10n.reReadPhase,
                     visualDensity: VisualDensity.compact,
                     onPressed: () => onZoneCleared(zone),
                     icon: const Icon(Icons.refresh_rounded, size: 20),
@@ -826,12 +852,12 @@ class _ErrorBanner extends StatelessWidget {
   }
 }
 
-String _zoneLabel(MoistureZone zone) {
+String _zoneLabel(AppLocalizations l10n, MoistureZone zone) {
   return switch (zone) {
-    MoistureZone.top => 'Top',
-    MoistureZone.lowerTop => 'Lower top',
-    MoistureZone.highBottom => 'High bottom',
-    MoistureZone.bottom => 'Bottom',
+    MoistureZone.top => l10n.zoneTop,
+    MoistureZone.lowerTop => l10n.zoneLowerTop,
+    MoistureZone.highBottom => l10n.zoneHighBottom,
+    MoistureZone.bottom => l10n.zoneBottom,
   };
 }
 

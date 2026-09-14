@@ -157,14 +157,14 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _phoneCtrl,
-              labelText: optionalLabel(l10n.phoneNumber),
+              labelText: optionalLabel(l10n.phoneNumber, l10n.optional),
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _emailCtrl,
-              labelText: optionalLabel(l10n.emailAddress),
+              labelText: optionalLabel(l10n.emailAddress, l10n.optional),
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
@@ -176,7 +176,7 @@ class _DependantFormState extends State<DependantForm> {
             const SizedBox(height: 14),
             AppTextFormField(
               controller: _addressCtrl,
-              labelText: optionalLabel(l10n.address),
+              labelText: optionalLabel(l10n.address, l10n.optional),
               icon: Icons.location_on_outlined,
               textCapitalization: TextCapitalization.words,
             ),

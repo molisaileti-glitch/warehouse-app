@@ -202,6 +202,7 @@ class WarehouseDetailScreen extends ConsumerWidget {
               ),
               inventoryAsync.maybeWhen(
                 data: (items) {
+                  final l10n = AppLocalizations.of(context)!;
                   final remaining = items.length - 3;
                   if (remaining <= 0) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -210,7 +211,7 @@ class WarehouseDetailScreen extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
                       child: Text(
-                        '$remaining more crops',
+                        l10n.moreCrops(remaining),
                         style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 12,
