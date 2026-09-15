@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/components/input_field.dart';
@@ -183,7 +184,11 @@ class _LoginHeader extends StatelessWidget {
 }
 
 class _LoginCard extends StatelessWidget {
-  static const String _appVersion = '1.0.0+1';
+  static const MethodChannel _browserChannel =
+      MethodChannel('warehouse_app.platform/browser');
+  static const String _accountDeletionUrl =
+      'https://forms.gle/w4AaDT2U3qriBeP76';
+  static const String _appVersion = '1.0.1+2';
 
   final GlobalKey<FormState> formKey;
   final TextEditingController emailCtrl;
@@ -352,6 +357,14 @@ class _LoginCard extends StatelessWidget {
                 ),
               ),
             ),
+            TextButton.icon(
+              onPressed: loading ? null : () => _openAccountDeletionForm(context),
+              icon: const Icon(Icons.open_in_new_rounded, size: 17),
+              label: Text(
+                l10n.requestAccountDeletion,
+                textAlign: TextAlign.center,
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               l10n.appVersion(_appVersion),
@@ -365,6 +378,20 @@ class _LoginCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openAccountDeletionForm(BuildContext context) async {
+    try {
+      await _browserChannel.invokeMethod<void>(
+        'openUrl',
+        <String, String>{'url': _accountDeletionUrl},
+      );
+    } on PlatformException {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.accountDeletionOpenFailed)),
+      );
+    }
   }
 }
 
@@ -706,6 +733,7 @@ class _ResetPasswordField extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class _AuthErrorBox extends StatelessWidget {

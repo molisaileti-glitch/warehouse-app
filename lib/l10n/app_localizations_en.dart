@@ -1007,6 +1007,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refreshBags => 'Refresh bags';
 
   @override
+  String get selectBagsToDispatch => 'Select bags to dispatch';
+
+  @override
+  String get selectBagsToAdjust => 'Select bags to adjust';
+
+  @override
+  String bagsAvailableForCrop(int count, String crop) {
+    return '$count bags available for $crop. Choose the visible bag tags.';
+  }
+
+  @override
+  String get searchByTagNumber => 'Search by tag number';
+
+  @override
+  String couldNotLoadStockBags(String error) {
+    return 'Could not load stock bags. $error';
+  }
+
+  @override
+  String get noMatchingBags => 'No matching bags';
+
+  @override
+  String get tryAnotherTagNumber =>
+      'Try another tag number or refresh available stock.';
+
+  @override
+  String get weighSelectedBags => 'Weigh selected bags';
+
+  @override
+  String get reweighSelectedBags => 'Reweigh selected bags';
+
+  @override
+  String get weighEachSelectedTaggedBagBeforeDispatch =>
+      'Weigh each selected tagged bag before confirming dispatch.';
+
+  @override
+  String get reweighEachSelectedTaggedBagBeforeAdjustment =>
+      'Reweigh each selected tagged bag before entering adjustment details.';
+
+  @override
+  String get dispatchBagsReady => 'Dispatch bags ready';
+
+  @override
+  String get adjustmentBagsReady => 'Adjustment bags ready';
+
+  @override
+  String get totalDispatchWeight => 'Total dispatch weight';
+
+  @override
+  String get totalMeasuredWeight => 'Total measured weight';
+
+  @override
+  String get confirmSave => 'Confirm save';
+
+  @override
+  String get recipientType => 'Recipient type';
+
+  @override
+  String get adjustmentType => 'Adjustment type';
+
+  @override
+  String get reason => 'Reason';
+
+  @override
+  String get dispatchRecord => 'dispatch';
+
+  @override
+  String get stockCountRecord => 'stock count';
+
+  @override
+  String get stockAdjustmentRecord => 'stock adjustment';
+
+  @override
+  String get manageStock => 'Manage Stock';
+
+  @override
+  String get chooseCropToManageStock => 'Choose a crop to manage its stock.';
+
+  @override
+  String get reducesStock => 'Reduces stock';
+
+  @override
+  String get doesNotChangeStock => 'Does not change stock';
+
+  @override
+  String get changesStock => 'Changes stock';
+
+  @override
+  String get cropStock => 'Crop stock';
+
+  @override
+  String get cropStockNotFound => 'Crop stock not found';
+
+  @override
+  String get operation => 'Operation';
+
+  @override
+  String get dispatchStock => 'Dispatch stock';
+
+  @override
+  String get stockAdjustment => 'Stock adjustment';
+
+  @override
+  String countedBagsSummary(int bags, String weight) {
+    return '$bags bags counted - $weight kg';
+  }
+
+  @override
   String bagWeightChangedNeedsAdjustment(String tag, String recordedWeight,
       String measuredWeight, String adjustmentType) {
     return 'Bag $tag changed from $recordedWeight kg to $measuredWeight kg. Perform a $adjustmentType stock adjustment first, then dispatch.';
@@ -1234,6 +1342,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String appVersion(String version) {
     return 'App ver $version';
   }
+
+  @override
+  String get requestAccountDeletion => 'Request account deletion';
+
+  @override
+  String get accountDeletionOpenFailed =>
+      'Could not open the account deletion form.';
 
   @override
   String comingSoon(String feature) {

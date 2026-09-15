@@ -50,16 +50,17 @@ class _WarehouseInventoryScreenState
     final warehouseAsync = ref.watch(warehouseByIdProvider(widget.warehouseId));
     final inventoryAsync =
         ref.watch(warehouseInventoryProvider(widget.warehouseId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Stock'),
+        title: Text(l10n.manageStock),
         actions: const [SyncIndicator()],
       ),
       body: warehouseAsync.when(
         data: (warehouse) {
           if (warehouse == null) {
-            return const ErrorView(message: 'Warehouse not found');
+            return ErrorView(message: l10n.warehouseNotFound);
           }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,9 +79,9 @@ class _WarehouseInventoryScreenState
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Choose a crop to manage its stock.',
-                      style: TextStyle(
+                    Text(
+                      l10n.chooseCropToManageStock,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,
                       ),
@@ -281,11 +282,13 @@ class _CurrentStockCard extends StatelessWidget {
 }
 
 class _OperationGrid extends StatelessWidget {
+  final AppLocalizations l10n;
   final VoidCallback onDispatch;
   final VoidCallback onCount;
   final VoidCallback onAdjustment;
 
   const _OperationGrid({
+    required this.l10n,
     required this.onDispatch,
     required this.onCount,
     required this.onAdjustment,
@@ -303,22 +306,22 @@ class _OperationGrid extends StatelessWidget {
             _OperationButton(
               width: width,
               icon: Icons.local_shipping_outlined,
-              label: 'Dispatch',
-              subtitle: 'Reduces stock',
+              label: l10n.dispatch,
+              subtitle: l10n.reducesStock,
               onTap: onDispatch,
             ),
             _OperationButton(
               width: width,
               icon: Icons.fact_check_outlined,
-              label: 'Stock Count',
-              subtitle: 'Does not change stock',
+              label: l10n.stockCount,
+              subtitle: l10n.doesNotChangeStock,
               onTap: onCount,
             ),
             _OperationButton(
               width: width,
               icon: Icons.tune_rounded,
-              label: 'Adjustment',
-              subtitle: 'Changes stock',
+              label: l10n.adjustment,
+              subtitle: l10n.changesStock,
               onTap: onAdjustment,
             ),
           ],
@@ -523,22 +526,26 @@ class _ReviewSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
       padding: const EdgeInsets.all(14),
       child: Column(
         children: [
-          _ReviewRow(label: 'Operation', value: _titleForAction(action)),
-          _ReviewRow(label: 'Warehouse', value: warehouse.name),
-          _ReviewRow(label: 'Crop', value: inventory.cropName),
+          _ReviewRow(
+            label: l10n.operation,
+            value: _titleForAction(action, l10n),
+          ),
+          _ReviewRow(label: l10n.warehouse, value: warehouse.name),
+          _ReviewRow(label: l10n.crop, value: inventory.cropName),
           if (action == _WarehouseAction.dispatch) ...[
-            _ReviewRow(label: 'Recipient type', value: recipientType),
-            _ReviewRow(label: 'Recipient name', value: recipientName),
+            _ReviewRow(label: l10n.recipientType, value: recipientType),
+            _ReviewRow(label: l10n.recipientName, value: recipientName),
             if (recipientPhone.trim().isNotEmpty)
-              _ReviewRow(label: 'Recipient phone', value: recipientPhone),
+              _ReviewRow(label: l10n.recipientPhone, value: recipientPhone),
           ],
           if (action == _WarehouseAction.adjustment) ...[
-            _ReviewRow(label: 'Adjustment type', value: adjustmentType),
-            _ReviewRow(label: 'Reason', value: reason),
+            _ReviewRow(label: l10n.adjustmentType, value: adjustmentType),
+            _ReviewRow(label: l10n.reason, value: reason),
           ],
         ],
       ),
@@ -893,11 +900,13 @@ class CropStockDetailsScreen extends ConsumerWidget {
     final countsAsync = ref.watch(warehouseStockCountsProvider(warehouseId));
     final adjustmentsAsync =
         ref.watch(warehouseStockAdjustmentsProvider(warehouseId));
+    final l10n = AppLocalizations.of(context)!;
     final item = _findInventory(
       inventoryAsync.valueOrNull ?? const <WarehouseInventory>[],
       cropId,
     );
     final activities = _recentActivities(
+      l10n: l10n,
       cropId: cropId,
       dispatches: dispatchesAsync.valueOrNull ?? const [],
       counts: countsAsync.valueOrNull ?? const [],
@@ -905,14 +914,14 @@ class CropStockDetailsScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(item?.cropName ?? 'Crop stock')),
+      appBar: AppBar(title: Text(item?.cropName ?? l10n.cropStock)),
       body: warehouseAsync.when(
         data: (warehouse) {
           if (warehouse == null) {
-            return const ErrorView(message: 'Warehouse not found');
+            return ErrorView(message: l10n.warehouseNotFound);
           }
           if (item == null) {
-            return const ErrorView(message: 'Crop stock not found');
+            return ErrorView(message: l10n.cropStockNotFound);
           }
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
@@ -938,9 +947,9 @@ class CropStockDetailsScreen extends ConsumerWidget {
               _CurrentStockCard(item: item),
               if (FeatureFlags.warehouseOperationsEnabled) ...[
                 const SizedBox(height: 18),
-                const Text(
-                  'Manage Stock',
-                  style: TextStyle(
+                Text(
+                  l10n.manageStock,
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -948,6 +957,7 @@ class CropStockDetailsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 _OperationGrid(
+                  l10n: l10n,
                   onDispatch: () => context.push(
                     _operationPath(
                       ownerFlow: ownerFlow,
@@ -1085,16 +1095,17 @@ class _WarehouseOperationFormScreenState
         _findInventory(inventoryAsync.valueOrNull ?? const [], widget.cropId);
     final crop = _findCrop(cropsAsync.valueOrNull ?? const [], widget.cropId) ??
         (inventory == null ? null : _cropFromInventory(inventory));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_titleForAction(action))),
+      appBar: AppBar(title: Text(_titleForAction(action, l10n))),
       body: warehouseAsync.when(
         data: (warehouse) {
           if (warehouse == null) {
-            return const ErrorView(message: 'Warehouse not found');
+            return ErrorView(message: l10n.warehouseNotFound);
           }
           if (crop == null || inventory == null) {
-            return const ErrorView(message: 'Crop stock not found');
+            return ErrorView(message: l10n.cropStockNotFound);
           }
           return Form(
             key: _formKey,
@@ -1227,6 +1238,7 @@ class _WarehouseOperationFormScreenState
     WarehouseInventory inventory,
     Crop crop,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     _requestStockBagsIfNeeded(warehouse: warehouse, crop: crop);
 
     final selectedUuids = _selectedStockBags.map((bag) => bag.uuid).toSet();
@@ -1235,14 +1247,16 @@ class _WarehouseOperationFormScreenState
     return [
       _SectionHeader(
         title: action == _WarehouseAction.dispatch
-            ? 'Select bags to dispatch'
-            : 'Select bags to adjust',
-        subtitle: '${inventory.totalBags} bags available for '
-            '${inventory.cropName}. Choose the visible bag tags.',
+            ? l10n.selectBagsToDispatch
+            : l10n.selectBagsToAdjust,
+        subtitle: l10n.bagsAvailableForCrop(
+          inventory.totalBags,
+          inventory.cropName,
+        ),
       ),
       const SizedBox(height: 10),
       AppLabeledField(
-        labelText: 'Search by tag number',
+        labelText: l10n.searchByTagNumber,
         child: TextField(
           controller: _bagSearch,
           decoration: const InputDecoration(
@@ -1271,16 +1285,16 @@ class _WarehouseOperationFormScreenState
       else if (_stockBagError != null)
         AppCard(
           child: Text(
-            'Could not load stock bags. ${_stockBagError ?? ''}',
+            l10n.couldNotLoadStockBags(_stockBagError ?? ''),
             style: const TextStyle(color: AppColors.error),
           ),
         )
       else if (visibleBags.isEmpty)
-        const AppCard(
+        AppCard(
           child: EmptyState(
             icon: Icons.inventory_2_outlined,
-            title: 'No matching bags',
-            subtitle: 'Try another tag number or refresh available stock.',
+            title: l10n.noMatchingBags,
+            subtitle: l10n.tryAnotherTagNumber,
           ),
         )
       else
@@ -1312,11 +1326,11 @@ class _WarehouseOperationFormScreenState
     return [
       _SectionHeader(
         title: action == _WarehouseAction.dispatch
-            ? 'Weigh selected bags'
-            : 'Reweigh selected bags',
+            ? l10n.weighSelectedBags
+            : l10n.reweighSelectedBags,
         subtitle: action == _WarehouseAction.dispatch
-            ? 'Weigh each selected tagged bag before confirming dispatch.'
-            : 'Reweigh each selected tagged bag before entering adjustment details.',
+            ? l10n.weighEachSelectedTaggedBagBeforeDispatch
+            : l10n.reweighEachSelectedTaggedBagBeforeAdjustment,
       ),
       const SizedBox(height: 10),
       _ScaleReadingCard(
@@ -1336,8 +1350,8 @@ class _WarehouseOperationFormScreenState
             children: [
               Text(
                 action == _WarehouseAction.dispatch
-                    ? 'Dispatch bags ready'
-                    : 'Adjustment bags ready',
+                    ? l10n.dispatchBagsReady
+                    : l10n.adjustmentBagsReady,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
@@ -1351,11 +1365,11 @@ class _WarehouseOperationFormScreenState
                 ),
               ),
               const Divider(height: 20),
-              _TotalRow(label: 'Total bags', value: '${_bags.length}'),
+              _TotalRow(label: l10n.receiptTotalBags, value: '${_bags.length}'),
               _TotalRow(
                 label: action == _WarehouseAction.dispatch
-                    ? 'Total dispatch weight'
-                    : 'Total measured weight',
+                    ? l10n.totalDispatchWeight
+                    : l10n.totalMeasuredWeight,
                 value: '${_formatNumber(_totalNetWeight)} kg',
               ),
             ],
@@ -1481,6 +1495,7 @@ class _WarehouseOperationFormScreenState
     required WarehouseInventory inventory,
     required Crop crop,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     if (_saving) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.workerColor),
@@ -1497,7 +1512,7 @@ class _WarehouseOperationFormScreenState
             child: OutlinedButton.icon(
               onPressed: _previousStep,
               icon: const Icon(Icons.arrow_back_rounded),
-              label: const Text('Back'),
+              label: Text(l10n.back),
             ),
           ),
           const SizedBox(width: 10),
@@ -1515,7 +1530,9 @@ class _WarehouseOperationFormScreenState
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.workerColor,
             ),
-            child: Text(isReviewStep ? 'Confirm save' : 'Continue'),
+            child: Text(
+              isReviewStep ? l10n.confirmSave : l10n.continueButton,
+            ),
           ),
         ),
       ],
@@ -1527,7 +1544,7 @@ class _WarehouseOperationFormScreenState
     return Column(
       children: [
         AppLabeledField(
-          labelText: 'Recipient type',
+          labelText: l10n.recipientType,
           child: DropdownButtonFormField<String>(
             value: _recipientType,
             decoration: const InputDecoration(
@@ -1571,10 +1588,11 @@ class _WarehouseOperationFormScreenState
   }
 
   Widget _adjustmentFields() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         AppLabeledField(
-          labelText: 'Adjustment type',
+          labelText: l10n.adjustmentType,
           child: DropdownButtonFormField<String>(
             value: _adjustmentType,
             decoration: const InputDecoration(
@@ -1601,7 +1619,7 @@ class _WarehouseOperationFormScreenState
         ),
         const SizedBox(height: 10),
         AppLabeledField(
-          labelText: 'Reason',
+          labelText: l10n.reason,
           child: DropdownButtonFormField<String>(
             value: _reason,
             decoration: const InputDecoration(
@@ -3092,11 +3110,11 @@ _WarehouseAction _actionFromPath(String value) {
   };
 }
 
-String _titleForAction(_WarehouseAction action) {
+String _titleForAction(_WarehouseAction action, AppLocalizations l10n) {
   return switch (action) {
-    _WarehouseAction.dispatch => 'Dispatch stock',
-    _WarehouseAction.count => 'Stock count',
-    _WarehouseAction.adjustment => 'Stock adjustment',
+    _WarehouseAction.dispatch => l10n.dispatchStock,
+    _WarehouseAction.count => l10n.stockCount,
+    _WarehouseAction.adjustment => l10n.stockAdjustment,
   };
 }
 
@@ -3120,6 +3138,7 @@ String _operationPath({
 }
 
 List<_ActivityItem> _recentActivities({
+  required AppLocalizations l10n,
   required int cropId,
   required List<WarehouseDispatch> dispatches,
   required List<WarehouseStockCount> counts,
@@ -3128,7 +3147,7 @@ List<_ActivityItem> _recentActivities({
   final activities = <_ActivityItem>[
     for (final item in dispatches.where((item) => item.crop == cropId))
       _ActivityItem(
-        title: 'Dispatch',
+        title: l10n.dispatch,
         subtitle:
             '-${item.totalBags} bags - ${_formatNumber(item.totalNetWeight)} kg',
         when: _shortDate(item.dispatchedAt),
@@ -3137,16 +3156,18 @@ List<_ActivityItem> _recentActivities({
       ),
     for (final item in counts.where((item) => item.crop == cropId))
       _ActivityItem(
-        title: 'Stock Count',
-        subtitle:
-            '${item.countedBags} bags counted - ${_formatNumber(item.countedNetWeight)} kg',
+        title: l10n.stockCount,
+        subtitle: l10n.countedBagsSummary(
+          item.countedBags,
+          _formatNumber(item.countedNetWeight),
+        ),
         when: _shortDate(item.countedAt),
         date: item.countedAt,
         icon: Icons.fact_check_outlined,
       ),
     for (final item in adjustments.where((item) => item.crop == cropId))
       _ActivityItem(
-        title: 'Adjustment',
+        title: l10n.adjustment,
         subtitle: '${item.adjustmentType} - ${item.reason}',
         when: _shortDate(item.adjustedAt),
         date: item.adjustedAt,

@@ -206,19 +206,19 @@ _SyncDetails _syncDetails(SyncQueueData entry, AppLocalizations l10n) {
         color: AppColors.success,
       ),
     'dispatches' => _SyncDetails(
-        title: '$operation Dispatch',
+        title: l10n.operationRecord(operation, l10n.dispatchRecord),
         subtitle: _stringValue(payload, 'recipientName') ?? entry.entityId,
         icon: Icons.local_shipping_outlined,
         color: AppColors.warning,
       ),
     'stockCounts' => _SyncDetails(
-        title: '$operation Stock Count',
+        title: l10n.operationRecord(operation, l10n.stockCountRecord),
         subtitle: _stringValue(payload, 'countedAt') ?? entry.entityId,
         icon: Icons.fact_check_outlined,
         color: AppColors.info,
       ),
     'stockAdjustments' => _SyncDetails(
-        title: '$operation Stock Adjustment',
+        title: l10n.operationRecord(operation, l10n.stockAdjustmentRecord),
         subtitle: _stringValue(payload, 'reason') ?? entry.entityId,
         icon: Icons.tune_rounded,
         color: AppColors.warning,

@@ -1,4 +1,4 @@
-package com.example.shambabora_mobile
+package com.climbup.warehousing
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -16,6 +16,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit
 class MainActivity : FlutterActivity() {
     private val printerLogTag = "ReceiptPrinter"
     private val channelName = "warehouse_app.bluetooth.print.receipt"
+    private val browserChannelName = "warehouse_app.platform/browser"
     private val sppUuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private val companionDeviceSetupFeature = "android.software.companion_device_setup"
     private val selectPrinterRequestCode = 7301
@@ -67,6 +69,31 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, browserChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "openUrl" -> {
+                        val url = call.argument<String>("url")
+                        if (url.isNullOrBlank()) {
+                            result.error("invalid_url", "URL is required.", null)
+                            return@setMethodCallHandler
+                        }
+                        openUrl(url, result)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun openUrl(url: String, result: MethodChannel.Result) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+            result.success(null)
+        } catch (error: Exception) {
+            result.error("open_url_failed", error.message, null)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

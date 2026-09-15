@@ -1893,6 +1893,204 @@ abstract class AppLocalizations {
   /// **'Refresh bags'**
   String get refreshBags;
 
+  /// No description provided for @selectBagsToDispatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Select bags to dispatch'**
+  String get selectBagsToDispatch;
+
+  /// No description provided for @selectBagsToAdjust.
+  ///
+  /// In en, this message translates to:
+  /// **'Select bags to adjust'**
+  String get selectBagsToAdjust;
+
+  /// No description provided for @bagsAvailableForCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bags available for {crop}. Choose the visible bag tags.'**
+  String bagsAvailableForCrop(int count, String crop);
+
+  /// No description provided for @searchByTagNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by tag number'**
+  String get searchByTagNumber;
+
+  /// No description provided for @couldNotLoadStockBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load stock bags. {error}'**
+  String couldNotLoadStockBags(String error);
+
+  /// No description provided for @noMatchingBags.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching bags'**
+  String get noMatchingBags;
+
+  /// No description provided for @tryAnotherTagNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another tag number or refresh available stock.'**
+  String get tryAnotherTagNumber;
+
+  /// No description provided for @weighSelectedBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh selected bags'**
+  String get weighSelectedBags;
+
+  /// No description provided for @reweighSelectedBags.
+  ///
+  /// In en, this message translates to:
+  /// **'Reweigh selected bags'**
+  String get reweighSelectedBags;
+
+  /// No description provided for @weighEachSelectedTaggedBagBeforeDispatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh each selected tagged bag before confirming dispatch.'**
+  String get weighEachSelectedTaggedBagBeforeDispatch;
+
+  /// No description provided for @reweighEachSelectedTaggedBagBeforeAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Reweigh each selected tagged bag before entering adjustment details.'**
+  String get reweighEachSelectedTaggedBagBeforeAdjustment;
+
+  /// No description provided for @dispatchBagsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatch bags ready'**
+  String get dispatchBagsReady;
+
+  /// No description provided for @adjustmentBagsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustment bags ready'**
+  String get adjustmentBagsReady;
+
+  /// No description provided for @totalDispatchWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Total dispatch weight'**
+  String get totalDispatchWeight;
+
+  /// No description provided for @totalMeasuredWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Total measured weight'**
+  String get totalMeasuredWeight;
+
+  /// No description provided for @confirmSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm save'**
+  String get confirmSave;
+
+  /// No description provided for @recipientType.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient type'**
+  String get recipientType;
+
+  /// No description provided for @adjustmentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustment type'**
+  String get adjustmentType;
+
+  /// No description provided for @reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reason;
+
+  /// No description provided for @dispatchRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'dispatch'**
+  String get dispatchRecord;
+
+  /// No description provided for @stockCountRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'stock count'**
+  String get stockCountRecord;
+
+  /// No description provided for @stockAdjustmentRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'stock adjustment'**
+  String get stockAdjustmentRecord;
+
+  /// No description provided for @manageStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Stock'**
+  String get manageStock;
+
+  /// No description provided for @chooseCropToManageStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a crop to manage its stock.'**
+  String get chooseCropToManageStock;
+
+  /// No description provided for @reducesStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduces stock'**
+  String get reducesStock;
+
+  /// No description provided for @doesNotChangeStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Does not change stock'**
+  String get doesNotChangeStock;
+
+  /// No description provided for @changesStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes stock'**
+  String get changesStock;
+
+  /// No description provided for @cropStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop stock'**
+  String get cropStock;
+
+  /// No description provided for @cropStockNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop stock not found'**
+  String get cropStockNotFound;
+
+  /// No description provided for @operation.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation'**
+  String get operation;
+
+  /// No description provided for @dispatchStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatch stock'**
+  String get dispatchStock;
+
+  /// No description provided for @stockAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock adjustment'**
+  String get stockAdjustment;
+
+  /// No description provided for @countedBagsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{bags} bags counted - {weight} kg'**
+  String countedBagsSummary(int bags, String weight);
+
   /// No description provided for @bagWeightChangedNeedsAdjustment.
   ///
   /// In en, this message translates to:
@@ -2319,6 +2517,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App ver {version}'**
   String appVersion(String version);
+
+  /// No description provided for @requestAccountDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Request account deletion'**
+  String get requestAccountDeletion;
+
+  /// No description provided for @accountDeletionOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the account deletion form.'**
+  String get accountDeletionOpenFailed;
 
   /// No description provided for @comingSoon.
   ///

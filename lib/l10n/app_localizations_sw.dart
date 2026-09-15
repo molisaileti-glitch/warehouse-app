@@ -1012,6 +1012,114 @@ class AppLocalizationsSw extends AppLocalizations {
   String get refreshBags => 'Pakua upya magunia';
 
   @override
+  String get selectBagsToDispatch => 'Chagua magunia ya kusafirisha';
+
+  @override
+  String get selectBagsToAdjust => 'Chagua magunia ya kurekebisha';
+
+  @override
+  String bagsAvailableForCrop(int count, String crop) {
+    return 'Magunia $count yapo kwa $crop. Chagua lebo za magunia yanayoonekana.';
+  }
+
+  @override
+  String get searchByTagNumber => 'Tafuta kwa namba ya lebo';
+
+  @override
+  String couldNotLoadStockBags(String error) {
+    return 'Imeshindwa kupakia magunia ya stoki. $error';
+  }
+
+  @override
+  String get noMatchingBags => 'Hakuna magunia yanayolingana';
+
+  @override
+  String get tryAnotherTagNumber =>
+      'Jaribu namba nyingine ya lebo au pakua upya stoki iliyopo.';
+
+  @override
+  String get weighSelectedBags => 'Pima magunia uliyochagua';
+
+  @override
+  String get reweighSelectedBags => 'Pima tena magunia uliyochagua';
+
+  @override
+  String get weighEachSelectedTaggedBagBeforeDispatch =>
+      'Pima kila gunia lenye lebo ulilochagua kabla ya kuthibitisha usafirishaji.';
+
+  @override
+  String get reweighEachSelectedTaggedBagBeforeAdjustment =>
+      'Pima tena kila gunia lenye lebo ulilochagua kabla ya kuweka taarifa za marekebisho.';
+
+  @override
+  String get dispatchBagsReady => 'Magunia ya kusafirisha yako tayari';
+
+  @override
+  String get adjustmentBagsReady => 'Magunia ya marekebisho yako tayari';
+
+  @override
+  String get totalDispatchWeight => 'Jumla ya uzito wa kusafirisha';
+
+  @override
+  String get totalMeasuredWeight => 'Jumla ya uzito uliopimwa';
+
+  @override
+  String get confirmSave => 'Thibitisha kuhifadhi';
+
+  @override
+  String get recipientType => 'Aina ya mpokeaji';
+
+  @override
+  String get adjustmentType => 'Aina ya marekebisho';
+
+  @override
+  String get reason => 'Sababu';
+
+  @override
+  String get dispatchRecord => 'usafirishaji';
+
+  @override
+  String get stockCountRecord => 'hesabu ya stoki';
+
+  @override
+  String get stockAdjustmentRecord => 'marekebisho ya stoki';
+
+  @override
+  String get manageStock => 'Simamia Stoki';
+
+  @override
+  String get chooseCropToManageStock => 'Chagua zao ili kusimamia stoki yake.';
+
+  @override
+  String get reducesStock => 'Hupunguza stoki';
+
+  @override
+  String get doesNotChangeStock => 'Haibadilishi stoki';
+
+  @override
+  String get changesStock => 'Hubadilisha stoki';
+
+  @override
+  String get cropStock => 'Stoki ya zao';
+
+  @override
+  String get cropStockNotFound => 'Stoki ya zao haikupatikana';
+
+  @override
+  String get operation => 'Operesheni';
+
+  @override
+  String get dispatchStock => 'Safirisha stoki';
+
+  @override
+  String get stockAdjustment => 'Marekebisho ya stoki';
+
+  @override
+  String countedBagsSummary(int bags, String weight) {
+    return 'Magunia $bags yamehesabiwa - kilo $weight';
+  }
+
+  @override
   String bagWeightChangedNeedsAdjustment(String tag, String recordedWeight,
       String measuredWeight, String adjustmentType) {
     return 'Gunia $tag limebadilika kutoka kilo $recordedWeight hadi kilo $measuredWeight. Fanya marekebisho ya stoki ya $adjustmentType kwanza, kisha safirisha.';
@@ -1240,6 +1348,13 @@ class AppLocalizationsSw extends AppLocalizations {
   String appVersion(String version) {
     return 'Toleo la programu $version';
   }
+
+  @override
+  String get requestAccountDeletion => 'Omba kufutwa kwa akaunti';
+
+  @override
+  String get accountDeletionOpenFailed =>
+      'Imeshindwa kufungua fomu ya kufuta akaunti.';
 
   @override
   String comingSoon(String feature) {
