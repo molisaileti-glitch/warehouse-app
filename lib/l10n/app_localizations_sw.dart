@@ -879,6 +879,47 @@ class AppLocalizationsSw extends AppLocalizations {
       'Usomaji wa unyevu utaombwa utakapo ongeza kila gunia.';
 
   @override
+  String get bulkMoistureReadingRequestedOnAddBag =>
+      'Mavuno ya jumla hayataomba usomaji wa unyevu na yatahifadhi unyevu kama 0.';
+
+  @override
+  String get singleBag => 'Gunia moja';
+
+  @override
+  String get bulkHarvest => 'Mavuno ya jumla';
+
+  @override
+  String get bulkHarvestStackingInstruction =>
+      'Acha magunia ya awali kwenye mizani. Ongeza gunia linalofuata juu yake; app itahesabu uzito wa gunia jipya pekee.';
+
+  @override
+  String get weighingModeLockedUntilBagsCleared =>
+      'Ondoa magunia yaliyoongezwa kabla ya kubadili aina ya upimaji.';
+
+  @override
+  String get addBulkBag => 'Ongeza gunia la jumla';
+
+  @override
+  String get batchReference => 'Rejea ya kundi';
+
+  @override
+  String get nextBagTag => 'Lebo inayofuata';
+
+  @override
+  String get previousCumulativeGross => 'Jumla ya awali';
+
+  @override
+  String get nextBagGross => 'Uzito wa gunia linalofuata';
+
+  @override
+  String bulkScaleMustIncrease(String current, String previous) {
+    return 'Usomaji wa mizani lazima uzidi jumla ya awali. Sasa: $current kg, awali: $previous kg.';
+  }
+
+  @override
+  String get bagTagMustHaveEightDigits => 'Weka tarakimu 8';
+
+  @override
   String get recipientName => 'Jina la mpokeaji';
 
   @override

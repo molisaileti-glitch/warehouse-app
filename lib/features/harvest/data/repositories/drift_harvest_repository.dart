@@ -468,6 +468,8 @@ class DriftHarvestRepository implements HarvestRepository {
       'uom': input.uom?.id.toString(),
       'packaging': input.packaging,
       'receiptNumber': receiptNumber,
+      'batchRef': input.batchRef,
+      'isBatchMode': input.isBatchMode,
       'amcos': amcos,
       'mcu': mcu,
       'crop': input.crop.id,
@@ -485,6 +487,7 @@ class DriftHarvestRepository implements HarvestRepository {
           'moistureWeight': _round(weights.moistureWeight),
           'moistureContent': _round(weights.moistureContent),
           'packagingWeight': _round(weights.packagingWeight),
+          'tagType': bag.tagType,
         };
       }).toList(),
     };

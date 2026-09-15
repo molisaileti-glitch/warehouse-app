@@ -2,12 +2,14 @@ import 'package:warehouse_app/core/database/app_database.dart';
 
 class HarvestBagInput {
   final String tag;
+  final String tagType;
   final double grossWeight;
   final double packagingWeight;
   final double moistureContent;
 
   const HarvestBagInput({
     required this.tag,
+    this.tagType = 'GENERATED',
     required this.grossWeight,
     required this.packagingWeight,
     required this.moistureContent,
@@ -53,6 +55,8 @@ class HarvestCreateInput {
   final CropGrade? cropGrade;
   final MeasurementUnit? uom;
   final String packaging;
+  final String batchRef;
+  final bool isBatchMode;
   final List<HarvestBagInput> bags;
 
   const HarvestCreateInput({
@@ -63,6 +67,8 @@ class HarvestCreateInput {
     this.cropGrade,
     this.uom,
     this.packaging = 'BAGS',
+    this.batchRef = '',
+    this.isBatchMode = false,
   });
 }
 

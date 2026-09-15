@@ -1677,6 +1677,78 @@ abstract class AppLocalizations {
   /// **'Moisture reading will be requested when you add each bag.'**
   String get moistureReadingRequestedOnAddBag;
 
+  /// No description provided for @bulkMoistureReadingRequestedOnAddBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk harvest skips moisture reading and saves moisture as 0.'**
+  String get bulkMoistureReadingRequestedOnAddBag;
+
+  /// No description provided for @singleBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Single bag'**
+  String get singleBag;
+
+  /// No description provided for @bulkHarvest.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk harvest'**
+  String get bulkHarvest;
+
+  /// No description provided for @bulkHarvestStackingInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep previous bags on the scale. Add the next bag on top; the app calculates only the new bag weight.'**
+  String get bulkHarvestStackingInstruction;
+
+  /// No description provided for @weighingModeLockedUntilBagsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the added bags before changing weighing mode.'**
+  String get weighingModeLockedUntilBagsCleared;
+
+  /// No description provided for @addBulkBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Add bulk bag'**
+  String get addBulkBag;
+
+  /// No description provided for @batchReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch reference'**
+  String get batchReference;
+
+  /// No description provided for @nextBagTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Next bag tag'**
+  String get nextBagTag;
+
+  /// No description provided for @previousCumulativeGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous total gross'**
+  String get previousCumulativeGross;
+
+  /// No description provided for @nextBagGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Next bag gross'**
+  String get nextBagGross;
+
+  /// No description provided for @bulkScaleMustIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale reading must be greater than previous total. Current: {current} kg, previous: {previous} kg.'**
+  String bulkScaleMustIncrease(String current, String previous);
+
+  /// No description provided for @bagTagMustHaveEightDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 8 digits'**
+  String get bagTagMustHaveEightDigits;
+
   /// No description provided for @recipientName.
   ///
   /// In en, this message translates to:

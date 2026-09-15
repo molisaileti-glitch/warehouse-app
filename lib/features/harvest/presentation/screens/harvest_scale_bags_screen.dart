@@ -17,6 +17,8 @@ import 'package:warehouse_app/features/scale/presentation/providers/weight_scale
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 
+enum _HarvestWeighingMode { single, bulk }
+
 class HarvestScaleBagsScreen extends ConsumerStatefulWidget {
   final String warehouseId;
   final bool ownerFlow;
@@ -36,6 +38,8 @@ class _HarvestScaleBagsScreenState
     extends ConsumerState<HarvestScaleBagsScreen> {
   final _bagFormKey = GlobalKey<FormState>();
   final _tagCtrl = TextEditingController();
+  _HarvestWeighingMode _weighingMode = _HarvestWeighingMode.single;
+  String _bulkBatchRef = '';
   bool _submitting = false;
 
   @override
@@ -117,51 +121,14 @@ class _HarvestScaleBagsScreenState
             warehouse: warehouse,
           ),
           const SizedBox(height: 16),
+          _weighingModeSelector(session),
+          const SizedBox(height: 16),
           _scaleCard(scaleState),
           const SizedBox(height: 18),
-          _sectionTitle(l10n.bag),
-          Form(
-            key: _bagFormKey,
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: AppLabeledField(
-                        labelText: l10n.bagTag,
-                        child: TextFormField(
-                          controller: _tagCtrl,
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.qr_code_2_outlined),
-                          ),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            const _BagTagInputFormatter(),
-                          ],
-                          validator: _bagTagValidator,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 23),
-                      child: IconButton.filledTonal(
-                        tooltip: l10n.generateBagTag,
-                        onPressed: _generateBagTag,
-                        icon: const Icon(Icons.casino_outlined),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                _packagingWeightSummary(
-                  label: l10n.packagingWeightKg,
-                  value: packagingWeight,
-                  unit: scaleState.uom,
-                ),
-              ],
-            ),
+          _bagEntrySection(
+            session: session,
+            scaleState: scaleState,
+            packagingWeight: packagingWeight,
           ),
           const SizedBox(height: 16),
           Row(
@@ -176,7 +143,11 @@ class _HarvestScaleBagsScreenState
                     backgroundColor: AppColors.workerColor,
                   ),
                   icon: const Icon(Icons.add_shopping_cart_rounded),
-                  label: Text(l10n.addBag),
+                  label: Text(
+                    _weighingMode == _HarvestWeighingMode.bulk
+                        ? l10n.addBulkBag
+                        : l10n.addBag,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -202,7 +173,9 @@ class _HarvestScaleBagsScreenState
           ),
           const SizedBox(height: 14),
           Text(
-            l10n.moistureReadingRequestedOnAddBag,
+            _weighingMode == _HarvestWeighingMode.bulk
+                ? l10n.bulkMoistureReadingRequestedOnAddBag
+                : l10n.moistureReadingRequestedOnAddBag,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -385,6 +358,239 @@ class _HarvestScaleBagsScreenState
     );
   }
 
+  Widget _weighingModeSelector(HarvestReceivingState session) {
+    final l10n = AppLocalizations.of(context)!;
+    final locked = session.bags.isNotEmpty;
+    return AppCard(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _modeButton(
+                  label: l10n.singleBag,
+                  icon: Icons.inventory_2_outlined,
+                  selected: _weighingMode == _HarvestWeighingMode.single,
+                  enabled: !locked,
+                  onTap: () => _setWeighingMode(_HarvestWeighingMode.single),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _modeButton(
+                  label: l10n.bulkHarvest,
+                  icon: Icons.inventory_outlined,
+                  selected: _weighingMode == _HarvestWeighingMode.bulk,
+                  enabled: !locked,
+                  onTap: () => _setWeighingMode(_HarvestWeighingMode.bulk),
+                ),
+              ),
+            ],
+          ),
+          if (locked) ...[
+            const SizedBox(height: 8),
+            Text(
+              l10n.weighingModeLockedUntilBagsCleared,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _modeButton({
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.ownerColor.withValues(alpha: 0.12)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected
+                ? AppColors.ownerColor
+                : AppColors.divider.withValues(alpha: 0.8),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: selected ? AppColors.ownerColor : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color:
+                      selected ? AppColors.ownerColor : AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bagEntrySection({
+    required HarvestReceivingState session,
+    required WeightScaleState scaleState,
+    required double packagingWeight,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    if (_weighingMode == _HarvestWeighingMode.bulk) {
+      final previousTotal = _previousCumulativeGross(session);
+      final nextGross = scaleState.weight - previousTotal;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionTitle(l10n.bulkHarvest),
+          AppCard(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.bulkHarvestStackingInstruction,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _summaryRow(l10n.batchReference, _bulkBatchRef),
+                const SizedBox(height: 8),
+                _summaryRow(
+                  l10n.nextBagTag,
+                  _bulkBagTag(session.bags.length + 1),
+                ),
+                const Divider(height: 22),
+                _summaryRow(
+                  l10n.previousCumulativeGross,
+                  '${_formatWeight(previousTotal)} ${scaleState.uom}',
+                ),
+                const SizedBox(height: 8),
+                _summaryRow(
+                  l10n.nextBagGross,
+                  '${_formatWeight(nextGross > 0 ? nextGross : 0)} ${scaleState.uom}',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _packagingWeightSummary(
+            label: l10n.packagingWeightKg,
+            value: packagingWeight,
+            unit: scaleState.uom,
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(l10n.bag),
+        Form(
+          key: _bagFormKey,
+          child: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: AppLabeledField(
+                      labelText: l10n.bagTag,
+                      child: TextFormField(
+                        controller: _tagCtrl,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.qr_code_2_outlined),
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          const _BagTagInputFormatter(),
+                        ],
+                        validator: _bagTagValidator,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 23),
+                    child: IconButton.filledTonal(
+                      tooltip: l10n.generateBagTag,
+                      onPressed: _generateBagTag,
+                      icon: const Icon(Icons.casino_outlined),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _packagingWeightSummary(
+                label: l10n.packagingWeightKg,
+                value: packagingWeight,
+                unit: scaleState.uom,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _summaryRow(String label, String value) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   void _generateBagTag() {
     final now = DateTime.now();
     final random = Random().nextInt(9000) + 1000;
@@ -394,7 +600,11 @@ class _HarvestScaleBagsScreenState
   }
 
   Future<void> _addBag(WeightScaleState scaleState, Crop? crop) async {
-    if (!(_bagFormKey.currentState?.validate() ?? false)) return;
+    final isBulk = _weighingMode == _HarvestWeighingMode.bulk;
+    final session = ref.read(
+      harvestReceivingControllerProvider(widget.warehouseId),
+    );
+    if (!isBulk && !(_bagFormKey.currentState?.validate() ?? false)) return;
     if (!scaleState.isConnected || !scaleState.isStreaming) {
       _showError(AppLocalizations.of(context)!.connectScaleBeforeBag);
       return;
@@ -408,24 +618,42 @@ class _HarvestScaleBagsScreenState
       return;
     }
 
+    final grossWeight = isBulk
+        ? scaleState.weight - _previousCumulativeGross(session)
+        : scaleState.weight;
+    if (isBulk && grossWeight <= 0) {
+      _showError(
+        AppLocalizations.of(context)!.bulkScaleMustIncrease(
+          _formatWeight(scaleState.weight),
+          _formatWeight(_previousCumulativeGross(session)),
+        ),
+      );
+      return;
+    }
+
     final packagingWeight = _cropPackagingWeight(crop);
-    if (packagingWeight >= scaleState.weight) {
+    if (packagingWeight >= grossWeight) {
       _showError(AppLocalizations.of(context)!.packagingLessThanGross);
       return;
     }
-    final moistureContent = await askAndMeasureMoisture(
-      context: context,
-      cropName: crop?.name ?? AppLocalizations.of(context)!.crop,
-      maxMoistureContent: crop?.maxMoisureContent,
-    );
+    final moistureContent = isBulk
+        ? 0.0
+        : await askAndMeasureMoisture(
+            context: context,
+            cropName: crop?.name ?? AppLocalizations.of(context)!.crop,
+            maxMoistureContent: crop?.maxMoisureContent,
+          );
     if (!mounted || moistureContent == null) return;
 
     ref
         .read(harvestReceivingControllerProvider(widget.warehouseId).notifier)
         .addBag(
           HarvestBagInput(
-            tag: _tagCtrl.text.trim(),
-            grossWeight: scaleState.weight,
+            tag: isBulk
+                ? _bulkBagTag(session.bags.length + 1)
+                : _tagCtrl.text.trim(),
+            tagType: isBulk ? 'BATCH_GENERATED' : 'GENERATED',
+            grossWeight: grossWeight,
             packagingWeight: packagingWeight,
             moistureContent: moistureContent,
           ),
@@ -575,6 +803,9 @@ class _HarvestScaleBagsScreenState
             cropGrade: null,
             uom: unit,
             packaging: session.packaging,
+            batchRef:
+                _weighingMode == _HarvestWeighingMode.bulk ? _bulkBatchRef : '',
+            isBatchMode: _weighingMode == _HarvestWeighingMode.bulk,
             bags: List.unmodifiable(session.bags),
           ),
         );
@@ -594,6 +825,11 @@ class _HarvestScaleBagsScreenState
     ref
         .read(harvestReceivingControllerProvider(widget.warehouseId).notifier)
         .markSaved(result.harvest!);
+    if (_weighingMode == _HarvestWeighingMode.bulk) {
+      setState(() {
+        _bulkBatchRef = _generateBatchRef();
+      });
+    }
 
     if (sheetContext.mounted) {
       Navigator.of(sheetContext).pop();
@@ -678,7 +914,36 @@ class _HarvestScaleBagsScreenState
     final l10n = AppLocalizations.of(context)!;
     if (value == null || value.trim().isEmpty) return l10n.requiredField;
     final digits = value.replaceAll(RegExp(r'\D'), '');
-    return digits.length == 8 ? null : 'Enter 8 digits';
+    return digits.length == 8 ? null : l10n.bagTagMustHaveEightDigits;
+  }
+
+  void _setWeighingMode(_HarvestWeighingMode mode) {
+    setState(() {
+      _weighingMode = mode;
+      if (mode == _HarvestWeighingMode.bulk && _bulkBatchRef.isEmpty) {
+        _bulkBatchRef = _generateBatchRef();
+      }
+    });
+  }
+
+  String _generateBatchRef() {
+    final now = DateTime.now();
+    final date =
+        '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+    final random = Random().nextInt(9000) + 1000;
+    return 'BATCH-$date-$random';
+  }
+
+  String _bulkBagTag(int bagNumber) {
+    final batchRef = _bulkBatchRef.isEmpty ? _generateBatchRef() : _bulkBatchRef;
+    return '$batchRef-$bagNumber';
+  }
+
+  double _previousCumulativeGross(HarvestReceivingState session) {
+    return session.bags.fold<double>(
+      0,
+      (sum, bag) => sum + bag.grossWeight,
+    );
   }
 
   double _cropPackagingWeight(Crop? crop) {

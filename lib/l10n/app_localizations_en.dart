@@ -874,6 +874,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'Moisture reading will be requested when you add each bag.';
 
   @override
+  String get bulkMoistureReadingRequestedOnAddBag =>
+      'Bulk harvest skips moisture reading and saves moisture as 0.';
+
+  @override
+  String get singleBag => 'Single bag';
+
+  @override
+  String get bulkHarvest => 'Bulk harvest';
+
+  @override
+  String get bulkHarvestStackingInstruction =>
+      'Keep previous bags on the scale. Add the next bag on top; the app calculates only the new bag weight.';
+
+  @override
+  String get weighingModeLockedUntilBagsCleared =>
+      'Remove the added bags before changing weighing mode.';
+
+  @override
+  String get addBulkBag => 'Add bulk bag';
+
+  @override
+  String get batchReference => 'Batch reference';
+
+  @override
+  String get nextBagTag => 'Next bag tag';
+
+  @override
+  String get previousCumulativeGross => 'Previous total gross';
+
+  @override
+  String get nextBagGross => 'Next bag gross';
+
+  @override
+  String bulkScaleMustIncrease(String current, String previous) {
+    return 'Scale reading must be greater than previous total. Current: $current kg, previous: $previous kg.';
+  }
+
+  @override
+  String get bagTagMustHaveEightDigits => 'Enter 8 digits';
+
+  @override
   String get recipientName => 'Recipient name';
 
   @override
