@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
@@ -54,6 +56,15 @@ class DriftWarehouseOperationsRepository
     String status = 'IN_STOCK',
   }) async {
     final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
+    final cachedBags = status == 'IN_STOCK'
+        ? (await _dao.getCachedStockBags(
+            warehouseId: warehouse.id,
+            cropId: crop.id,
+            status: status,
+          ))
+            .map(_stockBagFromCache)
+            .toList()
+        : const <StockBag>[];
     final locallyUnavailableUuids = status == 'IN_STOCK'
         ? await _locallyUnavailableStockBagUuids()
         : const <String>{};
@@ -64,6 +75,32 @@ class DriftWarehouseOperationsRepository
         ? await _pendingHarvestStockBags(warehouse: warehouse, crop: crop)
         : const <StockBag>[];
     final remoteBags = <StockBag>[];
+    var refreshedFromServer = false;
+
+    if (status == 'IN_STOCK' && cachedBags.isNotEmpty) {
+      final bags = _mergeAvailableStockBags(
+        sourceBags: cachedBags,
+        pendingHarvestBags: pendingHarvestBags,
+        locallyUnavailableUuids: locallyUnavailableUuids,
+        localAdjustments: localAdjustments,
+      );
+      await _replaceInventorySummaryFromStockBags(
+        warehouse: warehouse,
+        crop: crop,
+        bags: bags,
+      );
+      unawaited(
+        _refreshCachedStockBagsFromServer(
+          warehouse: warehouse,
+          crop: crop,
+          status: status,
+          pendingHarvestBags: pendingHarvestBags,
+          locallyUnavailableUuids: locallyUnavailableUuids,
+          localAdjustments: localAdjustments,
+        ),
+      );
+      return bags;
+    }
 
     try {
       final response = await _dio.get(
@@ -75,18 +112,116 @@ class DriftWarehouseOperationsRepository
             .map(StockBag.fromJson)
             .where((bag) => bag.uuid.trim().isNotEmpty),
       );
+      refreshedFromServer = true;
     } on DioException catch (error) {
-      if (!_canUseLocalStockBagFallback(error) || pendingHarvestBags.isEmpty) {
+      final canUseLocal =
+          _canUseLocalStockBagFallback(error) && cachedBags.isNotEmpty;
+      final canUsePending =
+          _canUseLocalStockBagFallback(error) && pendingHarvestBags.isNotEmpty;
+      if (!canUseLocal && !canUsePending) {
         rethrow;
       }
     }
 
+    final sourceBags =
+        refreshedFromServer ? remoteBags : cachedBags.followedBy(remoteBags);
+    final bags = _mergeAvailableStockBags(
+      sourceBags: sourceBags,
+      pendingHarvestBags: pendingHarvestBags,
+      locallyUnavailableUuids: locallyUnavailableUuids,
+      localAdjustments: localAdjustments,
+    );
+    if (status == 'IN_STOCK') {
+      if (refreshedFromServer) {
+        await _dao.replaceCachedStockBagsForStatus(
+          warehouseId: warehouse.id,
+          cropId: crop.id,
+          status: status,
+          entries: bags
+              .map(
+                (bag) => _cachedStockBagEntry(
+                  warehouse: warehouse,
+                  stockBag: bag,
+                  status: status,
+                ),
+              )
+              .toList(),
+        );
+      }
+      await _replaceInventorySummaryFromStockBags(
+        warehouse: warehouse,
+        crop: crop,
+        bags: bags,
+      );
+    }
+    return bags;
+  }
+
+  List<StockBag> _mergeAvailableStockBags({
+    required Iterable<StockBag> sourceBags,
+    required Iterable<StockBag> pendingHarvestBags,
+    required Set<String> locallyUnavailableUuids,
+    required Map<String, _StockBagAdjustmentSnapshot> localAdjustments,
+  }) {
     final byUuid = <String, StockBag>{};
-    for (final bag in remoteBags.followedBy(pendingHarvestBags)) {
+    for (final bag in sourceBags.followedBy(pendingHarvestBags)) {
       if (locallyUnavailableUuids.contains(bag.uuid)) continue;
       byUuid[bag.uuid] = _applyLocalAdjustment(bag, localAdjustments[bag.uuid]);
     }
     return byUuid.values.toList();
+  }
+
+  Future<void> _refreshCachedStockBagsFromServer({
+    required Warehouse warehouse,
+    required Crop crop,
+    required String status,
+    required Iterable<StockBag> pendingHarvestBags,
+    required Set<String> locallyUnavailableUuids,
+    required Map<String, _StockBagAdjustmentSnapshot> localAdjustments,
+  }) async {
+    try {
+      final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
+      final response = await _dio.get(
+        '/stock-bags/collection-center/$collectionCenterUuid/crop/${crop.id}',
+        queryParameters: {'status': status},
+      );
+      final remoteBags = _records(response.data)
+          .map(StockBag.fromJson)
+          .where((bag) => bag.uuid.trim().isNotEmpty)
+          .toList();
+      final bags = _mergeAvailableStockBags(
+        sourceBags: remoteBags,
+        pendingHarvestBags: pendingHarvestBags,
+        locallyUnavailableUuids: locallyUnavailableUuids,
+        localAdjustments: localAdjustments,
+      );
+      await _dao.replaceCachedStockBagsForStatus(
+        warehouseId: warehouse.id,
+        cropId: crop.id,
+        status: status,
+        entries: bags
+            .map(
+              (bag) => _cachedStockBagEntry(
+                warehouse: warehouse,
+                stockBag: bag,
+                status: status,
+              ),
+            )
+            .toList(),
+      );
+      await _replaceInventorySummaryFromStockBags(
+        warehouse: warehouse,
+        crop: crop,
+        bags: bags,
+      );
+    } on DioException catch (e) {
+      developer.log(
+        '[StockBagCache] background refresh failed '
+        'warehouseId=${warehouse.id} crop=${crop.id} '
+        'status=${e.response?.statusCode} data=${e.response?.data}',
+        name: 'warehouse.stock_bags',
+      );
+    }
   }
 
   @override
@@ -198,6 +333,10 @@ class DriftWarehouseOperationsRepository
       packagingDelta: -totalPackagingWeight,
       netDelta: -totalNetWeight,
       timestamp: now,
+    );
+    await _dao.markCachedStockBags(
+      uuids: _stockBagUuidsFromDrafts(bagDetails),
+      status: 'DISPATCH_PENDING',
     );
     await _log(
       'dispatch.create',
@@ -585,6 +724,17 @@ class DriftWarehouseOperationsRepository
     }
   }
 
+  Iterable<String> _stockBagUuidsFromDrafts(
+    List<WarehouseOperationBagDraft>? bagDetails,
+  ) sync* {
+    for (final bag in bagDetails ?? const <WarehouseOperationBagDraft>[]) {
+      final uuid = bag.stockBagUuid?.trim();
+      if (uuid != null && uuid.isNotEmpty) {
+        yield uuid;
+      }
+    }
+  }
+
   bool _hasExistingStockBagDetails(
     List<WarehouseOperationBagDraft>? bagDetails,
   ) {
@@ -618,15 +768,40 @@ class DriftWarehouseOperationsRepository
 
   Future<int> _pullInventory(String path) async {
     try {
+      developer.log(
+        '[InventoryPull] request path=$path',
+        name: 'warehouse.inventory',
+      );
       final response = await _dio.get(path);
       final rows = await _rowsWithWarehouseId(response.data);
+      developer.log(
+        '[InventoryPull] rows=${rows.length} path=$path',
+        name: 'warehouse.inventory',
+      );
       for (final item in rows) {
+        developer.log(
+          '[InventoryPull] upsert warehouseId=${item.warehouseId} '
+          'uuid=${_string(item.json['uuid'])} '
+          'collectionCenterUuid=${_string(item.json['collectionCenterUuid'])} '
+          'crop=${_int(item.json['crop'])} '
+          'cropName=${_string(item.json['cropName'])} '
+          'totalBags=${_int(item.json['totalBags'])} '
+          'gross=${_double(item.json['totalGrossWeight'])} '
+          'packaging=${_double(item.json['totalPackagingWeight'])} '
+          'net=${_double(item.json['totalNetWeight'])}',
+          name: 'warehouse.inventory',
+        );
         await _dao.upsertInventory(
           _inventoryFromJson(item.json, warehouseId: item.warehouseId),
         );
       }
       return rows.length;
-    } on DioException {
+    } on DioException catch (e) {
+      developer.log(
+        '[InventoryPull] failed path=$path status=${e.response?.statusCode} '
+        'data=${e.response?.data}',
+        name: 'warehouse.inventory',
+      );
       return 0;
     }
   }
@@ -690,6 +865,17 @@ class DriftWarehouseOperationsRepository
       warehouseId: warehouse.id,
       cropId: crop.id,
     );
+    developer.log(
+      '[InventoryDelta] before warehouseId=${warehouse.id} '
+      'collectionCenterUuid=$collectionCenterUuid crop=${crop.id} '
+      'bags=${current?.totalBags ?? 0} '
+      'gross=${current?.totalGrossWeight ?? 0} '
+      'packaging=${current?.totalPackagingWeight ?? 0} '
+      'net=${current?.totalNetWeight ?? 0} '
+      'deltaBags=$bagsDelta deltaGross=$grossDelta '
+      'deltaPackaging=$packagingDelta deltaNet=$netDelta',
+      name: 'warehouse.inventory',
+    );
     final totalBags = (current?.totalBags ?? 0) + bagsDelta;
     final updatedGrossWeight =
         _nonNegative((current?.totalGrossWeight ?? 0) + grossDelta);
@@ -702,13 +888,19 @@ class DriftWarehouseOperationsRepository
     if (clampedTotalBags <= 0) {
       if (current != null) {
         await _dao.deleteInventory(current.uuid);
+        developer.log(
+          '[InventoryDelta] deleted warehouseId=${warehouse.id} '
+          'crop=${crop.id} previousUuid=${current.uuid}',
+          name: 'warehouse.inventory',
+        );
       }
       return;
     }
 
+    final inventoryUuid = current?.uuid ?? newUuid();
     await _dao.upsertInventory(
       WarehouseInventoryItemsCompanion.insert(
-        uuid: current?.uuid ?? newUuid(),
+        uuid: inventoryUuid,
         serverId: Value(current?.serverId),
         warehouseId: warehouse.id,
         collectionCenter: Value(
@@ -731,6 +923,84 @@ class DriftWarehouseOperationsRepository
         createdAt: Value(current?.createdAt ?? timestamp),
         updatedAt: Value(timestamp),
       ),
+    );
+    developer.log(
+      '[InventoryDelta] after warehouseId=${warehouse.id} '
+      'collectionCenterUuid=$collectionCenterUuid crop=${crop.id} '
+      'uuid=$inventoryUuid bags=$clampedTotalBags '
+      'gross=$updatedGrossWeight packaging=$updatedPackagingWeight '
+      'net=$updatedNetWeight',
+      name: 'warehouse.inventory',
+    );
+  }
+
+  Future<void> _replaceInventorySummaryFromStockBags({
+    required Warehouse warehouse,
+    required Crop crop,
+    required List<StockBag> bags,
+  }) async {
+    final collectionCenterUuid = _requireCollectionCenterUuid(warehouse);
+    final current = await _dao.getInventoryByCrop(
+      warehouseId: warehouse.id,
+      cropId: crop.id,
+    );
+
+    if (bags.isEmpty) {
+      if (current != null) {
+        await _dao.deleteInventory(current.uuid);
+        developer.log(
+          '[InventoryStockBagRefresh] deleted empty stock '
+          'warehouseId=${warehouse.id} crop=${crop.id} '
+          'previousUuid=${current.uuid}',
+          name: 'warehouse.inventory',
+        );
+      }
+      return;
+    }
+
+    final totalGrossWeight =
+        _roundWeight(bags.fold<double>(0, (sum, bag) => sum + bag.grossWeight));
+    final totalPackagingWeight = _roundWeight(
+      bags.fold<double>(0, (sum, bag) => sum + bag.packagingWeight),
+    );
+    final totalNetWeight =
+        _roundWeight(bags.fold<double>(0, (sum, bag) => sum + bag.netWeight));
+    final now = DateTime.now();
+    final inventoryUuid = current?.uuid ?? newUuid();
+
+    await _dao.upsertInventory(
+      WarehouseInventoryItemsCompanion.insert(
+        uuid: inventoryUuid,
+        serverId: Value(current?.serverId),
+        warehouseId: warehouse.id,
+        collectionCenter: Value(
+          current?.collectionCenter ?? _serverCollectionCenterId(warehouse),
+        ),
+        collectionCenterUuid:
+            current?.collectionCenterUuid ?? collectionCenterUuid,
+        collectionCenterName:
+            Value(current?.collectionCenterName ?? warehouse.name),
+        amcos: Value(current?.amcos ?? warehouse.amcos),
+        amcosName: Value(current?.amcosName ?? warehouse.amcosName),
+        mcu: Value(current?.mcu),
+        mcuName: Value(current?.mcuName),
+        crop: crop.id,
+        cropName: crop.name,
+        totalBags: Value(bags.length),
+        totalGrossWeight: Value(totalGrossWeight),
+        totalPackagingWeight: Value(totalPackagingWeight),
+        totalNetWeight: Value(totalNetWeight),
+        createdAt: Value(current?.createdAt ?? now),
+        updatedAt: Value(now),
+      ),
+    );
+
+    developer.log(
+      '[InventoryStockBagRefresh] warehouseId=${warehouse.id} '
+      'collectionCenterUuid=$collectionCenterUuid crop=${crop.id} '
+      'bags=${bags.length} gross=$totalGrossWeight '
+      'packaging=$totalPackagingWeight net=$totalNetWeight',
+      name: 'warehouse.inventory',
     );
   }
 
@@ -831,6 +1101,47 @@ class DriftWarehouseOperationsRepository
       totalNetWeight: Value(_double(json['totalNetWeight'])),
       createdAt: Value(_date(json['createdAt'])),
       updatedAt: Value(_date(json['updatedAt'])),
+    );
+  }
+
+  StockBag _stockBagFromCache(CachedStockBagEntry bag) {
+    return StockBag(
+      id: bag.serverId,
+      uuid: bag.uuid,
+      tagNumber: bag.tagNumber,
+      crop: bag.crop,
+      cropName: bag.cropName,
+      grossWeight: bag.grossWeight,
+      packagingWeight: bag.packagingWeight,
+      loadWeight: bag.loadWeight,
+      netWeight: bag.netWeight,
+      moistureContent: bag.moistureContent,
+      status: bag.status,
+    );
+  }
+
+  CachedStockBagEntry _cachedStockBagEntry({
+    required Warehouse warehouse,
+    required StockBag stockBag,
+    required String status,
+  }) {
+    final now = DateTime.now();
+    return CachedStockBagEntry(
+      uuid: stockBag.uuid,
+      serverId: stockBag.id,
+      warehouseId: warehouse.id,
+      collectionCenterUuid: _requireCollectionCenterUuid(warehouse),
+      crop: stockBag.crop,
+      cropName: stockBag.cropName.isNotEmpty ? stockBag.cropName : 'Crop',
+      tagNumber: stockBag.tagNumber,
+      grossWeight: stockBag.grossWeight,
+      packagingWeight: stockBag.packagingWeight,
+      loadWeight: stockBag.loadWeight,
+      netWeight: stockBag.netWeight,
+      moistureContent: stockBag.moistureContent,
+      status: status,
+      lastSeenAt: now,
+      updatedAt: now,
     );
   }
 

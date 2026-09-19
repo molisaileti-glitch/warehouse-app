@@ -72,6 +72,8 @@ class _AmcosTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final category = amcos.memberCategory.trim().replaceAll('_', ' ');
+    final registrationNumber = amcos.registrationNumber.trim();
     final location = [amcos.regionName, amcos.districtName, amcos.villageName]
         .where((value) => value.trim().isNotEmpty)
         .join(', ');
@@ -108,13 +110,29 @@ class _AmcosTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    amcos.memberCategory.replaceAll('_', ' '),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
+                  if (registrationNumber.isNotEmpty) ...[
+                    Text(
+                      registrationNumber,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 3),
+                  ],
+                  if (category.isNotEmpty) ...[
+                    Text(
+                      category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                   if (location.isNotEmpty) ...[
                     const SizedBox(height: 3),
                     Text(
@@ -127,6 +145,8 @@ class _AmcosTile extends StatelessWidget {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 8),
+                  SyncStatusBadge(status: amcos.syncStatus),
                 ],
               ),
             ),

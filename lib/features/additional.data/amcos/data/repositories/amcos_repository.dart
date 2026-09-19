@@ -45,27 +45,42 @@ class AmcosRepository {
     required int? cropId,
   }) async {
     try {
+      final trimmedName = name.trim();
+      final trimmedMemberCategory = memberCategory.trim();
+      final trimmedRegistrationNumber = registrationNumber.trim();
+      final trimmedPhoneNumber = phoneNumber.trim();
+      if (trimmedName.isEmpty ||
+          trimmedMemberCategory.isEmpty ||
+          trimmedRegistrationNumber.isEmpty ||
+          trimmedPhoneNumber.isEmpty ||
+          cropId == null) {
+        return AmcosCreateResult.failure(
+          'AMCOS name, member category, registration number, phone number, and crop are required.',
+        );
+      }
+
       final uuid = newUuid();
       final localId = _localRowId(uuid);
-      final payload = {
+      final payload = <String, dynamic>{
         'uuid': uuid,
-        'name': name,
-        'memberCategory': memberCategory,
-        'registrationNumber': registrationNumber,
-        'tinNumber': tinNumber,
+        'name': trimmedName,
+        'memberCategory': trimmedMemberCategory,
+        'registrationNumber': trimmedRegistrationNumber,
         'mcu': mcuId,
         'region': regionId,
         'district': districtId,
         'ward': wardId,
         'village': villageId,
-        'phoneNumber': phoneNumber,
-        'email': email,
-        'contactPersonName': contactPersonName,
-        'contactPersonPhoneNumber': contactPersonPhoneNumber,
-        'contactPersonEmail': contactPersonEmail,
-        'contactPersonTitle': contactPersonTitle,
-        'website': website,
-        if (cropId != null) 'crops': [cropId],
+        'phoneNumber': trimmedPhoneNumber,
+        'tinNumber': tinNumber.trim(),
+        'email': email.trim(),
+        'contactPersonName': contactPersonName.trim(),
+        'contactPersonPhoneNumber': contactPersonPhoneNumber.trim(),
+        'contactPersonEmail': contactPersonEmail.trim(),
+        'contactPersonTitle': contactPersonTitle.trim(),
+        'website': website.trim(),
+        'status': 'ACTIVE',
+        'crops': [cropId],
         'idCounter': 0,
       };
 
@@ -73,10 +88,10 @@ class AmcosRepository {
         id: Value(localId),
         uuid: Value(uuid),
         syncStatus: const Value('pending'),
-        name: name,
-        memberCategory: memberCategory,
-        registrationNumber: registrationNumber,
-        tinNumber: tinNumber,
+        name: trimmedName,
+        memberCategory: trimmedMemberCategory,
+        registrationNumber: trimmedRegistrationNumber,
+        tinNumber: tinNumber.trim(),
         mcu: mcuId,
         mcuName: mcuName,
         region: regionId,
@@ -87,13 +102,13 @@ class AmcosRepository {
         wardName: wardName,
         village: villageId,
         villageName: villageName,
-        phoneNumber: phoneNumber,
-        email: email,
-        contactPersonName: contactPersonName,
-        contactPersonPhoneNumber: contactPersonPhoneNumber,
-        contactPersonEmail: contactPersonEmail,
-        contactPersonTitle: contactPersonTitle,
-        website: website,
+        phoneNumber: trimmedPhoneNumber,
+        email: email.trim(),
+        contactPersonName: contactPersonName.trim(),
+        contactPersonPhoneNumber: contactPersonPhoneNumber.trim(),
+        contactPersonEmail: contactPersonEmail.trim(),
+        contactPersonTitle: contactPersonTitle.trim(),
+        website: website.trim(),
         status: 'ACTIVE',
         crops: cropId?.toString() ?? '',
         idCounter: 0,
@@ -108,7 +123,8 @@ class AmcosRepository {
 
       await _dao.insertPendingAmcos(amcos: companion, queueEntry: queueEntry);
       developer.log(
-        '[AmcosSync] queued locally uuid=$uuid localId=$localId',
+        '[AmcosSync] queued locally uuid=$uuid localId=$localId '
+        'payload=$payload json=${jsonEncode(payload)}',
         name: 'sync.amcos',
       );
       return AmcosCreateResult.success(amcosId: localId);

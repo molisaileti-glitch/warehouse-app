@@ -1,5 +1,5 @@
 class FeatureFlags {
   const FeatureFlags._();
 
-  static const warehouseOperationsEnabled = false;
+  static const warehouseOperationsEnabled = true;
 }

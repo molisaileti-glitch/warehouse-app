@@ -192,7 +192,14 @@ class _FarmerTile extends StatelessWidget {
               ],
             ),
           ),
-          _FarmerStatusBadge(status: farmer.status),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _FarmerStatusBadge(status: farmer.status),
+              const SizedBox(height: 6),
+              SyncStatusBadge(status: farmer.syncStatus),
+            ],
+          ),
         ],
       ),
     );

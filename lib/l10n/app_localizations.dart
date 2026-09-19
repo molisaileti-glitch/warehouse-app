@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'Business email'**
   String get businessEmail;
 
+  /// No description provided for @businessEmailUsedForLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Business email (used for login)'**
+  String get businessEmailUsedForLogin;
+
   /// No description provided for @tinNumber.
   ///
   /// In en, this message translates to:
@@ -895,6 +901,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An account with this email already exists'**
   String get errorEmailExists;
+
+  /// No description provided for @ownerRegistrationNumberExists.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner with this registration number already exists'**
+  String get ownerRegistrationNumberExists;
 
   /// No description provided for @errorTooManyAttempts.
   ///

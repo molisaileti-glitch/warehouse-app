@@ -158,6 +158,10 @@ class AppLocalizationsSw extends AppLocalizations {
   String get businessEmail => 'Barua pepe ya biashara';
 
   @override
+  String get businessEmailUsedForLogin =>
+      'Barua pepe ya biashara (itatumika kuingia)';
+
+  @override
   String get tinNumber => 'Nambari ya TIN';
 
   @override
@@ -443,6 +447,10 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get errorEmailExists => 'Akaunti iliyo na barua pepe hii tayari ipo';
+
+  @override
+  String get ownerRegistrationNumberExists =>
+      'Mmiliki mwenye nambari hii ya usajili tayari yupo';
 
   @override
   String get errorTooManyAttempts =>

@@ -203,6 +203,7 @@ class SyncManager {
         await _pushEntry(entry);
         await _syncDao.markSynced(entry.id);
         await _markEntitySynced(entry.entityType, entry.entityId);
+        await _markStockBagMutationSynced(entry);
         if (entry.entityType == 'stockAdjustments') {
           adjustedStockBagUuidsThisPass.addAll(
             _stockBagUuidsFromQueuedPayload(entry.payload),
@@ -231,6 +232,12 @@ class SyncManager {
             conflictDetails.add(detail);
           }
         } else {
+          if (status != null && status >= 400) {
+            final detail = _describeDioRetryFailure(entry, e);
+            if (!conflictDetails.contains(detail)) {
+              conflictDetails.add(detail);
+            }
+          }
           // 400/422 are validation errors - the payload may be fixable on the
           // next sync (e.g. a parent reference that wasn't synced yet).
           // Treat them as retryable failures, not permanent conflicts.
@@ -249,6 +256,14 @@ class SyncManager {
     }
 
     return successCount;
+  }
+
+  Future<void> _markStockBagMutationSynced(SyncQueueData entry) async {
+    if (entry.entityType != 'dispatches') return;
+    await _warehouseOperationsDao.markCachedStockBags(
+      uuids: _stockBagUuidsFromQueuedPayload(entry.payload),
+      status: 'DISPATCHED',
+    );
   }
 
   String _queueEntrySummary(SyncQueueData entry) {
@@ -288,11 +303,36 @@ class SyncManager {
   Future<void> _pushEntry(SyncQueueData entry) async {
     final payload = jsonDecode(entry.payload) as Map<String, dynamic>;
     if (entry.entityType == 'amcos' && entry.operation == 'create') {
-      final response = await _dio.post('/amcos', data: payload);
-      await _applyAmcosCreateResponse(
-        uuid: entry.entityId,
-        responseData: response.data,
+      _normalizeAmcosCreatePayload(payload);
+      developer.log(
+        '[AmcosSync] POST /amcos uuid=${entry.entityId} '
+        'normalizedPayload=${_logPreview(payload)} '
+        'json=${_logPreview(jsonEncode(payload))}',
+        name: 'sync.amcos',
       );
+      try {
+        final response = await _dio.post('/amcos', data: payload);
+        developer.log(
+          '[AmcosSync] POST /amcos success uuid=${entry.entityId} '
+          'status=${response.statusCode} response=${_logPreview(response.data)}',
+          name: 'sync.amcos',
+        );
+        await _applyAmcosCreateResponse(
+          uuid: entry.entityId,
+          responseData: response.data,
+        );
+      } on DioException catch (e) {
+        developer.log(
+          '[AmcosSync] POST /amcos failure uuid=${entry.entityId} '
+          'status=${e.response?.statusCode} '
+          'response=${_logPreview(e.response?.data)} '
+          'normalizedPayload=${_logPreview(payload)} '
+          'json=${_logPreview(jsonEncode(payload))}',
+          name: 'sync.amcos',
+          error: e,
+        );
+        rethrow;
+      }
       return;
     }
     if (entry.entityType == 'farmerDependants' && entry.operation == 'create') {
@@ -793,6 +833,27 @@ class SyncManager {
     return value;
   }
 
+  void _normalizeAmcosCreatePayload(Map<String, dynamic> payload) {
+    final before = Map<String, dynamic>.from(payload);
+    payload['tinNumber'] ??= '';
+    payload['email'] ??= '';
+    payload['contactPersonName'] ??= '';
+    payload['contactPersonPhoneNumber'] ??= '';
+    payload['contactPersonEmail'] ??= '';
+    payload['contactPersonTitle'] ??= '';
+    payload['website'] ??= '';
+    payload['status'] ??= 'ACTIVE';
+    if (payload['crops'] is String && payload['crops'].toString().isEmpty) {
+      payload.remove('crops');
+    }
+    payload['idCounter'] ??= 0;
+    developer.log(
+      '[AmcosSync] normalized create payload '
+      'before=${_logPreview(before)} after=${_logPreview(payload)}',
+      name: 'sync.amcos',
+    );
+  }
+
   Object? _safeQueuedPayloadForLog(String payload) {
     try {
       return _redactForLog(jsonDecode(payload));
@@ -809,7 +870,8 @@ class SyncManager {
     return text.contains('already in use') ||
         text.contains('already exist') ||
         text.contains('already exists') ||
-        text.contains('duplicate');
+        text.contains('duplicate') ||
+        text.contains('stock bag is not available');
   }
 
   String _describeDioConflict(SyncQueueData entry, DioException error) {
@@ -825,6 +887,24 @@ class SyncManager {
     if (normalized.contains('already') || normalized.contains('duplicate')) {
       return '$queuedRecord Server says this record already exists.';
     }
+    if (entry.entityType == 'dispatches' &&
+        normalized.contains('stock bag is not available')) {
+      return '$queuedRecord The selected stock bag is no longer available on '
+          'the server. Please create a new dispatch using a currently '
+          'available bag.';
+    }
+    return '$queuedRecord Server message: $backendMessage';
+  }
+
+  String _describeDioRetryFailure(SyncQueueData entry, DioException error) {
+    final queuedRecord = _describeQueuedConflict(entry);
+    final status = error.response?.statusCode;
+    if (status == 403) {
+      return '$queuedRecord Server rejected this request with 403 Forbidden. '
+          'The logged-in account may not have permission to create this record.';
+    }
+    final backendMessage = _extractBackendMessage(error.response?.data);
+    if (backendMessage.isEmpty) return queuedRecord;
     return '$queuedRecord Server message: $backendMessage';
   }
 
@@ -1058,6 +1138,7 @@ class SyncManager {
         measuredAt: payload['dispatchedAt']?.toString(),
       );
       _assertMeasuredBagsHaveStockBagUuids(payload);
+      await _refreshDispatchStockBagUuids(payload);
       payload.remove('totalBags');
       payload.remove('totalGrossWeight');
       payload.remove('totalPackagingWeight');
@@ -1132,6 +1213,117 @@ class SyncManager {
       payload.remove('moistureContent');
       payload.remove('adjustedBy');
     }
+  }
+
+  Future<void> _refreshDispatchStockBagUuids(
+    Map<String, dynamic> payload,
+  ) async {
+    final collectionCenterUuid = payload['collectionCenter']?.toString().trim();
+    final cropId = _int(payload['crop']);
+    final bags = payload['bags'];
+    if (collectionCenterUuid == null ||
+        collectionCenterUuid.isEmpty ||
+        cropId == null ||
+        bags is! List ||
+        bags.isEmpty) {
+      return;
+    }
+
+    Response<dynamic> response;
+    try {
+      response = await _dio.get(
+        '/stock-bags/collection-center/$collectionCenterUuid/crop/$cropId',
+        queryParameters: {'status': 'IN_STOCK'},
+      );
+    } on DioException catch (e) {
+      developer.log(
+        '[DispatchBagRefresh] failed collectionCenter=$collectionCenterUuid '
+        'crop=$cropId status=${e.response?.statusCode} '
+        'response=${_logPreview(e.response?.data)}',
+        name: 'sync.warehouse.operation',
+      );
+      return;
+    }
+
+    final records = _responseRecords(response.data);
+    developer.log(
+      '[DispatchBagRefresh] current IN_STOCK bags '
+      'collectionCenter=$collectionCenterUuid crop=$cropId '
+      'options=${_logPreview(_stockBagOptionsForLog(records))}',
+      name: 'sync.warehouse.operation',
+    );
+    final inStockByUuid = <String, Map<String, dynamic>>{};
+    final inStockByTag = <String, Map<String, dynamic>>{};
+    for (final record in records) {
+      final uuid = record['uuid']?.toString().trim();
+      final tag = record['tagNumber']?.toString().trim().toLowerCase();
+      if (uuid != null && uuid.isNotEmpty) {
+        inStockByUuid[uuid] = record;
+      }
+      if (tag != null && tag.isNotEmpty) {
+        inStockByTag[tag] = record;
+      }
+    }
+
+    for (final bag in bags) {
+      if (bag is! Map) continue;
+      final currentUuid = bag['stockBagUuid']?.toString().trim();
+      if (currentUuid == null || currentUuid.isEmpty) continue;
+      if (inStockByUuid.containsKey(currentUuid)) continue;
+
+      final tag = bag['tagNumber']?.toString().trim().toLowerCase();
+      final replacement = tag == null || tag.isEmpty ? null : inStockByTag[tag];
+      final replacementUuid = replacement?['uuid']?.toString().trim();
+      if (replacementUuid != null && replacementUuid.isNotEmpty) {
+        developer.log(
+          '[DispatchBagRefresh] replacing stale stockBagUuid '
+          'tag=${bag['tagNumber']} old=$currentUuid new=$replacementUuid '
+          'collectionCenter=$collectionCenterUuid crop=$cropId',
+          name: 'sync.warehouse.operation',
+        );
+        bag['stockBagUuid'] = replacementUuid;
+      } else {
+        developer.log(
+          '[DispatchBagRefresh] stale stockBagUuid still not available '
+          'tag=${bag['tagNumber']} uuid=$currentUuid '
+          'collectionCenter=$collectionCenterUuid crop=$cropId '
+          'inStockCount=${records.length} '
+          'options=${_logPreview(_stockBagOptionsForLog(records))}',
+          name: 'sync.warehouse.operation',
+        );
+      }
+    }
+  }
+
+  List<Map<String, dynamic>> _responseRecords(Object? data) {
+    if (data is List) {
+      return data.whereType<Map>().map(_asMap).toList();
+    }
+    if (data is Map) {
+      final records = data['records'];
+      if (records is List) {
+        return records.whereType<Map>().map(_asMap).toList();
+      }
+      return [_asMap(data)];
+    }
+    return const <Map<String, dynamic>>[];
+  }
+
+  List<Map<String, dynamic>> _stockBagOptionsForLog(
+    List<Map<String, dynamic>> records,
+  ) {
+    return records
+        .map(
+          (record) => {
+            'uuid': record['uuid'],
+            'tagNumber': record['tagNumber'],
+            'grossWeight': record['grossWeight'],
+            'packagingWeight': record['packagingWeight'],
+            'netWeight': record['netWeight'],
+            'status': record['status'],
+          },
+        )
+        .toList();
   }
 
   void _ensureMeasuredBags(

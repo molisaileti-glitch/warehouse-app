@@ -132,6 +132,8 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                                       color: AppColors.textMuted,
                                     ),
                                   ),
+                                const SizedBox(height: 6),
+                                SyncStatusBadge(status: farmer.syncStatus),
                               ],
                             ),
                           ),

@@ -303,7 +303,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (!result.success) {
         failureMessage = _localizeAuthError(l10n, result.error);
         if (mounted) {
-          setState(() => _submitError = result.error);
+          setState(() => _submitError = failureMessage);
         }
       }
     } catch (e) {
@@ -373,8 +373,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'errorTooManyAttempts' => l10n.errorTooManyAttempts,
       'errorNetworkError' => l10n.errorNetworkError,
       'errorInvalidServerResponse' => l10n.errorInvalidServerResponse,
-      _ => errorKey,
+      _ => _friendlyRegistrationError(l10n, errorKey),
     };
+  }
+
+  String _friendlyRegistrationError(AppLocalizations l10n, String error) {
+    final normalized = error.toLowerCase();
+    if (normalized.contains('registration') &&
+        normalized.contains('number') &&
+        normalized.contains('already')) {
+      return l10n.ownerRegistrationNumberExists;
+    }
+    if (normalized.contains('mcu')) {
+      return error.replaceAll(RegExp('mcu', caseSensitive: false), 'Owner');
+    }
+    return error;
   }
 
   Widget _buildBusinessStep(BuildContext context) {
@@ -392,7 +405,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           const SizedBox(height: 16),
           AppDropdownFormField<String>(
-            labelText: optionalLabel(l10n.businessType, l10n.optional),
+            labelText: l10n.businessType,
             icon: Icons.category_outlined,
             value: _selectedType,
             hintText: l10n.selectBusinessType,
@@ -400,6 +413,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                 .toList(),
             onChanged: (v) => setState(() => _selectedType = v!),
+            validator: (v) => v == null ? l10n.selectBusinessType : null,
           ),
           const SizedBox(height: 16),
           AppDropdownFormField<Region>(
@@ -424,9 +438,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _registrationNumberCtrl,
-            labelText: optionalLabel(l10n.registrationNumber, l10n.optional),
+            labelText: l10n.registrationNumber,
             icon: Icons.numbers_outlined,
             hintText: l10n.enterRegistrationNumber,
+            validator: (v) =>
+                Validators.required(v, l10n.enterRegistrationNumber),
           ),
           const SizedBox(height: 16),
           AppTextFormField(
@@ -440,13 +456,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           AppTextFormField(
             controller: _emailCtrl,
-            labelText: optionalLabel(l10n.businessEmail, l10n.optional),
+            labelText: l10n.businessEmailUsedForLogin,
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
             hintText: l10n.enterBusinessEmail,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return null;
+              if (v == null || v.trim().isEmpty) {
+                return l10n.validationEmailRequired;
+              }
               if (!v.contains('@')) return l10n.validationEmailInvalid;
               return null;
             },

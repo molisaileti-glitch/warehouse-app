@@ -51,11 +51,18 @@ class SyncStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final normalized = status.trim().toLowerCase();
-    if (normalized != 'synced' && normalized != 'conflict') {
+    if (normalized != 'pending' &&
+        normalized != 'synced' &&
+        normalized != 'conflict') {
       return const SizedBox.shrink();
     }
 
     final (color, icon, label) = switch (normalized) {
+      'pending' => (
+          AppColors.warning,
+          Icons.cloud_upload_rounded,
+          l10n.pendingSync
+        ),
       'synced' => (
           AppColors.syncSynced,
           Icons.cloud_done_rounded,
@@ -824,7 +831,7 @@ String _syncRetryMessage(SyncState state, AppLocalizations l10n) {
   if (state.conflicts > 0) {
     return '${l10n.syncRetryPendingReviewConflicts(remaining)}$details';
   }
-  return l10n.syncTryAgainStrongConnection(remaining);
+  return '${l10n.syncTryAgainStrongConnection(remaining)}$details';
 }
 
 String _syncConflictDetails(SyncState state, AppLocalizations l10n) {

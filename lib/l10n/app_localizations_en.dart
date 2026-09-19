@@ -158,6 +158,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get businessEmail => 'Business email';
 
   @override
+  String get businessEmailUsedForLogin => 'Business email (used for login)';
+
+  @override
   String get tinNumber => 'TIN number';
 
   @override
@@ -440,6 +443,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorEmailExists => 'An account with this email already exists';
+
+  @override
+  String get ownerRegistrationNumberExists =>
+      'Owner with this registration number already exists';
 
   @override
   String get errorTooManyAttempts => 'Too many attempts — try again later';

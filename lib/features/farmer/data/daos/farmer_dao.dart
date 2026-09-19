@@ -89,7 +89,8 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
     return (select(farmerDependants)
           ..where(
             (d) =>
-                d.farmerId.equals(farmerId) & d.relationship.equals('').not(),
+                d.farmerId.equals(farmerId) &
+                d.relationship.equals('').not(),
           )
           ..orderBy([
             (d) => OrderingTerm.asc(d.lastName),
@@ -102,7 +103,8 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
     return (select(farmerDependants)
           ..where(
             (d) =>
-                d.farmerId.equals(farmerId) & d.relationship.equals('').not(),
+                d.farmerId.equals(farmerId) &
+                d.relationship.equals('').not(),
           )
           ..orderBy([
             (d) => OrderingTerm.asc(d.lastName),

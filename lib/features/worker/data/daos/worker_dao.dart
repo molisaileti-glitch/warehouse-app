@@ -27,7 +27,9 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
   Stream<List<User>> watchUsersByWarehouse(String warehouseId) {
     return (select(users)
           ..where(
-            (u) => u.warehouseId.equals(warehouseId) & u.deletedAt.isNull(),
+            (u) =>
+                u.warehouseId.equals(warehouseId) &
+                u.deletedAt.isNull(),
           ))
         .watch();
   }
