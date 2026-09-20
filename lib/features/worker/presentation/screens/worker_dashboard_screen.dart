@@ -13,7 +13,6 @@ import '../../../../core/sync/sync_engine.dart';
 import '../../../shared/widgets/common_widgets.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
-import '../../../warehouse_operations/presentation/providers/warehouse_operations_providers.dart';
 import 'worker_drawer.dart';
 
 // Scoped provider — watches the current worker's User record from local DB.
@@ -204,7 +203,7 @@ class _WorkerBody extends ConsumerWidget {
             crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 1.45,
+            childAspectRatio: 1.18,
             children: [
               StatCard(
                 label: l10n.farmers,
