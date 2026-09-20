@@ -35,6 +35,7 @@ class OwnerShell extends StatelessWidget {
 
   int _selectedIndex(String location) {
     if (location.startsWith('/owner/amcos') ||
+        location.startsWith('/owner/reports') ||
         location.startsWith('/owner/settings')) {
       return -1;
     }

@@ -14,6 +14,7 @@ import '../../../shared/widgets/common_widgets.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
 import '../../../warehouse_operations/presentation/providers/warehouse_operations_providers.dart';
+import 'worker_drawer.dart';
 
 // Scoped provider — watches the current worker's User record from local DB.
 final _workerProfileProvider = StreamProvider<User?>((ref) {
@@ -66,6 +67,7 @@ class WorkerDashboardScreen extends ConsumerWidget {
     });
 
     return Scaffold(
+      drawer: const WorkerDrawer(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         title: Text(l10n.myTasks),

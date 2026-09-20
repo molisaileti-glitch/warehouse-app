@@ -260,7 +260,6 @@ class _WarehouseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final location = _warehouseLocation(warehouse, l10n);
-    final active = warehouse.isActive;
 
     return AppCard(
       onTap: () => context.push('/owner/warehouses/${warehouse.id}'),
@@ -282,8 +281,6 @@ class _WarehouseTile extends StatelessWidget {
                   ),
                 ),
               ),
-              _WarehouseStatusBadge(active: active),
-              const SizedBox(width: 8),
               const Icon(Icons.chevron_right_rounded,
                   color: AppColors.textMuted),
             ],
@@ -343,34 +340,6 @@ class _WarehouseDetailLine extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _WarehouseStatusBadge extends StatelessWidget {
-  final bool active;
-
-  const _WarehouseStatusBadge({required this.active});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final color = active ? AppColors.success : AppColors.textMuted;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Text(
-        active ? l10n.active : l10n.inactive,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
     );
   }
 }

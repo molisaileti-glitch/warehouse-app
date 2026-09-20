@@ -284,13 +284,13 @@ class _CurrentStockCard extends StatelessWidget {
 class _OperationGrid extends StatelessWidget {
   final AppLocalizations l10n;
   final VoidCallback onDispatch;
-  final VoidCallback onCount;
+  final VoidCallback? onCount;
   final VoidCallback onAdjustment;
 
   const _OperationGrid({
     required this.l10n,
     required this.onDispatch,
-    required this.onCount,
+    this.onCount,
     required this.onAdjustment,
   });
 
@@ -310,13 +310,14 @@ class _OperationGrid extends StatelessWidget {
               subtitle: l10n.reducesStock,
               onTap: onDispatch,
             ),
-            _OperationButton(
-              width: width,
-              icon: Icons.fact_check_outlined,
-              label: l10n.stockCount,
-              subtitle: l10n.doesNotChangeStock,
-              onTap: onCount,
-            ),
+            if (FeatureFlags.stockCountEnabled)
+              _OperationButton(
+                width: width,
+                icon: Icons.fact_check_outlined,
+                label: l10n.stockCount,
+                subtitle: l10n.doesNotChangeStock,
+                onTap: onCount ?? () {},
+              ),
             _OperationButton(
               width: width,
               icon: Icons.tune_rounded,
@@ -966,14 +967,16 @@ class CropStockDetailsScreen extends ConsumerWidget {
                       operation: 'dispatch',
                     ),
                   ),
-                  onCount: () => context.push(
-                    _operationPath(
-                      ownerFlow: ownerFlow,
-                      warehouseId: warehouseId,
-                      cropId: cropId,
-                      operation: 'count',
-                    ),
-                  ),
+                  onCount: FeatureFlags.stockCountEnabled
+                      ? () => context.push(
+                            _operationPath(
+                              ownerFlow: ownerFlow,
+                              warehouseId: warehouseId,
+                              cropId: cropId,
+                              operation: 'count',
+                            ),
+                          )
+                      : null,
                   onAdjustment: () => context.push(
                     _operationPath(
                       ownerFlow: ownerFlow,
@@ -1097,6 +1100,13 @@ class _WarehouseOperationFormScreenState
         (inventory == null ? null : _cropFromInventory(inventory));
     final l10n = AppLocalizations.of(context)!;
 
+    if (action == _WarehouseAction.count && !FeatureFlags.stockCountEnabled) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.stockCount)),
+        body: ErrorView(message: l10n.stockCount),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(_titleForAction(action, l10n))),
       body: warehouseAsync.when(
@@ -1149,7 +1159,7 @@ class _WarehouseOperationFormScreenState
     final l10n = AppLocalizations.of(context)!;
     if (action == _WarehouseAction.dispatch ||
         action == _WarehouseAction.adjustment) {
-      return _selectedBagWeighingStep(action, crop, scaleState);
+      return _selectedBagWeighingStep(action, warehouse, crop, scaleState);
     }
 
     return [
@@ -1313,6 +1323,7 @@ class _WarehouseOperationFormScreenState
 
   List<Widget> _selectedBagWeighingStep(
     _WarehouseAction action,
+    Warehouse warehouse,
     Crop crop,
     WeightScaleState scaleState,
   ) {
@@ -1408,6 +1419,7 @@ class _WarehouseOperationFormScreenState
                   onPressed: _canAddBag(scaleState)
                       ? () => _addSelectedStockBag(
                             action: action,
+                            warehouse: warehouse,
                             stockBag: pendingBag,
                             crop: crop,
                             grossWeight: dispatchGross,
@@ -1951,6 +1963,7 @@ class _WarehouseOperationFormScreenState
 
   Future<void> _addSelectedStockBag({
     required _WarehouseAction action,
+    required Warehouse warehouse,
     required StockBag stockBag,
     required Crop crop,
     required double grossWeight,
@@ -1981,14 +1994,24 @@ class _WarehouseOperationFormScreenState
       final adjustmentType = difference > 0
           ? StockAdjustmentType.increase
           : StockAdjustmentType.decrease;
-      _showError(
-        l10n.bagWeightChangedNeedsAdjustment(
+      final adjusted = await _adjustStockBagInlineForDispatch(
+        warehouse: warehouse,
+        crop: crop,
+        stockBag: stockBag,
+        grossWeight: grossWeight,
+        packagingWeight: packagingWeight,
+        netWeight: netWeight,
+        adjustmentType: adjustmentType,
+        message: l10n.bagWeightChangedNeedsAdjustment(
           tag,
           _formatWeightDetail(stockBag.netWeight),
           _formatWeightDetail(netWeight),
           adjustmentType,
         ),
       );
+      if (adjusted) {
+        ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
+      }
       return;
     }
 
@@ -2010,6 +2033,183 @@ class _WarehouseOperationFormScreenState
     if (added) {
       ref.read(weightScaleControllerProvider.notifier).requestCurrentWeight();
     }
+  }
+
+  Future<bool> _adjustStockBagInlineForDispatch({
+    required Warehouse warehouse,
+    required Crop crop,
+    required StockBag stockBag,
+    required double grossWeight,
+    required double packagingWeight,
+    required double netWeight,
+    required String adjustmentType,
+    required String message,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final shouldAdjust = await showAppDialog<bool>(
+      context,
+      title: l10n.stockAdjustment,
+      description: message,
+      type: AppDialogType.warning,
+      actions: [
+        AppDialogAction<bool>(label: l10n.cancel, result: false),
+        AppDialogAction<bool>(
+          label: l10n.adjustment,
+          result: true,
+          isPrimary: true,
+        ),
+      ],
+    );
+    if (shouldAdjust != true || !mounted) return false;
+
+    final reason = await _selectInlineAdjustmentReason();
+    if (reason == null || !mounted) return false;
+
+    final bagDraft = WarehouseOperationBagDraft(
+      stockBagUuid: stockBag.uuid,
+      tagNumber: stockBag.tagNumber,
+      recordedGrossWeight: stockBag.grossWeight,
+      recordedPackagingWeight: stockBag.packagingWeight,
+      recordedNetWeight: stockBag.netWeight,
+      grossWeight: grossWeight,
+      packagingWeight: packagingWeight,
+      netWeight: netWeight,
+      moistureContent: stockBag.moistureContent,
+    );
+
+    setState(() => _saving = true);
+    try {
+      final repo = ref.read(warehouseOperationsRepoProvider);
+      await repo.recordStockAdjustment(
+        warehouse: warehouse,
+        crop: crop,
+        adjustmentType: adjustmentType,
+        reason: reason,
+        bags: 1,
+        grossWeight: grossWeight,
+        packagingWeight: packagingWeight,
+        netWeight: netWeight,
+        bagDetails: [bagDraft],
+        moistureContent: stockBag.moistureContent,
+      );
+
+      if (!mounted) return false;
+      setState(() {
+        _bags.add(
+          _OperationBag(
+            stockBagUuid: stockBag.uuid,
+            tagNumber: stockBag.tagNumber,
+            recordedGrossWeight: stockBag.grossWeight,
+            recordedPackagingWeight: stockBag.packagingWeight,
+            recordedNetWeight: stockBag.netWeight,
+            grossWeight: grossWeight,
+            packagingWeight: packagingWeight,
+            netWeight: netWeight,
+            moistureContent: stockBag.moistureContent,
+          ),
+        );
+      });
+      ref.invalidate(warehouseInventoryProvider(warehouse.id));
+      ref.invalidate(warehouseStockAdjustmentsProvider(warehouse.id));
+      await showSuccessDialog(
+        context,
+        title: l10n.stockAdjustment,
+        description: 'Stock adjustment saved. Continue dispatching this bag.',
+      );
+      return true;
+    } catch (error) {
+      if (mounted) {
+        await showErrorDialog(
+          context,
+          title: l10n.stockAdjustment,
+          description: '$error',
+        );
+      }
+      return false;
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<String?> _selectInlineAdjustmentReason() async {
+    final l10n = AppLocalizations.of(context)!;
+    var selectedReason = _reason;
+
+    return showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.adjustmentDetails,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    AppLabeledField(
+                      labelText: l10n.reason,
+                      child: DropdownButtonFormField<String>(
+                        value: selectedReason,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.info_outline),
+                        ),
+                        items: StockAdjustmentReason.values
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) => setSheetState(
+                          () => selectedReason =
+                              value ?? StockAdjustmentReason.other,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () =>
+                                Navigator.of(sheetContext).pop(),
+                            child: Text(l10n.cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () =>
+                                Navigator.of(sheetContext).pop(selectedReason),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.workerColor,
+                            ),
+                            child: Text(l10n.confirmSave),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _addBagFromScale(
@@ -3154,17 +3354,18 @@ List<_ActivityItem> _recentActivities({
         date: item.dispatchedAt,
         icon: Icons.local_shipping_outlined,
       ),
-    for (final item in counts.where((item) => item.crop == cropId))
-      _ActivityItem(
-        title: l10n.stockCount,
-        subtitle: l10n.countedBagsSummary(
-          item.countedBags,
-          _formatNumber(item.countedNetWeight),
+    if (FeatureFlags.stockCountEnabled)
+      for (final item in counts.where((item) => item.crop == cropId))
+        _ActivityItem(
+          title: l10n.stockCount,
+          subtitle: l10n.countedBagsSummary(
+            item.countedBags,
+            _formatNumber(item.countedNetWeight),
+          ),
+          when: _shortDate(item.countedAt),
+          date: item.countedAt,
+          icon: Icons.fact_check_outlined,
         ),
-        when: _shortDate(item.countedAt),
-        date: item.countedAt,
-        icon: Icons.fact_check_outlined,
-      ),
     for (final item in adjustments.where((item) => item.crop == cropId))
       _ActivityItem(
         title: l10n.adjustment,

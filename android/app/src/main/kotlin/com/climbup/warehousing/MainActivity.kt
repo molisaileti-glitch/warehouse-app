@@ -24,6 +24,9 @@ import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.util.Collections
 import java.util.Locale
@@ -36,16 +39,21 @@ class MainActivity : FlutterActivity() {
     private val printerLogTag = "ReceiptPrinter"
     private val channelName = "warehouse_app.bluetooth.print.receipt"
     private val browserChannelName = "warehouse_app.platform/browser"
+    private val fileChannelName = "warehouse_app.platform/files"
     private val sppUuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private val companionDeviceSetupFeature = "android.software.companion_device_setup"
     private val selectPrinterRequestCode = 7301
+    private val saveFileRequestCode = 7302
     private val pickerHandler = Handler(Looper.getMainLooper())
     private val directExecutor = Executor { command -> command.run() }
     private var pendingPickerResult: MethodChannel.Result? = null
+    private var pendingSaveResult: MethodChannel.Result? = null
+    private var pendingSaveSourcePath: String? = null
     private var pickerTimeout: Runnable? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        Log.d("WarehouseFiles", "Registering file channel: $fileChannelName")
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
@@ -84,6 +92,30 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, fileChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "openFile" -> openFile(
+                        call.argument<String>("path"),
+                        call.argument<String>("mimeType"),
+                        result,
+                    )
+                    "shareFile" -> shareFile(
+                        call.argument<String>("path"),
+                        call.argument<String>("fileName"),
+                        call.argument<String>("mimeType"),
+                        result,
+                    )
+                    "saveFileAs" -> saveFileAs(
+                        call.argument<String>("path"),
+                        call.argument<String>("fileName"),
+                        call.argument<String>("mimeType"),
+                        result,
+                    )
+                    else -> result.notImplemented()
+                }
+            }
     }
 
     private fun openUrl(url: String, result: MethodChannel.Result) {
@@ -97,6 +129,11 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == saveFileRequestCode) {
+            completeSaveFile(resultCode, data)
+            return
+        }
+
         if (requestCode != selectPrinterRequestCode) {
             super.onActivityResult(requestCode, resultCode, data)
             return
@@ -120,6 +157,117 @@ class MainActivity : FlutterActivity() {
         }
 
         completePickerError("invalid_printer", "Selected printer is invalid.")
+    }
+
+    private fun fileUri(file: File): Uri {
+        return FileProvider.getUriForFile(
+            this,
+            "$packageName.fileprovider",
+            file,
+        )
+    }
+
+    private fun openFile(path: String?, mimeType: String?, result: MethodChannel.Result) {
+        try {
+            val file = requireExistingFile(path)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(fileUri(file), mimeType ?: "application/octet-stream")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Open Excel File"))
+            result.success(null)
+        } catch (error: Exception) {
+            result.error("open_file_failed", error.message, null)
+        }
+    }
+
+    private fun shareFile(
+        path: String?,
+        fileName: String?,
+        mimeType: String?,
+        result: MethodChannel.Result,
+    ) {
+        try {
+            val file = requireExistingFile(path)
+            val uri = fileUri(file)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = mimeType ?: "application/octet-stream"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TITLE, fileName ?: file.name)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Share report"))
+            result.success(null)
+        } catch (error: Exception) {
+            result.error("share_file_failed", error.message, null)
+        }
+    }
+
+    private fun saveFileAs(
+        path: String?,
+        fileName: String?,
+        mimeType: String?,
+        result: MethodChannel.Result,
+    ) {
+        try {
+            requireExistingFile(path)
+            if (pendingSaveResult != null) {
+                result.error("save_in_progress", "A save operation is already in progress.", null)
+                return
+            }
+            pendingSaveSourcePath = path
+            pendingSaveResult = result
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = mimeType ?: "application/octet-stream"
+                putExtra(Intent.EXTRA_TITLE, fileName ?: "warehouse_report.xlsx")
+            }
+            startActivityForResult(intent, saveFileRequestCode)
+        } catch (error: Exception) {
+            pendingSaveSourcePath = null
+            pendingSaveResult = null
+            result.error("save_file_failed", error.message, null)
+        }
+    }
+
+    private fun completeSaveFile(resultCode: Int, data: Intent?) {
+        val result = pendingSaveResult ?: return
+        val sourcePath = pendingSaveSourcePath
+        pendingSaveResult = null
+        pendingSaveSourcePath = null
+
+        if (resultCode != Activity.RESULT_OK) {
+            result.success(false)
+            return
+        }
+
+        val destination = data?.data
+        if (sourcePath.isNullOrBlank() || destination == null) {
+            result.error("save_file_failed", "Destination file was not selected.", null)
+            return
+        }
+
+        try {
+            contentResolver.openOutputStream(destination)?.use { output ->
+                FileInputStream(File(sourcePath)).use { input ->
+                    input.copyTo(output)
+                }
+            } ?: throw IOException("Could not open destination file.")
+            result.success(true)
+        } catch (error: Exception) {
+            result.error("save_file_failed", error.message, null)
+        }
+    }
+
+    private fun requireExistingFile(path: String?): File {
+        if (path.isNullOrBlank()) {
+            throw IllegalArgumentException("File path is required.")
+        }
+        val file = File(path)
+        if (!file.exists()) {
+            throw IllegalArgumentException("File does not exist.")
+        }
+        return file
     }
 
     @SuppressLint("MissingPermission")

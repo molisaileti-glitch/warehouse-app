@@ -101,7 +101,7 @@ class FarmerDependantModel {
       email: _nullableString(json['email']),
       createdAt: _date(json['createdAt']),
       updatedAt: _date(json['updatedAt']),
-      syncStatus: 'synced', // pulled from server
+      syncStatus: _string(json['syncStatus'], fallback: 'synced'),
     );
   }
 
@@ -135,7 +135,10 @@ class FarmerDependantModel {
     return DateTime.tryParse(value?.toString() ?? '');
   }
 
-  static String _string(Object? value) => value?.toString() ?? '';
+  static String _string(Object? value, {String fallback = ''}) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? fallback : text;
+  }
 
   static String? _nullableString(Object? value) {
     final text = value?.toString().trim();

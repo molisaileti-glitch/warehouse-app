@@ -28,6 +28,7 @@ import 'package:warehouse_app/features/farmer/data/daos/farmer_dao.dart';
 import 'package:warehouse_app/features/farmer/data/tables/farmer_tables.dart';
 import 'package:warehouse_app/features/harvest/data/daos/harvest_dao.dart';
 import 'package:warehouse_app/features/harvest/data/tables/harvest_tables.dart';
+import 'package:warehouse_app/features/warehouse_reports/data/tables/warehouse_report_cache_tables.dart';
 
 import 'tables/app_tables.dart';
 import 'daos/inventory_dao.dart';
@@ -132,7 +133,7 @@ class AppDatabase extends _$AppDatabase {
   // ── Schema version ───────────────────────────────────────────────────────
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   // ── Migrations ───────────────────────────────────────────────────────────
 
@@ -145,6 +146,10 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(createCachedStockBagsSql);
         await customStatement(createCachedStockBagsLookupIndexSql);
         await customStatement(createCachedStockBagsTagIndexSql);
+        await customStatement(createWarehouseReportActivitiesSql);
+        await customStatement(createWarehouseReportBagsSql);
+        await customStatement(createWarehouseReportActivitiesLookupIndexSql);
+        await customStatement(createWarehouseReportBagsActivityIndexSql);
       },
       onUpgrade: (m, from, to) async {
         // v1 → v2: create the four location reference-data tables.
@@ -273,6 +278,15 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(createCachedStockBagsLookupIndexSql);
           await customStatement(createCachedStockBagsTagIndexSql);
         }
+
+        // v14 -> v15: local synced report cache. Report screens read this
+        // cache so the app stays offline-first after sync succeeds.
+        if (from < 15) {
+          await customStatement(createWarehouseReportActivitiesSql);
+          await customStatement(createWarehouseReportBagsSql);
+          await customStatement(createWarehouseReportActivitiesLookupIndexSql);
+          await customStatement(createWarehouseReportBagsActivityIndexSql);
+        }
       },
       beforeOpen: (details) async {
         // Enable WAL mode for better concurrent read/write performance.
@@ -295,6 +309,8 @@ class AppDatabase extends _$AppDatabase {
       await delete(warehouseStockAdjustments).go();
       await delete(warehouseStockCounts).go();
       await delete(warehouseDispatches).go();
+      await customStatement('DELETE FROM $warehouseReportBagsTable');
+      await customStatement('DELETE FROM $warehouseReportActivitiesTable');
       await customStatement('DELETE FROM $cachedStockBagsTableName');
       await delete(warehouseInventoryItems).go();
       await delete(farmerHarvestBags).go();

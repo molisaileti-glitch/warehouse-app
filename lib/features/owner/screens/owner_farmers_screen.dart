@@ -192,14 +192,7 @@ class _FarmerTile extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _FarmerStatusBadge(status: farmer.status),
-              const SizedBox(height: 6),
-              SyncStatusBadge(status: farmer.syncStatus),
-            ],
-          ),
+          SyncStatusBadge(status: farmer.syncStatus),
         ],
       ),
     );
@@ -211,33 +204,4 @@ String? _farmerIdLine(String idType, String idNumber) {
   final number = idNumber.trim();
   if (type.isEmpty || number.isEmpty) return null;
   return '$type: $number';
-}
-
-class _FarmerStatusBadge extends StatelessWidget {
-  final String status;
-
-  const _FarmerStatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final active = status.trim().toLowerCase() == 'active';
-    final color = active ? AppColors.success : AppColors.textMuted;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Text(
-        active ? l10n.active : status,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
 }

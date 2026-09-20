@@ -11,6 +11,8 @@ import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/utils/uuid_helper.dart';
 import 'package:warehouse_app/features/additional.data/crop/presentation/providers/crop_providers.dart';
+import 'package:warehouse_app/features/warehouse_reports/data/repositories/dio_warehouse_report_repository.dart';
+import 'package:warehouse_app/features/warehouse_reports/domain/repositories/warehouse_report_repository.dart';
 
 void main() {
   late AppDatabase db;
@@ -552,6 +554,64 @@ void main() {
 
       expect(counts.last, equals(1));
       await sub.cancel();
+    });
+  });
+
+  group('WarehouseOperationsDao report cache', () {
+    test('normalizes nested values before report SQL binding', () async {
+      final activityAt = DateTime.utc(2026, 9, 20, 9, 30);
+
+      await db.warehouseOperationsDao.cacheWarehouseReportActivity(
+        activity: <String, Object?>{
+          'uuid': 'activity-1',
+          'activityType': 'RECEIVING',
+          'warehouseId': 'warehouse-1',
+          'collectionCenterUuid': 'center-1',
+          'collectionCenterName': <String, Object?>{'name': 'Main Center'},
+          'crop': <String, Object?>{'id': 4, 'name': 'MAIZE'},
+          'cropName': <String, Object?>{'name': 'MAIZE'},
+          'totalBags': '1',
+          'totalGrossWeight': '82.5',
+          'totalNetWeight': <String, Object?>{'value': '80.5'},
+          'workerId': <String, Object?>{'id': '7'},
+          'workerName': <String, Object?>{'fullName': 'Asha Worker'},
+          'activityAt': activityAt,
+          'farmerName': <String, Object?>{'name': 'Farmer One'},
+          'receiptNumber': 'RCPT-1',
+        },
+        bags: <Map<String, Object?>>[
+          <String, Object?>{
+            'stockBagUuid': <String, Object?>{'uuid': 'bag-1'},
+            'tagNumber': <String, Object?>{'value': 'TAG-1'},
+            'grossWeight': '82.5',
+            'packagingWeight': '2',
+            'netWeight': <String, Object?>{'value': '80.5'},
+            'previousNetWeight': <String, Object?>{'value': '79.0'},
+            'netWeightDifference': <String, Object?>{'value': '1.5'},
+            'moistureContent': '10.2',
+          },
+        ],
+      );
+
+      final repo = LocalWarehouseReportRepository(database: db);
+      final records = await repo.fetchActivity(
+        WarehouseActivityReportQuery(
+          collectionCenterUuid: 'center-1',
+          fromDate: activityAt,
+          toDate: activityAt,
+        ),
+      );
+
+      expect(records, hasLength(1));
+      expect(records.single.collectionCenterName, 'Main Center');
+      expect(records.single.crop, 4);
+      expect(records.single.cropName, 'MAIZE');
+      expect(records.single.workerId, 7);
+      expect(records.single.workerName, 'Asha Worker');
+      expect(records.single.totalNetWeight, 80.5);
+      expect(records.single.bags.single.stockBagUuid, 'bag-1');
+      expect(records.single.bags.single.tagNumber, 'TAG-1');
+      expect(records.single.bags.single.netWeightDifference, 1.5);
     });
   });
 

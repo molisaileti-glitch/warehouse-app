@@ -44,7 +44,7 @@ class Farmers extends Table {
   // 'synced'   — confirmed on the server
   // 'conflict' — push was rejected by the server
   TextColumn get syncStatus =>
-      text().withDefault(const Constant('synced'))();
+      text().withDefault(const Constant('pending'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -71,7 +71,7 @@ class FarmerDependants extends Table {
   // 'pending'  — created locally, not yet pushed
   // 'synced'   — confirmed on the server
   TextColumn get syncStatus =>
-      text().withDefault(const Constant('synced'))();
+      text().withDefault(const Constant('pending'))();
 
   @override
   Set<Column> get primaryKey => {id};

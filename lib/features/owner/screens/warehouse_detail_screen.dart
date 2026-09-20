@@ -269,24 +269,6 @@ class WarehouseDetailScreen extends ConsumerWidget {
                                           fontSize: 11)),
                                 ],
                               )),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: w.isActive
-                                      ? AppColors.success.withValues(alpha: 0.1)
-                                      : AppColors.textMuted
-                                          .withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                    w.isActive ? l10n.active : l10n.inactive,
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: w.isActive
-                                            ? AppColors.success
-                                            : AppColors.textMuted)),
-                              ),
                             ]),
                           );
                         },

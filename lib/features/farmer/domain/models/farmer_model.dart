@@ -182,6 +182,7 @@ class FarmerModel {
     int? localId,
     int? serverId,
     String? uuidOverride,
+    String syncStatus = 'synced',
   }) {
     return FarmersCompanion.insert(
       id: Value(localId ?? id),
@@ -215,6 +216,7 @@ class FarmerModel {
       noOfShares: Value(noOfShares),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
     );
   }
 

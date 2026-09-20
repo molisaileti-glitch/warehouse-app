@@ -106,7 +106,6 @@ class _WorkerTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     final warehouseAsync = user.warehouseId != null
         ? ref.watch(warehouseByIdProvider(user.warehouseId!))
         : const AsyncValue.data(null);
@@ -152,32 +151,7 @@ class _WorkerTile extends ConsumerWidget {
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: user.isActive
-                      ? AppColors.success.withValues(alpha: 0.1)
-                      : AppColors.textMuted.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  user.isActive ? l10n.active : l10n.inactive,
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: user.isActive
-                          ? AppColors.success
-                          : AppColors.textMuted),
-                ),
-              ),
-              const SizedBox(height: 6),
-              SyncStatusBadge(status: user.syncStatus),
-            ],
-          ),
+          SyncStatusBadge(status: user.syncStatus),
           const SizedBox(width: 8),
           const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
         ],

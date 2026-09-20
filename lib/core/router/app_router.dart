@@ -28,6 +28,7 @@ import '../../features/owner/screens/amcos_form_screen.dart';
 import '../../features/worker/presentation/screens/worker_shell.dart';
 import '../../features/worker/presentation/screens/worker_dashboard_screen.dart';
 import '../../features/worker/presentation/screens/inventory_item_screen.dart';
+import '../../features/warehouse_reports/presentation/screens/warehouse_report_screen.dart';
 import '../../features/warehouse_operations/presentation/screens/warehouse_inventory_screen.dart';
 import '../../features/harvest/presentation/screens/harvest_connect_scale_screen.dart';
 import '../../features/harvest/presentation/screens/harvest_farmer_details_screen.dart';
@@ -72,6 +73,7 @@ class AppRoutes {
   static const ownerPendingSyncs = '/owner/pending-syncs';
   static const ownerAmcos = '/owner/amcos';
   static const ownerAmcosCreate = '/owner/amcos/new';
+  static const ownerReports = '/owner/reports';
 
   // Worker
   static const workerDashboard = '/worker';
@@ -92,6 +94,8 @@ class AppRoutes {
   static const workerFarmerRegistration = '/worker/farmers/new';
   static const workerFarmerDetail = '/worker/farmers/:id';
   static const workerPendingSyncs = '/worker/pending-syncs';
+  static const workerReports = '/worker/reports';
+  static const workerSettings = '/worker/settings';
 
   static String workerInventoryFor(String warehouseId) =>
       '/worker/inventory/$warehouseId';
@@ -355,6 +359,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               path: AppRoutes.ownerAmcosCreate,
               builder: (_, __) => const AmcosFormScreen()),
           GoRoute(
+            path: AppRoutes.ownerReports,
+            builder: (_, __) => const WarehouseReportScreen(ownerFlow: true),
+          ),
+          GoRoute(
               path: AppRoutes.ownerSettings,
               builder: (_, __) => const SettingsScreen()),
         ],
@@ -455,6 +463,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.workerPendingSyncs,
             builder: (_, __) => const PendingSyncsScreen(workerFlow: true),
+          ),
+          GoRoute(
+            path: AppRoutes.workerReports,
+            builder: (_, __) => const WarehouseReportScreen(ownerFlow: false),
+          ),
+          GoRoute(
+            path: AppRoutes.workerSettings,
+            builder: (_, __) => const SettingsScreen(),
           ),
         ],
       ),

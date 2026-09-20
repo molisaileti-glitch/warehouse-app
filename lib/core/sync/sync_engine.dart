@@ -260,9 +260,13 @@ class SyncManager {
 
   Future<void> _markStockBagMutationSynced(SyncQueueData entry) async {
     if (entry.entityType != 'dispatches') return;
+    final stockBagUuids = _stockBagUuidsFromQueuedPayload(entry.payload);
     await _warehouseOperationsDao.markCachedStockBags(
-      uuids: _stockBagUuidsFromQueuedPayload(entry.payload),
+      uuids: stockBagUuids,
       status: 'DISPATCHED',
+    );
+    await _warehouseOperationsDao.refreshInventorySummariesForCachedStockBags(
+      uuids: stockBagUuids,
     );
   }
 
@@ -302,6 +306,7 @@ class SyncManager {
 
   Future<void> _pushEntry(SyncQueueData entry) async {
     final payload = jsonDecode(entry.payload) as Map<String, dynamic>;
+    final originalPayload = _asMap(jsonDecode(entry.payload));
     if (entry.entityType == 'amcos' && entry.operation == 'create') {
       _normalizeAmcosCreatePayload(payload);
       developer.log(
@@ -411,6 +416,7 @@ class SyncManager {
             'response=${response.data}',
             name: 'sync.harvest',
           );
+          await _cacheHarvestReportActivity(entry.entityId);
         } else if (entry.entityType == 'farmers') {
           await _applyFarmerCreateResponse(
             uuid: entry.entityId,
@@ -428,6 +434,11 @@ class SyncManager {
             'uuid=${entry.entityId} payload=${_logPreview(payload)} '
             'response=${_logPreview(response.data)}',
             name: 'sync.warehouse.operation',
+          );
+          await _cacheWarehouseOperationReportActivity(
+            entityType: entry.entityType,
+            entityId: entry.entityId,
+            originalPayload: originalPayload,
           );
         }
         break;
@@ -968,6 +979,145 @@ class SyncManager {
       'stockAdjustments' => 'Stock adjustment',
       _ => 'Record',
     };
+  }
+
+  Future<void> _cacheHarvestReportActivity(String harvestUuid) async {
+    final harvest = await _harvestDao.getHarvestByUuid(harvestUuid);
+    if (harvest == null) return;
+    final warehouse = await _warehouseDao.getWarehouseById(harvest.warehouseId);
+    final bags = await _harvestDao.getBagsForHarvest(harvestUuid);
+
+    await _warehouseOperationsDao.cacheWarehouseReportActivity(
+      activity: {
+        'uuid': harvest.uuid,
+        'activityType': 'RECEIVING',
+        'warehouseId': harvest.warehouseId,
+        'collectionCenterUuid': warehouse?.uuid ?? harvest.warehouseId,
+        'collectionCenterName': harvest.collectionCenterName,
+        'crop': harvest.crop,
+        'cropName': harvest.cropName,
+        'totalBags': bags.isNotEmpty ? bags.length : 1,
+        'totalGrossWeight': harvest.grossWeight,
+        'totalNetWeight': harvest.netWeight,
+        'workerId': harvest.receivedBy,
+        'workerName': harvest.receivedByName ?? '',
+        'activityAt': harvest.receivedAt,
+        'farmerName': harvest.farmerName,
+        'farmerPhoneNumber': harvest.farmerPhoneNumber,
+        'receiptNumber': harvest.receiptNumber,
+      },
+      bags: [
+        for (final bag in bags)
+          {
+            'stockBagUuid': bag.id,
+            'tagNumber': bag.tag,
+            'grossWeight': bag.grossWeight,
+            'packagingWeight': bag.packagingWeight,
+            'netWeight': bag.netWeight,
+            'moistureContent': bag.moistureContent,
+          },
+      ],
+    );
+  }
+
+  Future<void> _cacheWarehouseOperationReportActivity({
+    required String entityType,
+    required String entityId,
+    required Map<String, dynamic> originalPayload,
+  }) async {
+    if (entityType == 'dispatches') {
+      final dispatch =
+          await _warehouseOperationsDao.getDispatchByUuid(entityId);
+      if (dispatch == null) return;
+      await _warehouseOperationsDao.cacheWarehouseReportActivity(
+        activity: {
+          'uuid': dispatch.uuid,
+          'activityType': 'DISPATCH',
+          'warehouseId': dispatch.warehouseId,
+          'collectionCenterUuid': dispatch.collectionCenterUuid,
+          'collectionCenterName':
+              dispatch.collectionCenterName ?? dispatch.collectionCenterUuid,
+          'crop': dispatch.crop,
+          'cropName': dispatch.cropName,
+          'totalBags': dispatch.totalBags,
+          'totalGrossWeight': dispatch.totalGrossWeight,
+          'totalNetWeight': dispatch.totalNetWeight,
+          'workerId': dispatch.dispatchedBy,
+          'workerName': dispatch.dispatchedByName ?? '',
+          'activityAt': dispatch.dispatchedAt,
+          'recipientType': dispatch.recipientType,
+          'recipientName': dispatch.recipientName,
+          'recipientPhone': dispatch.recipientPhone,
+        },
+        bags: _reportBagsFromPayload(originalPayload['bags']),
+      );
+      return;
+    }
+
+    if (entityType == 'stockAdjustments') {
+      final adjustment =
+          await _warehouseOperationsDao.getStockAdjustmentByUuid(entityId);
+      if (adjustment == null) return;
+      final changeSign =
+          adjustment.adjustmentType.toUpperCase() == 'DECREASE' ? -1 : 1;
+      await _warehouseOperationsDao.cacheWarehouseReportActivity(
+        activity: {
+          'uuid': adjustment.uuid,
+          'activityType': 'STOCK_ADJUSTMENT',
+          'warehouseId': adjustment.warehouseId,
+          'collectionCenterUuid': adjustment.collectionCenterUuid,
+          'collectionCenterName':
+              adjustment.collectionCenterName ?? adjustment.collectionCenterUuid,
+          'crop': adjustment.crop,
+          'cropName': adjustment.cropName,
+          'totalBags': adjustment.bags,
+          'totalGrossWeight': adjustment.grossWeight,
+          'totalNetWeight': adjustment.netWeight,
+          'workerId': adjustment.adjustedBy,
+          'workerName': adjustment.adjustedByName ?? '',
+          'activityAt': adjustment.adjustedAt,
+          'adjustmentType': adjustment.adjustmentType,
+          'reason': adjustment.reason,
+          'netWeightChange': changeSign * adjustment.netWeight,
+        },
+        bags: _reportBagsFromPayload(
+          _hasNonEmptyList(originalPayload['bags'])
+              ? originalPayload['bags']
+              : originalPayload['newBags'],
+          netWeightChangeSign: changeSign,
+        ),
+      );
+    }
+  }
+
+  List<Map<String, Object?>> _reportBagsFromPayload(
+    Object? value, {
+    int netWeightChangeSign = 1,
+  }) {
+    if (value is! List) return const <Map<String, Object?>>[];
+    return value.whereType<Map>().map((raw) {
+      final bag = _asMap(raw);
+      final grossWeight = _double(
+        bag['measuredGrossWeight'] ?? bag['grossWeight'],
+      );
+      final packagingWeight = _double(
+        bag['measuredPackagingWeight'] ?? bag['packagingWeight'],
+      );
+      final netWeight = _double(bag['measuredNetWeight'] ?? bag['netWeight']);
+      final diff = bag['netWeightDifference'] == null
+          ? null
+          : _double(bag['netWeightDifference']);
+      return <String, Object?>{
+        'stockBagUuid': bag['stockBagUuid'] ?? bag['uuid'] ?? '',
+        'tagNumber': bag['tagNumber'] ?? '',
+        'grossWeight': grossWeight,
+        'packagingWeight': packagingWeight,
+        'netWeight': netWeight,
+        'previousNetWeight': bag['previousNetWeight'],
+        'netWeightDifference': diff ?? (netWeightChangeSign * netWeight),
+        'moistureContent': _double(bag['moistureContent']),
+      };
+    }).toList();
   }
 
   List<Map<String, dynamic>> _asList(Object? value) {
