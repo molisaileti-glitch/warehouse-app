@@ -1483,10 +1483,10 @@ class AppLocalizationsSw extends AppLocalizations {
   String get selectSecondaryCrop => 'Chagua zao la pili';
 
   @override
-  String get amcos => 'AMCOS';
+  String get amcos => 'Shirika';
 
   @override
-  String get selectAmcos => 'Chagua AMCOS';
+  String get selectAmcos => 'Chagua shirika';
 
   @override
   String get memberType => 'Aina ya mwanachama';
@@ -1495,7 +1495,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get maritalStatus => 'Hali ya ndoa';
 
   @override
-  String get amcosMemberId => 'Namba ya mwanachama wa AMCOS';
+  String get amcosMemberId => 'Namba ya mwanachama wa shirika';
 
   @override
   String get tumeNumber => 'Namba ya TUME';
@@ -1934,10 +1934,10 @@ class AppLocalizationsSw extends AppLocalizations {
   String get editWarehouse => 'Hariri Ghala';
 
   @override
-  String get amcosId => 'Namba ya AMCOS';
+  String get amcosId => 'Namba ya shirika';
 
   @override
-  String get amcosName => 'Jina la AMCOS';
+  String get amcosName => 'Jina la shirika';
 
   @override
   String get villageId => 'Namba ya kijiji';
@@ -1984,7 +1984,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get amcosDerivedFromWarehouse =>
-      'AMCOS inapatikana kiotomatiki kutoka kwenye chaguo hili';
+      'Shirika linapatikana kiotomatiki kutoka kwenye chaguo hili';
 
   @override
   String get createWorkerAccount => 'Unda Akaunti ya Mfanyakazi';
@@ -2011,7 +2011,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String warehouseMissingAmcos(String warehouse) {
-    return '$warehouse halina AMCOS. Tafadhali chagua ghala tofauti.';
+    return '$warehouse halina shirika. Tafadhali chagua ghala tofauti.';
   }
 
   @override
@@ -2039,7 +2039,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get workerCreatedSuccess => 'Mfanyakazi ameundwa kikamilifu.';
 
   @override
-  String get mcu => 'MCU';
+  String get mcu => 'Mmiliki';
 
   @override
   String get loading => 'Inapakia...';
@@ -2453,7 +2453,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get workerMcuUnavailable =>
-      'Imeshindwa kupata MCU ya mfanyakazi huyu. Sawazisha wasifu wako au wasiliana na mmiliki.';
+      'Imeshindwa kupata mmiliki wa mfanyakazi huyu. Sawazisha wasifu wako au wasiliana na mmiliki.';
 
   @override
   String get creatingFarmer => 'Inaunda Mkulima';
@@ -2548,39 +2548,40 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get errorMissingMcuAssignment =>
-      'Akaunti yako haijaunganishwa na MCU. Tafadhali wasiliana na msimamizi.';
+      'Akaunti yako haijaunganishwa na mmiliki. Tafadhali wasiliana na msimamizi.';
 
   @override
-  String get amcosManagement => 'AMCOS';
+  String get amcosManagement => 'Mashirika';
 
   @override
-  String get addAmcos => 'Ongeza AMCOS';
+  String get addAmcos => 'Ongeza shirika';
 
   @override
-  String get noAmcosFound => 'Hakuna AMCOS iliyopatikana';
+  String get noAmcosFound => 'Hakuna shirika lililopatikana';
 
   @override
-  String get createFirstAmcos => 'Bonyeza + kuunda AMCOS ya kwanza ya MCU hii.';
+  String get createFirstAmcos =>
+      'Bonyeza + kuunda shirika la kwanza la mmiliki huyu.';
 
   @override
-  String get createAmcos => 'Unda AMCOS';
+  String get createAmcos => 'Unda shirika';
 
   @override
   String createAmcosConfirm(String name) {
-    return 'Unda $name chini ya MCU yako?';
+    return 'Unda $name chini ya akaunti ya mmiliki wako?';
   }
 
   @override
-  String get creatingAmcos => 'Inaunda AMCOS';
+  String get creatingAmcos => 'Inaunda shirika';
 
   @override
-  String get savingAmcos => 'Inahifadhi maelezo ya AMCOS.';
+  String get savingAmcos => 'Inahifadhi maelezo ya shirika.';
 
   @override
-  String get amcosCreated => 'AMCOS Imeundwa';
+  String get amcosCreated => 'Shirika Limeundwa';
 
   @override
-  String get amcosCreatedSuccess => 'AMCOS imeundwa kikamilifu.';
+  String get amcosCreatedSuccess => 'Shirika limeundwa kikamilifu.';
 
   @override
   String get memberCategory => 'Aina ya wanachama';

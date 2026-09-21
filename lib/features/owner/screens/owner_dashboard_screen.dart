@@ -12,7 +12,6 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/sync/sync_engine.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
-import 'package:warehouse_app/features/warehouse_operations/presentation/providers/warehouse_operations_providers.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 

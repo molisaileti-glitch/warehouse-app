@@ -557,7 +557,7 @@ class SyncManager {
     final data = _asMap(responseData);
     final serverId = _int(data['id']);
     if (serverId == null || serverId <= 0) {
-      throw StateError('AMCOS create response has no server ID.');
+      throw StateError('Organization create response has no server ID.');
     }
     await _amcosDao.markAmcosSynced(uuid, serverId: serverId);
     developer.log(
@@ -659,7 +659,7 @@ class SyncManager {
     final amcos = await _amcosDao.getAmcosById(amcosId);
     final serverId = amcosId < 0 ? amcos?.serverId : amcos?.serverId ?? amcosId;
     if (serverId == null || serverId <= 0) {
-      throw StateError('AMCOS (id=$amcosId) has not been synced yet.');
+      throw StateError('Organization (id=$amcosId) has not been synced yet.');
     }
     payload['amcos'] = serverId;
     if (payload.containsKey('amcosId')) payload['amcosId'] = serverId;
@@ -973,7 +973,7 @@ class SyncManager {
       'farmerDependants' => 'Farmer dependant',
       'farmerHarvests' => 'Harvest',
       'warehouses' => 'Warehouse',
-      'amcos' => 'AMCOS',
+      'amcos' => 'Organization',
       'dispatches' => 'Dispatch',
       'stockCounts' => 'Stock count',
       'stockAdjustments' => 'Stock adjustment',
@@ -1066,8 +1066,8 @@ class SyncManager {
           'activityType': 'STOCK_ADJUSTMENT',
           'warehouseId': adjustment.warehouseId,
           'collectionCenterUuid': adjustment.collectionCenterUuid,
-          'collectionCenterName':
-              adjustment.collectionCenterName ?? adjustment.collectionCenterUuid,
+          'collectionCenterName': adjustment.collectionCenterName ??
+              adjustment.collectionCenterUuid,
           'crop': adjustment.crop,
           'cropName': adjustment.cropName,
           'totalBags': adjustment.bags,
@@ -1335,9 +1335,11 @@ class SyncManager {
         measuredAt: payload['adjustedAt']?.toString(),
       );
 
-      final adjustmentType = payload['adjustmentType']?.toString().toUpperCase();
+      final adjustmentType =
+          payload['adjustmentType']?.toString().toUpperCase();
       if (adjustmentType == 'INCREASE') {
-        final adjustsExistingStockBags = _measuredBagsHaveStockBagUuids(payload);
+        final adjustsExistingStockBags =
+            _measuredBagsHaveStockBagUuids(payload);
         if (adjustsExistingStockBags) {
           payload.remove('newBags');
         } else if (!_hasNonEmptyList(payload['newBags'])) {
@@ -1712,7 +1714,7 @@ class WorkerSyncStrategy implements SyncRoleStrategy {
               warehouseId: warehouseId,
             );
       } else if (candidates.isEmpty) {
-        throw StateError('No warehouse found for this worker AMCOS.');
+        throw StateError('No warehouse found for this worker organization.');
       } else {
         throw StateError('Select a warehouse before syncing.');
       }
@@ -1768,7 +1770,7 @@ class WorkerSyncStrategy implements SyncRoleStrategy {
 Future<int> _requireCurrentUserMcu(Ref ref) async {
   final mcuId = await ref.read(currentUserMcuProvider.future);
   if (mcuId == null) {
-    throw StateError('The signed-in user has no MCU assignment.');
+    throw StateError('The signed-in user has no owner assignment.');
   }
   return mcuId;
 }

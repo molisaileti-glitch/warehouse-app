@@ -187,10 +187,10 @@ class OwnerWorkerDetailScreen extends ConsumerWidget {
     return async.maybeWhen(
       data: (amcos) {
         final name = amcos?.name.trim();
-        return name == null || name.isEmpty ? 'AMCOS #$id' : name;
+        return name == null || name.isEmpty ? '${l10n.amcos} #$id' : name;
       },
       loading: () => l10n.loading,
-      orElse: () => 'AMCOS #$id',
+      orElse: () => '${l10n.amcos} #$id',
     );
   }
 

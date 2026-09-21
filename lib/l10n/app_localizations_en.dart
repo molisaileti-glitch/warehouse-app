@@ -1475,10 +1475,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectSecondaryCrop => 'Select secondary crop';
 
   @override
-  String get amcos => 'AMCOS';
+  String get amcos => 'Organization';
 
   @override
-  String get selectAmcos => 'Select AMCOS';
+  String get selectAmcos => 'Select organization';
 
   @override
   String get memberType => 'Member type';
@@ -1487,7 +1487,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get maritalStatus => 'Marital status';
 
   @override
-  String get amcosMemberId => 'AMCOS member ID';
+  String get amcosMemberId => 'Organization member ID';
 
   @override
   String get tumeNumber => 'TUME number';
@@ -1922,10 +1922,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editWarehouse => 'Edit Warehouse';
 
   @override
-  String get amcosId => 'AMCOS ID';
+  String get amcosId => 'Organization ID';
 
   @override
-  String get amcosName => 'AMCOS name';
+  String get amcosName => 'Organization name';
 
   @override
   String get villageId => 'Village ID';
@@ -1971,7 +1971,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get amcosDerivedFromWarehouse =>
-      'AMCOS is derived automatically from this selection';
+      'Organization is derived automatically from this selection';
 
   @override
   String get createWorkerAccount => 'Create Worker Account';
@@ -1998,7 +1998,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String warehouseMissingAmcos(String warehouse) {
-    return '$warehouse has no AMCOS assigned. Please select a different warehouse.';
+    return '$warehouse has no organization assigned. Please select a different warehouse.';
   }
 
   @override
@@ -2026,7 +2026,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workerCreatedSuccess => 'Worker successfully created.';
 
   @override
-  String get mcu => 'MCU';
+  String get mcu => 'Owner';
 
   @override
   String get loading => 'Loading...';
@@ -2437,7 +2437,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workerMcuUnavailable =>
-      'Could not determine MCU for this worker. Please sync your profile or contact the owner.';
+      'Could not determine owner for this worker. Please sync your profile or contact the owner.';
 
   @override
   String get creatingFarmer => 'Creating Farmer';
@@ -2529,40 +2529,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorMissingMcuAssignment =>
-      'Your account has no MCU assignment. Please contact the administrator.';
+      'Your account has no owner assignment. Please contact the administrator.';
 
   @override
-  String get amcosManagement => 'AMCOS';
+  String get amcosManagement => 'Organizations';
 
   @override
-  String get addAmcos => 'Add AMCOS';
+  String get addAmcos => 'Add organization';
 
   @override
-  String get noAmcosFound => 'No AMCOS found';
+  String get noAmcosFound => 'No organizations found';
 
   @override
   String get createFirstAmcos =>
-      'Tap + to create the first AMCOS for this MCU.';
+      'Tap + to create the first organization for this owner.';
 
   @override
-  String get createAmcos => 'Create AMCOS';
+  String get createAmcos => 'Create organization';
 
   @override
   String createAmcosConfirm(String name) {
-    return 'Create $name under your MCU?';
+    return 'Create $name under your owner account?';
   }
 
   @override
-  String get creatingAmcos => 'Creating AMCOS';
+  String get creatingAmcos => 'Creating organization';
 
   @override
-  String get savingAmcos => 'Saving the AMCOS details.';
+  String get savingAmcos => 'Saving the organization details.';
 
   @override
-  String get amcosCreated => 'AMCOS Created';
+  String get amcosCreated => 'Organization Created';
 
   @override
-  String get amcosCreatedSuccess => 'AMCOS successfully created.';
+  String get amcosCreatedSuccess => 'Organization successfully created.';
 
   @override
   String get memberCategory => 'Member category';

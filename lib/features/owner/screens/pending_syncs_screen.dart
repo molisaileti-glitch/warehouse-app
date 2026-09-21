@@ -160,7 +160,7 @@ _SyncDetails _syncDetails(SyncQueueData entry, AppLocalizations l10n) {
 
   return switch (entry.entityType) {
     'amcos' => _SyncDetails(
-        title: l10n.operationRecord(operation, 'AMCOS'),
+        title: l10n.operationRecord(operation, l10n.amcos),
         subtitle: _stringValue(payload, 'name') ?? entry.entityId,
         icon: Icons.groups_2_rounded,
         color: AppColors.info,

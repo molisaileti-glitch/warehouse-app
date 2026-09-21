@@ -300,7 +300,7 @@ class DriftWarehouseRepository implements WarehouseRepository {
   Future<int> _requireMcuId() async {
     final mcuId = await _currentMcuId();
     if (mcuId == null) {
-      throw StateError('The signed-in user has no MCU assignment');
+      throw StateError('The signed-in user has no owner assignment');
     }
     return mcuId;
   }

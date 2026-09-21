@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/components/input_field.dart';
@@ -23,6 +24,10 @@ class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   static const String _appVersion = '1.0.0+1';
+  static const String _privacyPolicyUrl =
+      'https://sites.google.com/view/warehousing-privacy/privacy';
+  static const MethodChannel _browserChannel =
+      MethodChannel('warehouse_app.platform/browser');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,6 +82,12 @@ class SettingsScreen extends ConsumerWidget {
               title: l10n.language,
               subtitle: _languageLabel(lang, l10n),
               onTap: () => _showLanguageSheet(context, ref),
+            ),
+            _SettingsRow(
+              icon: Icons.privacy_tip_outlined,
+              title: _privacyPolicyLabel(context),
+              subtitle: _privacyPolicyUrl,
+              onTap: () => _openPrivacyPolicy(context),
             ),
             _SettingsRow(
               icon: Icons.logout_rounded,
@@ -138,6 +149,11 @@ class SettingsScreen extends ConsumerWidget {
     };
   }
 
+  String _privacyPolicyLabel(BuildContext context) {
+    final isSw = Localizations.localeOf(context).languageCode == 'sw';
+    return isSw ? 'Sera ya Faragha' : 'Privacy Policy';
+  }
+
   String _homeRoute(UserRole? role) {
     return role == UserRole.worker
         ? AppRoutes.workerDashboard
@@ -173,6 +189,19 @@ class SettingsScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    try {
+      await _browserChannel.invokeMethod<void>('openUrl', {
+        'url': _privacyPolicyUrl,
+      });
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(_privacyPolicyUrl)),
+      );
+    }
   }
 
   void _showChangePasswordSheet(BuildContext context, WidgetRef ref) {

@@ -55,7 +55,7 @@ class AmcosRepository {
           trimmedPhoneNumber.isEmpty ||
           cropId == null) {
         return AmcosCreateResult.failure(
-          'AMCOS name, member category, registration number, phone number, and crop are required.',
+          'Organization name, member category, registration number, phone number, and crop are required.',
         );
       }
 
@@ -110,7 +110,7 @@ class AmcosRepository {
         contactPersonTitle: contactPersonTitle.trim(),
         website: website.trim(),
         status: 'ACTIVE',
-        crops: cropId?.toString() ?? '',
+        crops: cropId.toString(),
         idCounter: 0,
       );
 
@@ -198,7 +198,8 @@ class AmcosRepository {
     return AmcosTableCompanion.insert(
       id: Value(_int(json['id'])),
       uuid: Value(_nullableString(json['uuid'])),
-      syncStatus: const Value('synced'), // server-pulled rows are already synced
+      syncStatus:
+          const Value('synced'), // server-pulled rows are already synced
       name: _string(json['name']),
       memberCategory:
           _string(json['memberCategory'] ?? json['member_category']),
@@ -274,17 +275,6 @@ class AmcosRepository {
     final compact = uuid.replaceAll('-', '');
     final value = int.parse(compact.substring(0, 15), radix: 16);
     return value == 0 ? -1 : -value;
-  }
-
-  String _dioMessage(DioException error) {
-    final data = error.response?.data;
-    if (data is Map) {
-      for (final key in const ['detail', 'message', 'error', 'errors']) {
-        final value = data[key];
-        if (value != null) return value.toString();
-      }
-    }
-    return error.message ?? 'Unable to create AMCOS';
   }
 }
 

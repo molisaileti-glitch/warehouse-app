@@ -2761,13 +2761,13 @@ abstract class AppLocalizations {
   /// No description provided for @amcos.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS'**
+  /// **'Organization'**
   String get amcos;
 
   /// No description provided for @selectAmcos.
   ///
   /// In en, this message translates to:
-  /// **'Select AMCOS'**
+  /// **'Select organization'**
   String get selectAmcos;
 
   /// No description provided for @memberType.
@@ -2785,7 +2785,7 @@ abstract class AppLocalizations {
   /// No description provided for @amcosMemberId.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS member ID'**
+  /// **'Organization member ID'**
   String get amcosMemberId;
 
   /// No description provided for @tumeNumber.
@@ -3583,13 +3583,13 @@ abstract class AppLocalizations {
   /// No description provided for @amcosId.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS ID'**
+  /// **'Organization ID'**
   String get amcosId;
 
   /// No description provided for @amcosName.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS name'**
+  /// **'Organization name'**
   String get amcosName;
 
   /// No description provided for @villageId.
@@ -3679,7 +3679,7 @@ abstract class AppLocalizations {
   /// No description provided for @amcosDerivedFromWarehouse.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS is derived automatically from this selection'**
+  /// **'Organization is derived automatically from this selection'**
   String get amcosDerivedFromWarehouse;
 
   /// No description provided for @createWorkerAccount.
@@ -3727,7 +3727,7 @@ abstract class AppLocalizations {
   /// No description provided for @warehouseMissingAmcos.
   ///
   /// In en, this message translates to:
-  /// **'{warehouse} has no AMCOS assigned. Please select a different warehouse.'**
+  /// **'{warehouse} has no organization assigned. Please select a different warehouse.'**
   String warehouseMissingAmcos(String warehouse);
 
   /// No description provided for @ownerIdUnavailable.
@@ -3775,7 +3775,7 @@ abstract class AppLocalizations {
   /// No description provided for @mcu.
   ///
   /// In en, this message translates to:
-  /// **'MCU'**
+  /// **'Owner'**
   String get mcu;
 
   /// No description provided for @loading.
@@ -4483,7 +4483,7 @@ abstract class AppLocalizations {
   /// No description provided for @workerMcuUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Could not determine MCU for this worker. Please sync your profile or contact the owner.'**
+  /// **'Could not determine owner for this worker. Please sync your profile or contact the owner.'**
   String get workerMcuUnavailable;
 
   /// No description provided for @creatingFarmer.
@@ -4639,67 +4639,67 @@ abstract class AppLocalizations {
   /// No description provided for @errorMissingMcuAssignment.
   ///
   /// In en, this message translates to:
-  /// **'Your account has no MCU assignment. Please contact the administrator.'**
+  /// **'Your account has no owner assignment. Please contact the administrator.'**
   String get errorMissingMcuAssignment;
 
   /// No description provided for @amcosManagement.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS'**
+  /// **'Organizations'**
   String get amcosManagement;
 
   /// No description provided for @addAmcos.
   ///
   /// In en, this message translates to:
-  /// **'Add AMCOS'**
+  /// **'Add organization'**
   String get addAmcos;
 
   /// No description provided for @noAmcosFound.
   ///
   /// In en, this message translates to:
-  /// **'No AMCOS found'**
+  /// **'No organizations found'**
   String get noAmcosFound;
 
   /// No description provided for @createFirstAmcos.
   ///
   /// In en, this message translates to:
-  /// **'Tap + to create the first AMCOS for this MCU.'**
+  /// **'Tap + to create the first organization for this owner.'**
   String get createFirstAmcos;
 
   /// No description provided for @createAmcos.
   ///
   /// In en, this message translates to:
-  /// **'Create AMCOS'**
+  /// **'Create organization'**
   String get createAmcos;
 
   /// No description provided for @createAmcosConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Create {name} under your MCU?'**
+  /// **'Create {name} under your owner account?'**
   String createAmcosConfirm(String name);
 
   /// No description provided for @creatingAmcos.
   ///
   /// In en, this message translates to:
-  /// **'Creating AMCOS'**
+  /// **'Creating organization'**
   String get creatingAmcos;
 
   /// No description provided for @savingAmcos.
   ///
   /// In en, this message translates to:
-  /// **'Saving the AMCOS details.'**
+  /// **'Saving the organization details.'**
   String get savingAmcos;
 
   /// No description provided for @amcosCreated.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS Created'**
+  /// **'Organization Created'**
   String get amcosCreated;
 
   /// No description provided for @amcosCreatedSuccess.
   ///
   /// In en, this message translates to:
-  /// **'AMCOS successfully created.'**
+  /// **'Organization successfully created.'**
   String get amcosCreatedSuccess;
 
   /// No description provided for @memberCategory.

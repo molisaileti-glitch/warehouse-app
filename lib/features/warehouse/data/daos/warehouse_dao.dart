@@ -269,7 +269,7 @@ class WarehouseDao extends DatabaseAccessor<AppDatabase>
       await into(amcosTable).insert(
         AmcosTableCompanion(
           id: Value(amcosId),
-          name: Value(_nonEmpty(amcosName) ?? 'AMCOS $amcosId'),
+          name: Value(_nonEmpty(amcosName) ?? 'Organization $amcosId'),
           memberCategory: const Value('FARMERS'),
           registrationNumber: Value(amcosId.toString()),
           tinNumber: const Value(''),
