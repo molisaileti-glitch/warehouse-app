@@ -228,11 +228,10 @@ class AppLocalizationsSw extends AppLocalizations {
   String get signOutConfirmTitle => 'Ondoka';
 
   @override
-  String get signOutConfirmMessageOwner =>
-      'Mabadiliko yanayosubiri yatasawazishwa utakapounganisha tena.';
+  String get signOutConfirmMessageOwner => 'Una uhakika unataka kuondoka?';
 
   @override
-  String get signOutConfirmMessageWorker => 'Utatolewa kwenye akaunti.';
+  String get signOutConfirmMessageWorker => 'Una uhakika unataka kuondoka?';
 
   @override
   String get dashboard => 'Dashibodi';
@@ -1391,7 +1390,25 @@ class AppLocalizationsSw extends AppLocalizations {
   String get loggingOut => 'Inaondoka';
 
   @override
-  String get clearingLocalSession => 'Inafuta kipindi chako cha ndani.';
+  String get clearingLocalSession => 'Inakuondoa kwenye akaunti.';
+
+  @override
+  String get logoutUnsyncedTitle => 'Sawazisha kabla ya kuondoka';
+
+  @override
+  String logoutUnsyncedMessage(int pending, int conflicts) {
+    return 'Kuna rekodi $pending zinazosubiri na rekodi $conflicts zenye mgongano. Zisawazishe kabla ya kuondoka ili kazi ya ndani isipotee.';
+  }
+
+  @override
+  String get syncNow => 'Sawazisha sasa';
+
+  @override
+  String get logoutBlockedTitle => 'Kutoka kumezuiwa';
+
+  @override
+  String get logoutBlockedMessage =>
+      'Baadhi ya rekodi bado hazijasawazishwa. Tafadhali rudia kusawazisha au kagua rekodi zinazosubiri kabla ya kuondoka.';
 
   @override
   String appVersion(String version) {

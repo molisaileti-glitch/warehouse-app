@@ -123,8 +123,8 @@ class AuthInterceptor extends Interceptor {
     if (_isInvalidatingSession) return;
     _isInvalidatingSession = true;
     try {
-      _log('clearing stored session and forcing login');
-      await _storage.clearAll();
+      _log('clearing current session and forcing login');
+      await _storage.clearCurrentSession();
       await _onSessionExpired?.call();
     } finally {
       _isInvalidatingSession = false;

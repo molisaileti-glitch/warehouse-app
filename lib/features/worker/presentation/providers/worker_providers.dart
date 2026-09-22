@@ -19,7 +19,11 @@ final workerRepoProvider = Provider<WorkerRepository>((ref) {
 });
 
 final allWorkersProvider = StreamProvider<List<User>>((ref) {
-  return ref.watch(workerRepoProvider).watchAllWorkers();
+  final mcuId = ref.watch(currentUserMcuProvider).valueOrNull;
+  if (mcuId == null) return const Stream.empty();
+  return ref.watch(workerDaoProvider).watchUsersByMcu(mcuId).map(
+        (users) => users.where((u) => _isWorkerRole(u.role)).toList(),
+      );
 });
 
 final workersByWarehouseProvider =
@@ -30,3 +34,10 @@ final workersByWarehouseProvider =
 final workerByIdProvider = StreamProvider.family<User?, String>((ref, id) {
   return ref.watch(workerRepoProvider).watchWorkerById(id);
 });
+
+bool _isWorkerRole(String role) {
+  final normalized = role.trim().toLowerCase().replaceAll(' ', '_');
+  return normalized == 'worker' ||
+      normalized == 'amcos_user' ||
+      normalized == 'user';
+}

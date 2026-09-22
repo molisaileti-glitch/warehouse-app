@@ -227,11 +227,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOutConfirmTitle => 'Sign Out';
 
   @override
-  String get signOutConfirmMessageOwner =>
-      'Pending changes will sync when you next connect.';
+  String get signOutConfirmMessageOwner => 'Are you sure you want to sign out?';
 
   @override
-  String get signOutConfirmMessageWorker => 'You will be signed out.';
+  String get signOutConfirmMessageWorker =>
+      'Are you sure you want to sign out?';
 
   @override
   String get dashboard => 'Dashboard';
@@ -1384,7 +1384,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loggingOut => 'Logging Out';
 
   @override
-  String get clearingLocalSession => 'Clearing your local session.';
+  String get clearingLocalSession => 'Signing you out.';
+
+  @override
+  String get logoutUnsyncedTitle => 'Sync before logout';
+
+  @override
+  String logoutUnsyncedMessage(int pending, int conflicts) {
+    return 'There are $pending pending record(s) and $conflicts conflict record(s). Sync them before logging out so no local work is lost.';
+  }
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get logoutBlockedTitle => 'Logout blocked';
+
+  @override
+  String get logoutBlockedMessage =>
+      'Some records are still not synced. Please retry sync or review pending records before logging out.';
 
   @override
   String appVersion(String version) {

@@ -11,6 +11,9 @@ class SecureTokenStorage {
   static const _userRoleKey = 'user_role';
   static const _mcuIdKey = 'mcu_id';
   static const _mcuNameKey = 'mcu_name';
+  static const _lastUserIdKey = 'last_user_id';
+  static const _lastUserRoleKey = 'last_user_role';
+  static const _lastMcuIdKey = 'last_mcu_id';
 
   final FlutterSecureStorage _storage;
 
@@ -28,6 +31,13 @@ class SecureTokenStorage {
   Future<String?> getRefreshToken() => _storage.read(key: _refreshKey);
   Future<String?> getUserId() => _storage.read(key: _userIdKey);
   Future<String?> getUserRole() => _storage.read(key: _userRoleKey);
+  Future<String?> getLastUserId() => _storage.read(key: _lastUserIdKey);
+  Future<String?> getLastUserRole() => _storage.read(key: _lastUserRoleKey);
+  Future<int?> getLastMcuId() async {
+    final value = await _storage.read(key: _lastMcuIdKey);
+    return value == null ? null : int.tryParse(value);
+  }
+
   Future<int?> getMcuId() async {
     final value = await _storage.read(key: _mcuIdKey);
     return value == null ? null : int.tryParse(value);
@@ -56,10 +66,16 @@ class SecureTokenStorage {
     await Future.wait([
       _storage.write(key: _userIdKey, value: userId),
       _storage.write(key: _userRoleKey, value: role),
+      _storage.write(key: _lastUserIdKey, value: userId),
+      _storage.write(key: _lastUserRoleKey, value: role),
       if (mcuId == null)
         _storage.delete(key: _mcuIdKey)
       else
         _storage.write(key: _mcuIdKey, value: mcuId.toString()),
+      if (mcuId == null)
+        _storage.delete(key: _lastMcuIdKey)
+      else
+        _storage.write(key: _lastMcuIdKey, value: mcuId.toString()),
       if (mcuName == null || mcuName.isEmpty)
         _storage.delete(key: _mcuNameKey)
       else
@@ -73,6 +89,34 @@ class SecureTokenStorage {
   // ── Clear ─────────────────────────────────────────────────────────────────
 
   Future<void> clearAll() => _storage.deleteAll();
+
+  Future<void> clearCurrentSession() async {
+    final currentUserId = await getUserId();
+    final currentRole = await getUserRole();
+    final currentMcuId = await getMcuId();
+    if (currentUserId != null && currentUserId.isNotEmpty) {
+      await Future.wait([
+        _storage.write(key: _lastUserIdKey, value: currentUserId),
+        if (currentRole == null || currentRole.isEmpty)
+          _storage.delete(key: _lastUserRoleKey)
+        else
+          _storage.write(key: _lastUserRoleKey, value: currentRole),
+        if (currentMcuId == null)
+          _storage.delete(key: _lastMcuIdKey)
+        else
+          _storage.write(key: _lastMcuIdKey, value: currentMcuId.toString()),
+      ]);
+    }
+
+    await Future.wait([
+      _storage.delete(key: _accessKey),
+      _storage.delete(key: _refreshKey),
+      _storage.delete(key: _userIdKey),
+      _storage.delete(key: _userRoleKey),
+      _storage.delete(key: _mcuIdKey),
+      _storage.delete(key: _mcuNameKey),
+    ]);
+  }
 
   // ── Convenience ──────────────────────────────────────────────────────────
 

@@ -521,13 +521,13 @@ abstract class AppLocalizations {
   /// No description provided for @signOutConfirmMessageOwner.
   ///
   /// In en, this message translates to:
-  /// **'Pending changes will sync when you next connect.'**
+  /// **'Are you sure you want to sign out?'**
   String get signOutConfirmMessageOwner;
 
   /// No description provided for @signOutConfirmMessageWorker.
   ///
   /// In en, this message translates to:
-  /// **'You will be signed out.'**
+  /// **'Are you sure you want to sign out?'**
   String get signOutConfirmMessageWorker;
 
   /// No description provided for @dashboard.
@@ -2593,8 +2593,38 @@ abstract class AppLocalizations {
   /// No description provided for @clearingLocalSession.
   ///
   /// In en, this message translates to:
-  /// **'Clearing your local session.'**
+  /// **'Signing you out.'**
   String get clearingLocalSession;
+
+  /// No description provided for @logoutUnsyncedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync before logout'**
+  String get logoutUnsyncedTitle;
+
+  /// No description provided for @logoutUnsyncedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There are {pending} pending record(s) and {conflicts} conflict record(s). Sync them before logging out so no local work is lost.'**
+  String logoutUnsyncedMessage(int pending, int conflicts);
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get syncNow;
+
+  /// No description provided for @logoutBlockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout blocked'**
+  String get logoutBlockedTitle;
+
+  /// No description provided for @logoutBlockedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Some records are still not synced. Please retry sync or review pending records before logging out.'**
+  String get logoutBlockedMessage;
 
   /// No description provided for @appVersion.
   ///

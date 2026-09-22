@@ -16,6 +16,16 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
         .watch();
   }
 
+  Stream<List<Farmer>> watchFarmersByMcu(int mcuId) {
+    return (select(farmers)
+          ..where((f) => f.mcu.equals(mcuId))
+          ..orderBy([
+            (f) => OrderingTerm.asc(f.lastName),
+            (f) => OrderingTerm.asc(f.firstName),
+          ]))
+        .watch();
+  }
+
   Stream<Farmer?> watchFarmerById(int id) {
     return (select(farmers)..where((f) => f.id.equals(id))).watchSingleOrNull();
   }
@@ -56,8 +66,7 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
 
   /// Marks a dependant as synced by matching its uuid column.
   Future<void> markDependantSynced(String uuid) {
-    return (update(farmerDependants)
-          ..where((d) => d.uuid.equals(uuid)))
+    return (update(farmerDependants)..where((d) => d.uuid.equals(uuid)))
         .write(const FarmerDependantsCompanion(syncStatus: Value('synced')));
   }
 
@@ -89,8 +98,7 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
     return (select(farmerDependants)
           ..where(
             (d) =>
-                d.farmerId.equals(farmerId) &
-                d.relationship.equals('').not(),
+                d.farmerId.equals(farmerId) & d.relationship.equals('').not(),
           )
           ..orderBy([
             (d) => OrderingTerm.asc(d.lastName),
@@ -103,8 +111,7 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
     return (select(farmerDependants)
           ..where(
             (d) =>
-                d.farmerId.equals(farmerId) &
-                d.relationship.equals('').not(),
+                d.farmerId.equals(farmerId) & d.relationship.equals('').not(),
           )
           ..orderBy([
             (d) => OrderingTerm.asc(d.lastName),

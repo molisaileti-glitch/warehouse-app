@@ -15,6 +15,7 @@ import 'package:warehouse_app/l10n/app_localizations.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../widgets/logout_flow.dart';
 
 final _settingsUserProvider = StreamProvider.family<User?, String>((ref, id) {
   return ref.watch(workerDaoProvider).watchUserById(id);
@@ -93,7 +94,7 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.logout_rounded,
               title: l10n.logout,
               isDestructive: true,
-              onTap: () => _logout(context, ref),
+              onTap: () => runLogoutFlow(context, ref),
             ),
             const SizedBox(height: 34),
             Center(
@@ -211,29 +212,6 @@ class SettingsScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => _ChangePasswordSheet(parentContext: context),
     );
-  }
-
-  Future<void> _logout(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showCreationConfirmDialog(
-      context,
-      title: l10n.logout,
-      description: l10n.logoutConfirmMessage,
-      confirmLabel: l10n.logout,
-      isDestructive: true,
-    );
-    if (!confirmed || !context.mounted) return;
-
-    showCenteredLoadingDialog(
-      context,
-      title: l10n.loggingOut,
-      description: l10n.clearingLocalSession,
-    );
-    await ref.read(authProvider.notifier).logout();
-    if (!context.mounted) return;
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
   }
 
   void _showComingSoon(BuildContext context, String title) {

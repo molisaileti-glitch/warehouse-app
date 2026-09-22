@@ -11,6 +11,7 @@ import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/sync/sync_engine.dart';
 import '../../../shared/widgets/common_widgets.dart';
+import '../../../shared/widgets/logout_flow.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
 import 'worker_drawer.dart';
@@ -73,14 +74,7 @@ class WorkerDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),
-            onPressed: () async {
-              final ok = await showConfirmDialog(context,
-                  title: l10n.signOutConfirmTitle,
-                  message: l10n.signOutConfirmMessageWorker,
-                  confirmLabel: l10n.signOut,
-                  isDestructive: true);
-              if (ok) ref.read(authProvider.notifier).logout();
-            },
+            onPressed: () => runLogoutFlow(context, ref),
           ),
         ],
       ),
@@ -140,7 +134,7 @@ class _WorkerBody extends ConsumerWidget {
     // Once the real backend syncs the user record down, this branch never runs.
     if (user == null) {
       return _NoProfileView(
-        onLogout: () => ref.read(authProvider.notifier).logout(),
+        onLogout: () => runLogoutFlow(context, ref),
       );
     }
 

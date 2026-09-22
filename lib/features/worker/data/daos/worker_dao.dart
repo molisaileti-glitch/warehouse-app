@@ -23,13 +23,21 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
         .watch();
   }
 
+  /// Emits users assigned to a specific owner/MCU.
+  Stream<List<User>> watchUsersByMcu(int mcuId) {
+    return (select(users)
+          ..where(
+            (u) => u.mcu.equals(mcuId) & u.deletedAt.isNull(),
+          )
+          ..orderBy([(u) => OrderingTerm.asc(u.fullName)]))
+        .watch();
+  }
+
   /// Emits users belonging to a specific warehouse.
   Stream<List<User>> watchUsersByWarehouse(String warehouseId) {
     return (select(users)
           ..where(
-            (u) =>
-                u.warehouseId.equals(warehouseId) &
-                u.deletedAt.isNull(),
+            (u) => u.warehouseId.equals(warehouseId) & u.deletedAt.isNull(),
           ))
         .watch();
   }
@@ -63,9 +71,7 @@ class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
   Future<User?> getUserByPhoneNumber(String phoneNumber) {
     return (select(users)
           ..where(
-            (u) =>
-                u.phoneNumber.equals(phoneNumber) &
-                u.deletedAt.isNull(),
+            (u) => u.phoneNumber.equals(phoneNumber) & u.deletedAt.isNull(),
           ))
         .getSingleOrNull();
   }

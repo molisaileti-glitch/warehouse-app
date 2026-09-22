@@ -299,9 +299,9 @@ class AppDatabase extends _$AppDatabase {
 
   // ── Utility — wipe all data (used during testing / logout) ───────────────
 
-  /// Deletes every row from every table. Preserves the schema.
-  /// Call on logout so the next user starts clean.
-  Future<void> clearAllData() {
+  /// Deletes private/session-owned business data while preserving reference data
+  /// such as crops, grades, measurement units, and locations.
+  Future<void> clearSessionData() {
     return transaction(() async {
       // Delete in reverse dependency order to avoid FK violations.
       await delete(auditLogs).go();
@@ -319,13 +319,24 @@ class AppDatabase extends _$AppDatabase {
       await delete(inventoryItems).go();
       await delete(farmerDependants).go();
       await delete(farmers).go();
-      await delete(cropGrades).go();
-      await delete(measurementUnits).go();
       await delete(warehouses).go();
       await delete(users).go();
-      await delete(cropTable).go();
       await delete(amcosTable).go();
-      // Location reference-data tables (leaf → root order).
+    });
+  }
+}
+
+// ── SQLite connection ──────────────────────────────────────────────────────
+
+extension AppDatabaseFullReset on AppDatabase {
+  /// Deletes every row from every table. Preserves the schema.
+  Future<void> clearAllData() {
+    return transaction(() async {
+      await clearSessionData();
+      await delete(cropGrades).go();
+      await delete(measurementUnits).go();
+      await delete(cropTable).go();
+      // Location reference-data tables (leaf -> root order).
       await delete(villagesTable).go();
       await delete(wardsTable).go();
       await delete(districtsTable).go();
@@ -333,8 +344,6 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 }
-
-// ── SQLite connection ──────────────────────────────────────────────────────
 
 QueryExecutor _openConnection() {
   // drift_flutter picks the right SQLite implementation per platform:

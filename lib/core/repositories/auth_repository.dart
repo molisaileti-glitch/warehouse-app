@@ -13,14 +13,17 @@ import '../enums/sync_status.dart';
 class AuthRepository {
   final Dio _dio;
   final SecureTokenStorage _storage;
+  final AppDatabase _database;
   final WorkerDao _workerDao;
 
   AuthRepository({
     required Dio dio,
     required SecureTokenStorage storage,
+    required AppDatabase database,
     required WorkerDao workerDao,
   })  : _dio = dio,
         _storage = storage,
+        _database = database,
         _workerDao = workerDao;
 
   // ── Register (owner only) ─────────────────────────────────────────────────
@@ -150,6 +153,22 @@ class AuthRepository {
       }
 
       final emailValue = _string(user['email'] ?? email);
+      final previousUserId = await _storage.getLastUserId();
+      final previousRole = await _storage.getLastUserRole();
+      final previousMcuId = await _storage.getLastMcuId();
+      final accountChanged = previousUserId != null &&
+          (previousUserId != userId ||
+              previousRole != roleStr ||
+              previousMcuId != mcuId);
+
+      if (accountChanged) {
+        developer.log(
+          '[AuthRepository] account changed previousUser=$previousUserId '
+          'newUser=$userId; clearing local business data',
+          name: 'auth.login',
+        );
+        await _database.clearSessionData();
+      }
 
       await _storage.saveTokens(
           accessToken: accessToken, refreshToken: refreshToken);
@@ -254,7 +273,8 @@ class AuthRepository {
 
       final responseData = res.data;
       if (responseData is! Map<String, dynamic>) {
-        _logRefresh('invalid refresh response type=${responseData.runtimeType}');
+        _logRefresh(
+            'invalid refresh response type=${responseData.runtimeType}');
         return false;
       }
 
@@ -321,7 +341,7 @@ class AuthRepository {
     } catch (_) {
       // Best-effort server revocation — always clear locally regardless.
     } finally {
-      await _storage.clearAll();
+      await _storage.clearCurrentSession();
     }
   }
 
@@ -598,6 +618,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     dio: client.dio,
     storage: storage,
+    database: ref.watch(appDatabaseProvider),
     workerDao: ref.watch(workerDaoProvider),
   );
 });
