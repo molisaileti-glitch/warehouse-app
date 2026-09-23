@@ -49,7 +49,7 @@ The app is designed for crop traceability and accountability from receiving to w
 The app may collect:
 
 - User account details: name, email, phone number, role, login credentials, user ID.
-- Business and warehouse details: business name, business type, registration number, TIN, address, region, warehouse name, warehouse location,AMCOS references.
+- Business and warehouse details: business name, business type, registration number, TIN, address, region, warehouse name, warehouse location, organization references.
 - Worker records: worker name, email, phone number, role, status, assigned warehouse.
 - Farmer and dependant records where enabled: names, phone numbers, addresses, gender, date of birth, relationship, ID type/number, member details.
 - Harvest and stock records: crop, grade, bag tag numbers, gross weight, packaging weight, net weight, moisture content, receipt number, receiving user, timestamps.

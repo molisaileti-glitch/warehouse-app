@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
@@ -19,7 +20,7 @@ class CropRepository {
         '/crops',
         queryParameters: const {'page': 0, 'size': 100},
       );
-      print('RAW RESPONSE for /crops: ${res.data}');
+      _logReferenceResponse('/crops', res);
       final rows = _asRows(res.data);
       final validRows = rows.where(_isValidCropRow).toList();
       await _dao.upsertCrops(validRows.map(_fromJson).toList());
@@ -30,6 +31,7 @@ class CropRepository {
       );
       return validRows.length;
     } on DioException catch (error, stackTrace) {
+      _logReferenceError('/crops', error);
       developer.log(
         'Crop sync request failed',
         name: 'CropRepository',
@@ -124,5 +126,38 @@ class CropRepository {
   String? _nullableString(Object? value) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;
+  }
+
+  void _logReferenceResponse(String path, Response<dynamic> response) {
+    final body = _stringifyForLog(response.data);
+    _logLong(
+      '[ReferenceSync] GET $path status=${response.statusCode} body=$body',
+    );
+  }
+
+  void _logReferenceError(String path, DioException error) {
+    final body = _stringifyForLog(error.response?.data);
+    _logLong(
+      '[ReferenceSync] GET $path failed status=${error.response?.statusCode} '
+      'message=${error.message} body=$body',
+    );
+  }
+
+  String _stringifyForLog(Object? value) {
+    try {
+      return const JsonEncoder.withIndent('  ').convert(value);
+    } catch (_) {
+      return value?.toString() ?? 'null';
+    }
+  }
+
+  void _logLong(String message) {
+    const chunkSize = 900;
+    for (var start = 0; start < message.length; start += chunkSize) {
+      final end = (start + chunkSize) > message.length
+          ? message.length
+          : start + chunkSize;
+      developer.log(message.substring(start, end), name: 'reference.sync');
+    }
   }
 }

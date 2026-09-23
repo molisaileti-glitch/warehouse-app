@@ -215,25 +215,29 @@ class DriftHarvestRepository implements HarvestRepository {
     var count = 0;
     try {
       final unitsResponse = await _dio.get('/measurement-units');
+      _logReferenceResponse('/measurement-units', unitsResponse);
       final units = _readRows(unitsResponse.data)
           .map(_measurementUnitFromJson)
           .whereType<MeasurementUnitsCompanion>()
           .toList();
       await _dao.upsertMeasurementUnits(units);
       count += units.length;
-    } on DioException {
+    } on DioException catch (error) {
+      _logReferenceError('/measurement-units', error);
       // Offline-first: keep using whatever reference data is cached locally.
     }
 
     try {
       final gradesResponse = await _dio.get('/crop-grades');
+      _logReferenceResponse('/crop-grades', gradesResponse);
       final grades = _readRows(gradesResponse.data)
           .map(_cropGradeFromJson)
           .whereType<CropGradesCompanion>()
           .toList();
       await _dao.upsertCropGrades(grades);
       count += grades.length;
-    } on DioException {
+    } on DioException catch (error) {
+      _logReferenceError('/crop-grades', error);
       // Offline-first: keep using whatever reference data is cached locally.
     }
     return count;
@@ -631,5 +635,38 @@ class DriftHarvestRepository implements HarvestRepository {
 
   double _round(double value) {
     return double.parse(value.toStringAsFixed(3));
+  }
+
+  void _logReferenceResponse(String path, Response<dynamic> response) {
+    final body = _stringifyForLog(response.data);
+    _logLong(
+      '[ReferenceSync] GET $path status=${response.statusCode} body=$body',
+    );
+  }
+
+  void _logReferenceError(String path, DioException error) {
+    final body = _stringifyForLog(error.response?.data);
+    _logLong(
+      '[ReferenceSync] GET $path failed status=${error.response?.statusCode} '
+      'message=${error.message} body=$body',
+    );
+  }
+
+  String _stringifyForLog(Object? value) {
+    try {
+      return const JsonEncoder.withIndent('  ').convert(value);
+    } catch (_) {
+      return value?.toString() ?? 'null';
+    }
+  }
+
+  void _logLong(String message) {
+    const chunkSize = 900;
+    for (var start = 0; start < message.length; start += chunkSize) {
+      final end = (start + chunkSize) > message.length
+          ? message.length
+          : start + chunkSize;
+      developer.log(message.substring(start, end), name: 'reference.sync');
+    }
   }
 }

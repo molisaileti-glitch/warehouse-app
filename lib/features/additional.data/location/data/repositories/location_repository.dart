@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 
@@ -108,10 +111,15 @@ class LocationRepository {
             ? null
             : {'updated_since': since.toIso8601String()},
       );
+      _logReferenceResponse(path, res);
       final rows = _asList(res.data);
-      print('Reference sync $path rows=${rows.length}');
+      developer.log(
+        '[ReferenceSync] $path parsedRows=${rows.length}',
+        name: 'reference.sync',
+      );
       return rows;
-    } on DioException {
+    } on DioException catch (error) {
+      _logReferenceError(path, error);
       return const [];
     }
   }
@@ -145,4 +153,37 @@ class LocationRepository {
   }
 
   String _string(Object? value) => value?.toString() ?? '';
+
+  void _logReferenceResponse(String path, Response<dynamic> response) {
+    final body = _stringifyForLog(response.data);
+    _logLong(
+      '[ReferenceSync] GET $path status=${response.statusCode} body=$body',
+    );
+  }
+
+  void _logReferenceError(String path, DioException error) {
+    final body = _stringifyForLog(error.response?.data);
+    _logLong(
+      '[ReferenceSync] GET $path failed status=${error.response?.statusCode} '
+      'message=${error.message} body=$body',
+    );
+  }
+
+  String _stringifyForLog(Object? value) {
+    try {
+      return const JsonEncoder.withIndent('  ').convert(value);
+    } catch (_) {
+      return value?.toString() ?? 'null';
+    }
+  }
+
+  void _logLong(String message) {
+    const chunkSize = 900;
+    for (var start = 0; start < message.length; start += chunkSize) {
+      final end = (start + chunkSize) > message.length
+          ? message.length
+          : start + chunkSize;
+      developer.log(message.substring(start, end), name: 'reference.sync');
+    }
+  }
 }
