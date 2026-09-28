@@ -1028,6 +1028,18 @@ abstract class AppLocalizations {
   /// **'New Receiving'**
   String get newReceiving;
 
+  /// No description provided for @recentReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Receipts'**
+  String get recentReceipts;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
   /// No description provided for @generateReceipt.
   ///
   /// In en, this message translates to:
@@ -3466,6 +3478,18 @@ abstract class AppLocalizations {
   /// **'Search warehouses...'**
   String get searchWarehouses;
 
+  /// No description provided for @searchWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Search workers...'**
+  String get searchWorkers;
+
+  /// No description provided for @searchOrganizations.
+  ///
+  /// In en, this message translates to:
+  /// **'Search organizations...'**
+  String get searchOrganizations;
+
   /// No description provided for @allWarehouses.
   ///
   /// In en, this message translates to:
@@ -4695,6 +4719,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap + to create the first organization for this owner.'**
   String get createFirstAmcos;
+
+  /// No description provided for @createOrganizationFirstTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your organization first'**
+  String get createOrganizationFirstTitle;
+
+  /// No description provided for @createOrganizationFirstMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the menu, create your organization first, then continue with warehouses, workers, farmers, and harvest records.'**
+  String get createOrganizationFirstMessage;
 
   /// No description provided for @createAmcos.
   ///

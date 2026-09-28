@@ -230,6 +230,106 @@ class LoadingView extends StatelessWidget {
 
 // ── ErrorView ──────────────────────────────────────────────────────────────────
 
+class SkeletonListView extends StatefulWidget {
+  final int itemCount;
+  final EdgeInsetsGeometry padding;
+
+  const SkeletonListView({
+    super.key,
+    this.itemCount = 6,
+    this.padding = const EdgeInsets.fromLTRB(20, 16, 20, 24),
+  });
+
+  @override
+  State<SkeletonListView> createState() => _SkeletonListViewState();
+}
+
+class _SkeletonListViewState extends State<SkeletonListView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.45, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: widget.padding,
+      itemCount: widget.itemCount,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (_, index) {
+        return FadeTransition(
+          opacity: _opacity,
+          child: AppCard(
+            child: Row(
+              children: [
+                const _SkeletonBox(width: 44, height: 44, radius: 12),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SkeletonBox(
+                        width: index.isEven ? 180 : 140,
+                        height: 14,
+                        radius: 8,
+                      ),
+                      const SizedBox(height: 9),
+                      const _SkeletonBox(width: 220, height: 11, radius: 8),
+                      const SizedBox(height: 8),
+                      const _SkeletonBox(width: 100, height: 10, radius: 8),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  final double width;
+  final double height;
+  final double radius;
+
+  const _SkeletonBox({
+    required this.width,
+    required this.height,
+    required this.radius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.divider.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
 enum AppDialogType { success, error, warning, info, confirmation, loading }
 
 class AppDialogAction<T> {
@@ -254,7 +354,7 @@ Future<T?> showAppDialog<T>(
   required String description,
   required AppDialogType type,
   List<AppDialogAction<T>> actions = const [],
-  bool barrierDismissible = true,
+  bool barrierDismissible = false,
 }) {
   final (icon, accentColor) = switch (type) {
     AppDialogType.success => (Icons.check_circle_rounded, AppColors.success),

@@ -34,11 +34,26 @@ final _workersProvider = allWorkersProvider;
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
-class UserManagementScreen extends ConsumerWidget {
+class UserManagementScreen extends ConsumerStatefulWidget {
   const UserManagementScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UserManagementScreen> createState() =>
+      _UserManagementScreenState();
+}
+
+class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final usersAsync = ref.watch(_workersProvider);
 
@@ -59,12 +74,31 @@ class UserManagementScreen extends ConsumerWidget {
       // ── FAB — opens Add Worker sheet ──────────────────────────────────────
       body: Column(
         children: [
-          // Info banner
-          // Worker list
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: l10n.searchWorkers,
+                prefixIcon: const Icon(Icons.search_rounded),
+              ),
+              onChanged: (value) =>
+                  setState(() => _query = value.trim().toLowerCase()),
+            ),
+          ),
           Expanded(
             child: usersAsync.when(
               data: (users) {
-                final workers = users;
+                final workers = _query.isEmpty
+                    ? users
+                    : users.where((user) {
+                        final text = [
+                          user.fullName,
+                          user.email,
+                          user.phoneNumber,
+                        ].join(' ').toLowerCase();
+                        return text.contains(_query);
+                      }).toList();
                 if (workers.isEmpty) {
                   return EmptyState(
                     icon: Icons.people_rounded,
@@ -79,7 +113,9 @@ class UserManagementScreen extends ConsumerWidget {
                   itemBuilder: (_, i) => _WorkerTile(user: workers[i]),
                 );
               },
-              loading: () => const LoadingView(),
+              loading: () => const SkeletonListView(
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 24),
+              ),
               error: (e, _) => ErrorView(message: '$e'),
             ),
           ),

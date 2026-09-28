@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:warehouse_app/core/database/app_database.dart';
 import 'package:warehouse_app/core/database/database_provider.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/features/harvest/presentation/widgets/harvest_print_button.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 
@@ -135,6 +136,11 @@ class OwnerHarvestDetailScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 14),
+                HarvestPrintButton(
+                  harvest: harvest,
+                  filled: true,
                 ),
               ],
             ),

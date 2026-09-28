@@ -11,6 +11,7 @@ import 'package:warehouse_app/core/providers/repository_providers.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/sync/sync_engine.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/features/additional.data/amcos/presentation/providers/amcos_providers.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
@@ -33,15 +34,30 @@ final _ownerHarvestCountProvider = StreamProvider<int>((ref) {
       );
 });
 
-class OwnerDashboardScreen extends ConsumerWidget {
+class OwnerDashboardScreen extends ConsumerStatefulWidget {
   const OwnerDashboardScreen({super.key});
+
+  @override
+  ConsumerState<OwnerDashboardScreen> createState() =>
+      _OwnerDashboardScreenState();
+}
+
+class _OwnerDashboardScreenState extends ConsumerState<OwnerDashboardScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _menuButtonKey = GlobalKey();
+  Rect? _menuButtonRect;
+  bool _organizationCoachDismissed = false;
 
   Future<void> _refreshDashboard() async {}
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final warehousesAsync = ref.watch(currentOwnerWarehousesProvider);
+    final mcuAsync = ref.watch(currentUserMcuProvider);
+    final organizationsAsync = mcuAsync.valueOrNull == null
+        ? const AsyncValue<List<Amcos>>.data([])
+        : ref.watch(amcosByMcuProvider(mcuAsync.valueOrNull!));
     final workersAsync = ref.watch(allWorkersProvider);
     final farmersAsync = ref.watch(allFarmersProvider);
     final activitiesAsync = userId != null
@@ -64,162 +80,403 @@ class OwnerDashboardScreen extends ConsumerWidget {
       );
     }
     final stockOverviewItems = _stockOverviewItems(inventoryItems);
+    final shouldShowOrganizationCoach =
+        !_organizationCoachDismissed &&
+            (organizationsAsync.valueOrNull?.isEmpty ?? false);
+    if (shouldShowOrganizationCoach) {
+      _updateMenuButtonRectAfterLayout();
+    }
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      drawer: const OwnerDrawer(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      appBar: AppBar(
-        title: const SizedBox.shrink(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            tooltip: l10n.notifications,
-            onPressed: pendingSyncCount == 0
-                ? null
-                : () => context.go(AppRoutes.ownerPendingSyncs),
-          ),
-        ],
-      ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'owner_dashboard_sync',
-            onPressed: syncState.isSyncing
-                ? null
-                : () => runSyncWithProgressDialog(context, ref),
-            icon: syncState.isSyncing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.sync_rounded),
-            label: Text(syncState.isSyncing ? l10n.syncing : l10n.sync),
-            backgroundColor: AppColors.ownerColor,
-            foregroundColor: Colors.white,
-          ),
-          if (pendingSyncCount > 0) ...[
-            const SizedBox(height: 8),
-            PendingSyncFloatingBanner(
-              count: pendingSyncCount,
-              onTap: () => context.go(AppRoutes.ownerPendingSyncs),
+    return Stack(
+      children: [
+        Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: AppColors.surface,
+          drawer: const OwnerDrawer(),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          appBar: AppBar(
+            leading: IconButton(
+              key: _menuButtonKey,
+              icon: const Icon(Icons.menu_rounded),
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              onPressed: _openDrawer,
             ),
-          ],
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refreshDashboard,
-        color: AppColors.primary,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            if (syncState.isSyncing || syncState.hasErrors)
-              SliverToBoxAdapter(child: _SyncBanner(state: syncState)),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.ownerOverview,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
+            title: const SizedBox.shrink(),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded),
+                tooltip: l10n.notifications,
+                onPressed: pendingSyncCount == 0
+                    ? null
+                    : () => context.go(AppRoutes.ownerPendingSyncs),
+              ),
+            ],
+          ),
+          floatingActionButton: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FloatingActionButton.extended(
+                heroTag: 'owner_dashboard_sync',
+                onPressed: syncState.isSyncing
+                    ? null
+                    : () => runSyncWithProgressDialog(context, ref),
+                icon: syncState.isSyncing
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.sync_rounded),
+                label: Text(syncState.isSyncing ? l10n.syncing : l10n.sync),
+                backgroundColor: AppColors.ownerColor,
+                foregroundColor: Colors.white,
+              ),
+              if (pendingSyncCount > 0) ...[
+                const SizedBox(height: 8),
+                PendingSyncFloatingBanner(
+                  count: pendingSyncCount,
+                  onTap: () => context.go(AppRoutes.ownerPendingSyncs),
+                ),
+              ],
+            ],
+          ),
+          body: RefreshIndicator(
+            onRefresh: _refreshDashboard,
+            color: AppColors.primary,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                if (syncState.isSyncing || syncState.hasErrors)
+                  SliverToBoxAdapter(child: _SyncBanner(state: syncState)),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.ownerOverview,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        _OverviewPanel(
+                          items: stockOverviewItems,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      mainAxisExtent: 150,
+                    ),
+                    delegate: SliverChildListDelegate([
+                      _DashboardStatCard(
+                        label: l10n.warehouses,
+                        value: '${warehouses.length}',
+                        subtitle: l10n.activeCount(
+                          warehouses.where((w) => w.isActive).length,
+                        ),
+                        icon: Icons.warehouse_rounded,
+                        color: AppColors.ownerColor,
+                        onTap: () => context.go(AppRoutes.ownerWarehouses),
                       ),
+                      _DashboardStatCard(
+                        label: l10n.workers,
+                        value: '${workers.length}',
+                        subtitle: l10n.activeCount(
+                          workers.where((w) => w.isActive).length,
+                        ),
+                        icon: Icons.groups_rounded,
+                        color: AppColors.workerColor,
+                        onTap: () => context.go(AppRoutes.ownerUsers),
+                      ),
+                      _DashboardStatCard(
+                        label: l10n.farmers,
+                        value: '${farmers.length}',
+                        subtitle: l10n.registeredFarmers,
+                        icon: Icons.agriculture_rounded,
+                        color: AppColors.success,
+                      ),
+                      _DashboardStatCard(
+                        label: l10n.harvest,
+                        value: '$harvestCount',
+                        subtitle: l10n.records,
+                        icon: Icons.grass_rounded,
+                        color: AppColors.info,
+                        onTap: () => context.go(AppRoutes.ownerHarvests),
+                      ),
+                    ]),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SectionHeader(
+                    title: l10n.recentActivity,
+                    actionLabel: l10n.seeAll,
+                    onAction: () => context.go(AppRoutes.ownerAuditLog),
+                  ),
+                ),
+                activitiesAsync.when(
+                  data: (logs) => SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: logs.isEmpty
+                          ? _EmptyDashboardCard(
+                              icon: Icons.history_rounded,
+                              title: l10n.noOwnerActivity,
+                              subtitle: l10n.createWarehouseWorkerActivity,
+                            )
+                          : _RecentActivityList(logs: logs),
                     ),
-                    const SizedBox(height: 18),
-                    _OverviewPanel(
-                      items: stockOverviewItems,
-                    ),
-                  ],
+                  ),
+                  loading: () => const SliverToBoxAdapter(child: LoadingView()),
+                  error: (error, _) =>
+                      SliverToBoxAdapter(child: ErrorView(message: '$error')),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 150)),
+              ],
+            ),
+          ),
+        ),
+        if (shouldShowOrganizationCoach && _menuButtonRect != null)
+          _OrganizationCoachOverlay(
+            targetRect: _menuButtonRect!,
+            onDismiss: _dismissOrganizationCoach,
+            onTargetTap: () {
+              _dismissOrganizationCoach();
+              _openDrawer();
+            },
+          ),
+      ],
+    );
+  }
+
+  void _openDrawer() {
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
+  void _dismissOrganizationCoach() {
+    if (!mounted) return;
+    setState(() => _organizationCoachDismissed = true);
+  }
+
+  void _updateMenuButtonRectAfterLayout() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final renderObject = _menuButtonKey.currentContext?.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) return;
+      final topLeft = renderObject.localToGlobal(Offset.zero);
+      final rect = topLeft & renderObject.size;
+      if (_menuButtonRect == rect) return;
+      setState(() => _menuButtonRect = rect);
+    });
+  }
+}
+
+class _OrganizationCoachOverlay extends StatelessWidget {
+  final Rect targetRect;
+  final VoidCallback onDismiss;
+  final VoidCallback onTargetTap;
+
+  const _OrganizationCoachOverlay({
+    required this.targetRect,
+    required this.onDismiss,
+    required this.onTargetTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final size = MediaQuery.sizeOf(context);
+    final bubbleWidth = size.width < 340 ? size.width - 32 : 308.0;
+    final bubbleLeft =
+        (targetRect.left - 4).clamp(16.0, size.width - bubbleWidth - 16);
+    final maxBubbleTop = size.height > 220 ? size.height - 180 : 16.0;
+    final bubbleTop = (targetRect.bottom + 20).clamp(16.0, maxBubbleTop);
+    final arrowLeft = (targetRect.center.dx - 9).clamp(16.0, size.width - 34);
+
+    return Positioned.fill(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (details) {
+          if (targetRect.inflate(16).contains(details.globalPosition)) {
+            onTargetTap();
+          }
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              CustomPaint(
+                size: Size.infinite,
+                painter: _SpotlightOverlayPainter(
+                  targetRect: targetRect.inflate(8),
                 ),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  mainAxisExtent: 150,
-                ),
-                delegate: SliverChildListDelegate([
-                  _DashboardStatCard(
-                    label: l10n.warehouses,
-                    value: '${warehouses.length}',
-                    subtitle: l10n.activeCount(
-                      warehouses.where((w) => w.isActive).length,
-                    ),
-                    icon: Icons.warehouse_rounded,
-                    color: AppColors.ownerColor,
-                    onTap: () => context.go(AppRoutes.ownerWarehouses),
-                  ),
-                  _DashboardStatCard(
-                    label: l10n.workers,
-                    value: '${workers.length}',
-                    subtitle: l10n.activeCount(
-                      workers.where((w) => w.isActive).length,
-                    ),
-                    icon: Icons.groups_rounded,
-                    color: AppColors.workerColor,
-                    onTap: () => context.go(AppRoutes.ownerUsers),
-                  ),
-                  _DashboardStatCard(
-                    label: l10n.farmers,
-                    value: '${farmers.length}',
-                    subtitle: l10n.registeredFarmers,
-                    icon: Icons.agriculture_rounded,
-                    color: AppColors.success,
-                  ),
-                  _DashboardStatCard(
-                    label: l10n.harvest,
-                    value: '$harvestCount',
-                    subtitle: l10n.records,
-                    icon: Icons.grass_rounded,
-                    color: AppColors.info,
-                    onTap: () => context.go(AppRoutes.ownerHarvests),
-                  ),
-                ]),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: l10n.recentActivity,
-                actionLabel: l10n.seeAll,
-                onAction: () => context.go(AppRoutes.ownerAuditLog),
-              ),
-            ),
-            activitiesAsync.when(
-              data: (logs) => SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverToBoxAdapter(
-                  child: logs.isEmpty
-                      ? _EmptyDashboardCard(
-                          icon: Icons.history_rounded,
-                          title: l10n.noOwnerActivity,
-                          subtitle: l10n.createWarehouseWorkerActivity,
-                        )
-                      : _RecentActivityList(logs: logs),
+              Positioned(
+                left: arrowLeft.toDouble(),
+                top: bubbleTop.toDouble() - 11,
+                child: CustomPaint(
+                  size: const Size(18, 12),
+                  painter: _CoachArrowPainter(),
                 ),
               ),
-              loading: () => const SliverToBoxAdapter(child: LoadingView()),
-              error: (error, _) =>
-                  SliverToBoxAdapter(child: ErrorView(message: '$error')),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 150)),
-          ],
+              Positioned(
+                left: bubbleLeft.toDouble(),
+                top: bubbleTop.toDouble(),
+                width: bubbleWidth,
+                child: _CoachBubble(
+                  title: l10n.createOrganizationFirstTitle,
+                  message: l10n.createOrganizationFirstMessage,
+                  onDismiss: onDismiss,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _CoachBubble extends StatelessWidget {
+  final String title;
+  final String message;
+  final VoidCallback onDismiss;
+
+  const _CoachBubble({
+    required this.title,
+    required this.message,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.tips_and_updates_outlined,
+                color: AppColors.info,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      message,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onDismiss,
+              child: Text(l10n.ok),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpotlightOverlayPainter extends CustomPainter {
+  final Rect targetRect;
+
+  const _SpotlightOverlayPainter({required this.targetRect});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final spotlight = RRect.fromRectAndRadius(
+      targetRect,
+      const Radius.circular(14),
+    );
+    final overlayPath = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(Offset.zero & size)
+      ..addRRect(spotlight);
+
+    canvas.drawPath(
+      overlayPath,
+      Paint()..color = Colors.black.withValues(alpha: 0.68),
+    );
+    canvas.drawRRect(
+      spotlight,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SpotlightOverlayPainter oldDelegate) {
+    return oldDelegate.targetRect != targetRect;
+  }
+}
+
+class _CoachArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _OverviewPanel extends StatelessWidget {

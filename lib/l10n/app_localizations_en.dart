@@ -510,6 +510,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newReceiving => 'New Receiving';
 
   @override
+  String get recentReceipts => 'Recent Receipts';
+
+  @override
+  String get viewAll => 'View all';
+
+  @override
   String get generateReceipt => 'Generate Receipt';
 
   @override
@@ -1863,6 +1869,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchWarehouses => 'Search warehouses...';
 
   @override
+  String get searchWorkers => 'Search workers...';
+
+  @override
+  String get searchOrganizations => 'Search organizations...';
+
+  @override
   String get allWarehouses => 'All Warehouses';
 
   @override
@@ -2561,6 +2573,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get createFirstAmcos =>
       'Tap + to create the first organization for this owner.';
+
+  @override
+  String get createOrganizationFirstTitle => 'Create your organization first';
+
+  @override
+  String get createOrganizationFirstMessage =>
+      'Tap the menu, create your organization first, then continue with warehouses, workers, farmers, and harvest records.';
 
   @override
   String get createAmcos => 'Create organization';

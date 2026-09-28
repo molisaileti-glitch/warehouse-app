@@ -60,9 +60,14 @@ class DriftWorkerRepository implements WorkerRepository {
     for (final row in rows) {
       final serverId = _string(row['id']);
       final email = _string(row['email']);
+      final phoneNumber = _string(row['phoneNumber']);
       if (serverId.isEmpty || email.isEmpty) continue;
 
-      final existing = await _dao.getUserByEmail(email);
+      final existingByEmail = await _dao.getUserByEmail(email);
+      final existingByPhone = phoneNumber.isEmpty
+          ? null
+          : await _dao.getUserByPhoneNumber(phoneNumber);
+      final existing = existingByEmail ?? existingByPhone;
       final amcosId = _nullableInt(row['amcos']) ??
           _nullableInt(_assignmentId(row['amcos']));
       final serverWarehouseId = _assignmentId(
@@ -90,7 +95,7 @@ class DriftWorkerRepository implements WorkerRepository {
           id: serverId,
           fullName: _string(row['fullName']),
           email: email,
-          phoneNumber: Value(_string(row['phoneNumber'])),
+          phoneNumber: Value(phoneNumber),
           role: Value(_string(row['role'], fallback: 'USER')),
           mcu: Value(_nullableInt(row['mcu']) ?? mcuId),
           amcos: Value(amcosId),

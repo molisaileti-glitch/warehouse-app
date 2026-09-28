@@ -339,7 +339,9 @@ class DriftHarvestRepository implements HarvestRepository {
 
 
       final rawUuid = _nullableString(row['uuid']);
-      final uuid = rawUuid ?? 'server-harvest-$serverId';
+      final existingByServerId = await _dao.getHarvestByServerId(serverId);
+      final uuid =
+          rawUuid ?? existingByServerId?.uuid ?? 'server-harvest-$serverId';
       final guarantorId = _nullableInt(row['guarantor']);
       final guarantor = guarantorId == null
           ? null
@@ -485,6 +487,7 @@ class DriftHarvestRepository implements HarvestRepository {
         return {
           'uuid': item.id,
           'netWeight': _round(weights.netWeight),
+          'tag': bag.tag,
           'tagNumber': bag.tag,
           'loadWeight': _round(weights.loadWeight),
           'grossWeight': _round(weights.grossWeight),

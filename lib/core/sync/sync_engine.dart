@@ -416,6 +416,10 @@ class SyncManager {
             'response=${response.data}',
             name: 'sync.harvest',
           );
+          await _applyHarvestCreateResponse(
+            uuid: entry.entityId,
+            responseData: response.data,
+          );
           await _cacheHarvestReportActivity(entry.entityId);
         } else if (entry.entityType == 'farmers') {
           await _applyFarmerCreateResponse(
@@ -599,6 +603,19 @@ class SyncManager {
     developer.log(
       '[FarmerSync] create uuid=$uuid serverId=${model.id}',
       name: 'sync.farmer',
+    );
+  }
+
+  Future<void> _applyHarvestCreateResponse({
+    required String uuid,
+    required Object? responseData,
+  }) async {
+    final data = _asMap(responseData);
+    final serverId = _int(data['id']);
+    await _harvestDao.markHarvestSynced(uuid, serverId: serverId);
+    developer.log(
+      '[HarvestSync] create uuid=$uuid serverId=$serverId',
+      name: 'sync.harvest',
     );
   }
 
@@ -1235,10 +1252,11 @@ class SyncManager {
     if (bags is! List) return;
 
     for (final bag in bags.whereType<Map>()) {
-      if (bag['tagNumber'] == null && bag['tag'] != null) {
+      final tagNumber = bag['tagNumber']?.toString().trim();
+      if ((tagNumber == null || tagNumber.isEmpty) && bag['tag'] != null) {
         bag['tagNumber'] = bag['tag'];
       }
-      bag.remove('tag');
+      bag['tag'] ??= bag['tagNumber'];
     }
   }
 

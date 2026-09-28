@@ -129,7 +129,8 @@ class _OwnerHarvestsScreenState extends ConsumerState<OwnerHarvestsScreen> {
                   ),
                 );
               },
-              loading: () => const SliverFillRemaining(child: LoadingView()),
+              loading: () =>
+                  const SliverFillRemaining(child: SkeletonListView()),
               error: (error, _) =>
                   SliverFillRemaining(child: ErrorView(message: '$error')),
             ),
@@ -301,6 +302,11 @@ class _HarvestTile extends StatelessWidget {
             ),
           ),
           SyncStatusBadge(status: harvest.syncStatus),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textMuted,
+          ),
         ],
       ),
     );

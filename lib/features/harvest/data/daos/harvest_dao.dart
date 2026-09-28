@@ -46,6 +46,11 @@ class HarvestDao extends DatabaseAccessor<AppDatabase> with _$HarvestDaoMixin {
         .getSingleOrNull();
   }
 
+  Future<FarmerHarvest?> getHarvestByServerId(int serverId) {
+    return (select(farmerHarvests)..where((h) => h.serverId.equals(serverId)))
+        .getSingleOrNull();
+  }
+
   Future<List<FarmerHarvestBag>> getBagsForHarvest(String harvestUuid) {
     return (select(farmerHarvestBags)
           ..where((b) => b.harvestUuid.equals(harvestUuid)))

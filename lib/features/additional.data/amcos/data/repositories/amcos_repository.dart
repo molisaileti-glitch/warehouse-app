@@ -175,10 +175,25 @@ class AmcosRepository {
 
   Future<void> _upsertRows(List<Map<String, dynamic>> rows) async {
     if (rows.isEmpty) return;
+    final entries = <AmcosTableCompanion>[];
     for (final row in rows) {
       await _ensureReferences(row);
+      final serverId = _int(row['id']);
+      final existingByServerId = serverId > 0
+          ? await _dao.getAmcosByServerId(serverId)
+          : null;
+      final uuid = _nullableString(row['uuid']);
+      final existingByUuid =
+          uuid == null ? null : await _dao.getAmcosByUuid(uuid);
+      entries.add(
+        _fromJson(
+          row,
+          localId: existingByUuid?.id ?? existingByServerId?.id,
+          uuidOverride: uuid ?? existingByServerId?.uuid,
+        ),
+      );
     }
-    await _dao.upsertAmcosList(rows.map(_fromJson).toList());
+    await _dao.upsertAmcosList(entries);
   }
 
   Future<void> _ensureReferences(Map<String, dynamic> json) {
@@ -194,10 +209,16 @@ class AmcosRepository {
     );
   }
 
-  AmcosTableCompanion _fromJson(Map<String, dynamic> json) {
+  AmcosTableCompanion _fromJson(
+    Map<String, dynamic> json, {
+    int? localId,
+    String? uuidOverride,
+  }) {
+    final serverId = _int(json['id']);
     return AmcosTableCompanion.insert(
-      id: Value(_int(json['id'])),
-      uuid: Value(_nullableString(json['uuid'])),
+      id: Value(localId ?? serverId),
+      uuid: Value(uuidOverride ?? _nullableString(json['uuid'])),
+      serverId: Value(serverId > 0 ? serverId : null),
       syncStatus:
           const Value('synced'), // server-pulled rows are already synced
       name: _string(json['name']),

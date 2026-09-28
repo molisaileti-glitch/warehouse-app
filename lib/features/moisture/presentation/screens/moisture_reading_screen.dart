@@ -60,7 +60,7 @@ class MoistureReadingScreen extends StatefulWidget {
 }
 
 class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
-  static const _baudRates = [2400, 4800, 9600, 19200, 38400, 57600, 115200];
+  static const _baudRate = 2400;
 
   final _service = LandtekMoistureMeterService();
   final _manual = TextEditingController();
@@ -75,7 +75,6 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
   MoistureUsbDevice? _selectedDevice;
   MoistureZone _activeZone = MoistureZone.top;
   int _ignoredDeviceCount = 0;
-  int _baudRate = 2400;
   bool _scanning = false;
   bool _connecting = false;
   bool _reading = false;
@@ -96,17 +95,6 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
     _manual.dispose();
     _service.dispose();
     super.dispose();
-  }
-
-  Future<void> _changeBaudRate(int? value) async {
-    if (value == null || value == _baudRate) return;
-    await _service.disconnect();
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    setState(() {
-      _baudRate = value;
-      _error = l10n.baudRateChangedReconnectMeter;
-    });
   }
 
   Future<void> _scanDevices() async {
@@ -308,8 +296,6 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
               expectedMaterial: _expectedMaterial,
               cropName: widget.cropName,
               ignoredDeviceCount: _ignoredDeviceCount,
-              baudRate: _baudRate,
-              baudRates: _baudRates,
               scanning: _scanning,
               connecting: _connecting,
               reading: _reading,
@@ -317,7 +303,6 @@ class _MoistureReadingScreenState extends State<MoistureReadingScreen> {
                 _selectedDevice = device;
                 _error = null;
               }),
-              onBaudRateChanged: _changeBaudRate,
               onScan: _scanDevices,
               onConnect: _connect,
               onRead: _readActiveZone,
@@ -470,13 +455,10 @@ class _MeterCard extends StatelessWidget {
   final GrainMaterial? expectedMaterial;
   final String cropName;
   final int ignoredDeviceCount;
-  final int baudRate;
-  final List<int> baudRates;
   final bool scanning;
   final bool connecting;
   final bool reading;
   final ValueChanged<MoistureUsbDevice?> onDeviceChanged;
-  final ValueChanged<int?> onBaudRateChanged;
   final VoidCallback onScan;
   final VoidCallback onConnect;
   final VoidCallback onRead;
@@ -488,13 +470,10 @@ class _MeterCard extends StatelessWidget {
     required this.expectedMaterial,
     required this.cropName,
     required this.ignoredDeviceCount,
-    required this.baudRate,
-    required this.baudRates,
     required this.scanning,
     required this.connecting,
     required this.reading,
     required this.onDeviceChanged,
-    required this.onBaudRateChanged,
     required this.onScan,
     required this.onConnect,
     required this.onRead,
@@ -545,25 +524,6 @@ class _MeterCard extends StatelessWidget {
           _MaterialVerificationHint(
             cropName: cropName,
             expectedMaterial: expectedMaterial,
-          ),
-          const SizedBox(height: 12),
-          AppLabeledField(
-            labelText: l10n.baudRate,
-            child: DropdownButtonFormField<int>(
-              value: baudRate,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.speed_rounded),
-              ),
-              items: baudRates
-                  .map(
-                    (rate) => DropdownMenuItem<int>(
-                      value: rate,
-                      child: Text(l10n.baudRateValue(rate)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: connecting || reading ? null : onBaudRateChanged,
-            ),
           ),
           if (ignoredDeviceCount > 0) ...[
             const SizedBox(height: 4),

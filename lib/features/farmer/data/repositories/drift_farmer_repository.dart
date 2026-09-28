@@ -204,7 +204,10 @@ class DriftFarmerRepository implements FarmerRepository {
     String? fallbackUuid,
   }) async {
     final uuid = model.uuid ?? fallbackUuid;
-    final existing = uuid == null ? null : await _dao.getFarmerByUuid(uuid);
+    final existingByUuid =
+        uuid == null ? null : await _dao.getFarmerByUuid(uuid);
+    final existingByServerId = await _dao.getFarmerByServerId(model.id);
+    final existing = existingByUuid ?? existingByServerId;
     await _dao.upsertFarmer(
       model.toCompanion(
         localId: existing?.id ?? model.id,
@@ -256,13 +259,24 @@ class DriftFarmerRepository implements FarmerRepository {
                   model.uuid ??
                       '${farmer.id}-${model.firstName}-${model.lastName}',
                 );
+          final existingByUuid = model.uuid == null
+              ? null
+              : await _dao.getDependantByUuid(model.uuid!);
+          final existingByDetails = await _dao.getMatchingDependant(
+            farmerId: farmer.id,
+            firstName: model.firstName,
+            lastName: model.lastName,
+            relationship: model.relationship,
+            dob: model.dob,
+          );
+          final existing = existingByUuid ?? existingByDetails;
           // Dependants pulled from server are already synced — upsert preserves
           // any locally-created rows that may already exist.
           await _dao.upsertDependant(
             FarmerDependantsCompanion(
-              id: Value(localId),
+              id: Value(existing?.id ?? localId),
               farmerId: Value(farmer.id), // use local FK, not server FK
-              uuid: Value(model.uuid),
+              uuid: Value(model.uuid ?? existing?.uuid),
               syncStatus: const Value('synced'),
               firstName: Value(model.firstName),
               middleName: Value(model.middleName),

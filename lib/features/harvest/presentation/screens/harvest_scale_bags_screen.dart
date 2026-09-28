@@ -12,6 +12,7 @@ import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
 import 'package:warehouse_app/features/harvest/domain/models/harvest_model.dart';
 import 'package:warehouse_app/features/harvest/presentation/providers/harvest_receiving_controller.dart';
+import 'package:warehouse_app/features/harvest/presentation/widgets/recent_harvest_receipts.dart';
 import 'package:warehouse_app/features/moisture/presentation/screens/moisture_reading_screen.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
@@ -180,6 +181,11 @@ class _HarvestScaleBagsScreenState
               color: AppColors.textSecondary,
               fontSize: 12,
             ),
+          ),
+          const SizedBox(height: 22),
+          RecentHarvestReceipts(
+            warehouseId: widget.warehouseId,
+            ownerFlow: widget.ownerFlow,
           ),
         ],
       ),

@@ -120,6 +120,30 @@ class FarmerDao extends DatabaseAccessor<AppDatabase> with _$FarmerDaoMixin {
         .get();
   }
 
+  Future<FarmerDependant?> getDependantByUuid(String uuid) {
+    return (select(farmerDependants)..where((d) => d.uuid.equals(uuid)))
+        .getSingleOrNull();
+  }
+
+  Future<FarmerDependant?> getMatchingDependant({
+    required int farmerId,
+    required String firstName,
+    required String lastName,
+    required String relationship,
+    required String dob,
+  }) {
+    return (select(farmerDependants)
+          ..where(
+            (d) =>
+                d.farmerId.equals(farmerId) &
+                d.firstName.equals(firstName) &
+                d.lastName.equals(lastName) &
+                d.relationship.equals(relationship) &
+                d.dob.equals(dob),
+          ))
+        .getSingleOrNull();
+  }
+
   Future<void> upsertDependant(Insertable<FarmerDependant> entry) {
     return into(farmerDependants).insertOnConflictUpdate(entry);
   }

@@ -24,7 +24,7 @@ Future<T?> showAppFeedbackDialog<T>(
   required String description,
   required AppFeedbackType type,
   List<AppFeedbackAction<T>> actions = const [],
-  bool barrierDismissible = true,
+  bool barrierDismissible = false,
 }) {
   final (icon, accentColor) = switch (type) {
     AppFeedbackType.success => (Icons.check_circle_rounded, AppColors.success),

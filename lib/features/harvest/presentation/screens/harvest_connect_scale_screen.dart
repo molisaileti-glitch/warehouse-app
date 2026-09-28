@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:warehouse_app/core/components/app_feedback.dart';
 import 'package:warehouse_app/core/router/app_router.dart';
 import 'package:warehouse_app/core/theme/app_theme.dart';
+import 'package:warehouse_app/features/harvest/presentation/widgets/recent_harvest_receipts.dart';
 import 'package:warehouse_app/features/scale/presentation/providers/weight_scale_controller.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
@@ -196,6 +197,11 @@ class _HarvestConnectScaleScreenState
                     )
                   : const Icon(Icons.bluetooth_searching_rounded),
               label: Text(_scanning ? l10n.scanning : l10n.scanDevices),
+            ),
+            const SizedBox(height: 22),
+            RecentHarvestReceipts(
+              warehouseId: widget.warehouseId,
+              ownerFlow: widget.ownerFlow,
             ),
           ],
         ),

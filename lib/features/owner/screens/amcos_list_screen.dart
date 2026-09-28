@@ -10,11 +10,25 @@ import 'package:warehouse_app/features/owner/widgets/owner_drawer.dart';
 import 'package:warehouse_app/features/shared/widgets/common_widgets.dart';
 import 'package:warehouse_app/l10n/app_localizations.dart';
 
-class AmcosListScreen extends ConsumerWidget {
+class AmcosListScreen extends ConsumerStatefulWidget {
   const AmcosListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AmcosListScreen> createState() => _AmcosListScreenState();
+}
+
+class _AmcosListScreenState extends ConsumerState<AmcosListScreen> {
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final mcuAsync = ref.watch(currentUserMcuProvider);
 
@@ -33,7 +47,7 @@ class AmcosListScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: mcuAsync.when(
-          loading: () => const LoadingView(),
+          loading: () => const SkeletonListView(),
           error: (error, _) => ErrorView(message: '$error'),
           data: (mcuId) {
             if (mcuId == null) {
@@ -41,22 +55,57 @@ class AmcosListScreen extends ConsumerWidget {
             }
 
             return ref.watch(amcosByMcuProvider(mcuId)).when(
-                  loading: () => const LoadingView(),
+                  loading: () => const SkeletonListView(),
                   error: (error, _) => ErrorView(message: '$error'),
-                  data: (items) => items.isEmpty
-                      ? EmptyState(
-                          icon: Icons.groups_2_outlined,
-                          title: l10n.noAmcosFound,
-                          subtitle: l10n.createFirstAmcos,
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(20),
-                          itemCount: items.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (_, index) =>
-                              _AmcosTile(amcos: items[index]),
+                  data: (items) {
+                    final filtered = _query.isEmpty
+                        ? items
+                        : items.where((amcos) {
+                            final text = [
+                              amcos.name,
+                              amcos.registrationNumber,
+                              amcos.regionName,
+                              amcos.districtName,
+                              amcos.villageName,
+                            ].join(' ').toLowerCase();
+                            return text.contains(_query);
+                          }).toList();
+
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                          child: TextField(
+                            controller: _searchCtrl,
+                            decoration: InputDecoration(
+                              hintText: l10n.searchOrganizations,
+                              prefixIcon: const Icon(Icons.search_rounded),
+                            ),
+                            onChanged: (value) => setState(
+                              () => _query = value.trim().toLowerCase(),
+                            ),
+                          ),
                         ),
+                        Expanded(
+                          child: filtered.isEmpty
+                              ? EmptyState(
+                                  icon: Icons.groups_2_outlined,
+                                  title: l10n.noAmcosFound,
+                                  subtitle: l10n.createFirstAmcos,
+                                )
+                              : ListView.separated(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                                  itemCount: filtered.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 10),
+                                  itemBuilder: (_, index) =>
+                                      _AmcosTile(amcos: filtered[index]),
+                                ),
+                        ),
+                      ],
+                    );
+                  },
                 );
           },
         ),

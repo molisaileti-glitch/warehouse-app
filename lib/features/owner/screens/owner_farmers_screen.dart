@@ -107,7 +107,8 @@ class _OwnerFarmersScreenState extends ConsumerState<OwnerFarmersScreen> {
                   ),
                 );
               },
-              loading: () => const SliverFillRemaining(child: LoadingView()),
+              loading: () =>
+                  const SliverFillRemaining(child: SkeletonListView()),
               error: (error, _) =>
                   SliverFillRemaining(child: ErrorView(message: '$error')),
             ),
@@ -193,6 +194,11 @@ class _FarmerTile extends StatelessWidget {
             ),
           ),
           SyncStatusBadge(status: farmer.syncStatus),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textMuted,
+          ),
         ],
       ),
     );

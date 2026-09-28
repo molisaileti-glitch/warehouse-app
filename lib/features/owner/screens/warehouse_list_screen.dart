@@ -175,7 +175,7 @@ class _WarehouseListScreenState extends ConsumerState<WarehouseListScreen> {
                 ],
               );
             },
-            loading: () => const LoadingView(),
+            loading: () => const SkeletonListView(),
             error: (error, _) => ErrorView(message: '$error'),
           ),
         ),

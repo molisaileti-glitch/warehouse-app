@@ -515,6 +515,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get newReceiving => 'Pokea Mavuno Mapya';
 
   @override
+  String get recentReceipts => 'Risiti za Hivi Karibuni';
+
+  @override
+  String get viewAll => 'Tazama zote';
+
+  @override
   String get generateReceipt => 'Tengeneza Risiti';
 
   @override
@@ -1873,6 +1879,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get searchWarehouses => 'Tafuta maghala...';
 
   @override
+  String get searchWorkers => 'Tafuta wafanyakazi...';
+
+  @override
+  String get searchOrganizations => 'Tafuta mashirika...';
+
+  @override
   String get allWarehouses => 'Maghala Yote';
 
   @override
@@ -2579,6 +2591,13 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get createFirstAmcos =>
       'Bonyeza + kuunda shirika la kwanza la mmiliki huyu.';
+
+  @override
+  String get createOrganizationFirstTitle => 'Unda shirika lako kwanza';
+
+  @override
+  String get createOrganizationFirstMessage =>
+      'Gusa menyu, unda shirika lako kwanza, kisha endelea na maghala, wafanyakazi, wakulima na rekodi za mavuno.';
 
   @override
   String get createAmcos => 'Unda shirika';

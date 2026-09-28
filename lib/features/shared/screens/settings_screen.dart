@@ -87,7 +87,6 @@ class SettingsScreen extends ConsumerWidget {
             _SettingsRow(
               icon: Icons.privacy_tip_outlined,
               title: _privacyPolicyLabel(context),
-              subtitle: _privacyPolicyUrl,
               onTap: () => _openPrivacyPolicy(context),
             ),
             _SettingsRow(

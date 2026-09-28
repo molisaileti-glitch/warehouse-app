@@ -147,7 +147,9 @@ class _FarmerListScreenState extends ConsumerState<FarmerListScreen> {
                   },
                 );
               },
-              loading: () => const LoadingView(),
+              loading: () => const SkeletonListView(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 100),
+              ),
               error: (error, _) => ErrorView(message: '$error'),
             ),
           ),

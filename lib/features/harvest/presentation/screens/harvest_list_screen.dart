@@ -42,6 +42,8 @@ class HarvestListScreen extends ConsumerWidget {
       ),
       body: harvestsAsync.hasError && harvests.isEmpty
           ? ErrorView(message: '${harvestsAsync.error}')
+          : harvestsAsync.isLoading && harvests.isEmpty
+              ? const SkeletonListView()
           : harvests.isEmpty
               ? EmptyState(
                   icon: Icons.receipt_long_outlined,
